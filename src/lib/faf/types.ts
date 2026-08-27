@@ -43,7 +43,13 @@ export interface Blueprint {
   };
   Air?: { MaxAirspeed?: number; MinAirspeed?: number; TurnSpeed?: number };
   Display?: { Abilities?: string[] };
-  Transport?: { TransportClass?: number; CanFireFromTransport?: boolean; AirClass?: boolean };
+  Transport?: {
+    TransportClass?: number;
+    CanFireFromTransport?: boolean;
+    AirClass?: boolean;
+    /** Small-unit capacity; 1 is a single-unit clamp rather than a transport. */
+    Class1Capacity?: number;
+  };
   Wreckage?: { MassMult?: number; HealthMult?: number };
   Weapon?: Weapon[];
   /** Commander upgrades, keyed by internal name. See lib/faf/enhancements.ts. */

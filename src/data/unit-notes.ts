@@ -33,6 +33,16 @@ const FORUM_BRICK_LOYALIST = {
   url: 'https://forums.faforever.com/viewtopic.php?f=40&t=4069',
 };
 
+const FORUM_FIRE_BEETLE = {
+  label: 'FAF forums: Fire Beetle',
+  url: 'https://forum.faforever.com/topic/23/fire-beetle-balance-suggestion',
+};
+
+const FORUM_MERCY = {
+  label: 'FAF forums: finding a use for the Mercy',
+  url: 'https://forum.faforever.com/topic/6866/trying-to-find-a-use-for-mercy-janus-does-it-better/24',
+};
+
 const FORUM_BEST_NAVY = {
   label: 'FAF forums: what is the best navy?',
   url: 'https://forums.faforever.com/viewtopic.php?f=2&t=6323',
@@ -60,6 +70,24 @@ export const UNIT_NOTES: Record<string, UnitNote> = {
     source: FORUM_BRICK_LOYALIST,
     patch: '3838',
   },
+  // Unique units. The source threads compare the Beetle's blast to a tactical
+  // missile's and give ratios that no longer hold: this patch has 1100 damage
+  // over radius 6.5 against a TML's 6000 over radius 2, so the area is about
+  // ten times larger, not six, and the single-target damage is under a fifth,
+  // not half. The figures below are this patch's.
+  XRL0302: {
+    text:
+      '1100 damage over a 6.5 radius, against a tactical missile\u2019s 6000 over 2. It is the wrong tool for one tough target and the right one for a clump. Historically an ACU snipe; the practical modern use is a transport of beetles with a mobile stealth, dropped onto mexes or power, which reaches at T2 what otherwise needs a strategic bomber.',
+    source: FORUM_FIRE_BEETLE,
+    patch: '3838',
+  },
+  DAA0206: {
+    text:
+      '2100 damage in a single hit, and it dies delivering it. Good for removing a T3 mex or forcing an ACU to move. The catch is that it can be shut out completely: anti-air stops a Mercy dead where a bomber will usually get something through.',
+    source: FORUM_MERCY,
+    patch: '3838',
+  },
+
   // Naval. The source thread also claims the UEF Valiant is the one destroyer
   // that cannot kill submarines; the blueprint disagrees (it carries torpedoes
   // and ANTINAVY like the rest), so that claim is not repeated here.

@@ -107,6 +107,52 @@ export function notablesOf(unit: Unit): Notable[] {
     out.push({ label: 'Hover', detail: 'Crosses water on the surface, and can be hit by torpedoes while doing it.' });
   }
 
+  // The units that do something the stat table has no row for at all.
+  if (c.has('BOMB')) {
+    // The payload never shows as DPS: the Fire Beetle carries a 1-damage
+    // Kamikaze trigger and a separate 1100-damage Death weapon, and the Mercy
+    // puts everything on the Kamikaze itself. Take the largest of the two, or
+    // the page reports a one-way attack that does 1 damage.
+    // fullDamage, not raw Damage: the Mercy releases six projectiles of 350,
+    // so the raw field understates its payload by a factor of six.
+    const payload = Math.max(
+      0,
+      ...(unit.weapons ?? [])
+        .filter((w) => w.WeaponCategory === 'Kamikaze' || w.WeaponCategory === 'Death' || (w.Label ?? '') === 'DeathWeapon')
+        .map((w) => w.fullDamage ?? w.Damage ?? 0)
+    );
+    if (payload > 0) {
+      out.push({
+        label: 'One-way trip',
+        detail: `${payload.toLocaleString('en-GB').replace(/,/g, ' ')} damage, delivered once, by dying. It carries no ordinary weapon, so it shows no DPS.`,
+      });
+    }
+  }
+
+  if ((unit.Weapon ?? []).some((w) => /tractor/i.test(String(w.Label ?? '')))) {
+    out.push({
+      label: 'Tractor beam',
+      detail: 'Drags mobile units in and crushes them, which no amount of health prevents.',
+    });
+  }
+
+  // A transport with real guns, or a gunship that happens to carry a unit.
+  const carries = unit.Transport?.Class1Capacity ?? 0;
+  const armed = weapons(unit).some((w) => w.WeaponCategory !== 'Death');
+  if (c.has('TRANSPORTATION') && carries > 0 && armed) {
+    out.push(
+      carries === 1
+        ? {
+            label: 'Carries one unit',
+            detail: 'A gunship with a transport clamp: it can lift a single unit and still fight.',
+          }
+        : {
+            label: `Armed transport, carries ${carries}`,
+            detail: 'Shoots back rather than relying on an escort, and can support what it drops.',
+          }
+    );
+  }
+
   if (c.has('CAPTURE')) {
     out.push({ label: 'Can capture', detail: 'Takes enemy structures intact instead of destroying them.' });
   }

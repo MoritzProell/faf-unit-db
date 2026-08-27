@@ -149,7 +149,17 @@ export function buildSlots(all: Unit[]): Slot[] {
       }));
 
     const present = new Set(list.map((u) => u.faction));
-    const roleLabel = (kind === 'Base' ? STRUCTURE_SLOT[role] : undefined) ?? role.toLowerCase();
+    // Match the unit pages: a "Special" slot says which kind it is.
+    const specialLabel =
+      role === 'Special'
+        ? list.every((u) => (u.Categories ?? []).includes('BOMB'))
+          ? 'one-shot unit'
+          : list.every((u) => (u.Categories ?? []).includes('SNIPER'))
+            ? 'sniper'
+            : 'special unit'
+        : undefined;
+    const roleLabel =
+      specialLabel ?? (kind === 'Base' ? STRUCTURE_SLOT[role] : undefined) ?? role.toLowerCase();
     const techLabel = tech === 'EXP' ? 'T4' : tech;
 
     slots.push({

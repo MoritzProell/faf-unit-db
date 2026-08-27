@@ -93,8 +93,12 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
     Shield: 'shield generator',
     Intel: 'sensor',
   };
+  // "Special" is a bucket, not a description. Say which kind of special.
+  const cats = new Set(unit.Categories ?? []);
+  const specialLabel =
+    role === 'Special' ? (cats.has('BOMB') ? 'one-shot unit' : 'sniper') : undefined;
   const roleLabel =
-    (unit.kind === 'Base' ? STRUCTURE_SLOT[role] : undefined) ?? role.toLowerCase();
+    specialLabel ?? (unit.kind === 'Base' ? STRUCTURE_SLOT[role] : undefined) ?? role.toLowerCase();
   const slotLabel = `${unit.techLabel} ${roleLabel}`;
 
   // Only claim a superlative when there is a field to lead. Two units make a

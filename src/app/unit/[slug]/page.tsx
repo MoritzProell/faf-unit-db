@@ -82,6 +82,14 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
   const note = UNIT_NOTES[unit.Id];
   const notables = notablesOf(unit);
   const primary = unit.weapons.find((w) => w.dps !== null && w.dps > 0) ?? null;
+  // A one-shot unit carries all its damage on a suicide or death weapon, which
+  // has no rate of fire and so no DPS. Without this the glance calls a Fire
+  // Beetle unarmed while the weapon block below it shows 1100 damage.
+  const payload = primary
+    ? null
+    : unit.weapons
+        .filter((w) => (w.fullDamage ?? 0) > 0)
+        .sort((a, b) => (b.fullDamage ?? 0) - (a.fullDamage ?? 0))[0] ?? null;
   const shownWeapons = unit.weapons.filter((w) => (w.dps !== null && w.dps > 0) || w.fullDamage > 0);
   const kindLabel = unit.kind === 'Base' ? 'Structures' : unit.kind;
 
@@ -210,18 +218,41 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                 }
               />
               <Glance
-                label={primary ? `${primary.category} DPS` : 'Weapons'}
+                label={primary ? `${primary.category} DPS` : payload ? 'Payload' : 'Weapons'}
                 icon="damage"
-                figure={primary?.dps ? fmtRatio(primary.dps, 1) : 'None'}
-                foot={<span className={styles.glanceFoot}>{primary?.cycleText ?? 'This unit is unarmed.'}</span>}
-              />
-              <Glance
-                label="Range"
-                icon="range"
-                figure={primary?.MaxRadius ? fmtNum(primary.MaxRadius) : '–'}
+                figure={
+                  primary?.dps
+                    ? fmtRatio(primary.dps, 1)
+                    : payload
+                      ? fmtNum(payload.fullDamage)
+                      : 'None'
+                }
                 foot={
                   <span className={styles.glanceFoot}>
-                    {primary?.MuzzleVelocity ? `Muzzle velocity ${primary.MuzzleVelocity}` : 'No ranged weapon'}
+                    {primary?.cycleText ??
+                      (payload
+                        ? 'Delivered once, on detonation. It has no rate of fire, so no DPS.'
+                        : 'This unit is unarmed.')}
+                  </span>
+                }
+              />
+              <Glance
+                label={payload && !primary ? 'Blast radius' : 'Range'}
+                icon="range"
+                figure={
+                  primary?.MaxRadius
+                    ? fmtNum(primary.MaxRadius)
+                    : payload?.DamageRadius
+                      ? fmtNum(payload.DamageRadius)
+                      : '–'
+                }
+                foot={
+                  <span className={styles.glanceFoot}>
+                    {primary?.MuzzleVelocity
+                      ? `Muzzle velocity ${primary.MuzzleVelocity}`
+                      : payload
+                        ? 'Everything inside the radius takes it'
+                        : 'No ranged weapon'}
                   </span>
                 }
               />
