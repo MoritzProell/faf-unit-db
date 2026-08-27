@@ -13,7 +13,12 @@ import { SiteFooter } from './SiteFooter';
 import { FactionMark } from './FactionMark';
 import { Icon, type IconName } from './Icon';
 import { useCompareSelection, MAX_COMPARE } from '@/lib/useCompareSelection';
-import { useViewPreference, type ViewMode } from '@/lib/useViewPreference';
+import { useViewPreference } from '@/lib/useViewPreference';
+import { useUrlState } from '@/lib/useUrlState';
+import {
+  parseBrowseState, serialiseBrowseState, isDefault, defaults,
+  type BrowseState, type ViewMode,
+} from '@/lib/faf/urlFilters';
 import {
   SORTS, SORT_ORDER, ROLE_KEYS, ROLE_LABEL,
   type BrowseUnit, type SortKey,
@@ -31,23 +36,6 @@ const VIEWS: Array<{ id: ViewMode; label: string; icon: IconName }> = [
   { id: 'compact', label: 'Compact', icon: 'rows' },
 ];
 
-/**
- * Landing defaults: the whole base-game roster, in the grouped layout.
- *
- * The point of a unit database's front page is seeing everything at once, the
- * way the in-game roster does. Cards are the drill-down, not the entry: at card
- * size you see fifteen units and have to scroll to learn the game exists.
- *
- * Nomads stays off because it is mod content, one click away with its count on
- * screen.
- */
-const defaultFilters = (): FilterState => ({
-  factions: new Set(FACTIONS.filter((f) => f !== 'Nomads')),
-  techs: new Set(TECHS),
-  kinds: new Set(KINDS),
-  roles: new Set(ROLE_KEYS),
-});
-
 export function BrowseClient({
   units,
   facets,
@@ -57,41 +45,53 @@ export function BrowseClient({
   facets: Facets;
   version: string;
 }) {
-  const [query, setQuery] = useState('');
-  const [filters, setFilters] = useState<FilterState>(defaultFilters);
-  const [sortKey, setSortKey] = useState<SortKey>('hpPerMass');
-  const [view, setView] = useViewPreference();
+  const [search, setSearch] = useUrlState();
+  const [viewPreference, setViewPreference] = useViewPreference();
   const [railOpen, setRailOpen] = useState(false);
   const [pickMode, setPickMode] = useState(false);
   const compare = useCompareSelection();
 
+  // Everything the browse screen shows is derived from the URL, so any view can
+  // be copied out of the address bar and shared.
+  const state = useMemo(() => parseBrowseState(search, viewPreference), [search, viewPreference]);
+  const { query, sort: sortKey, view } = state;
+  const filters: FilterState = state;
   const sort = SORTS[sortKey];
 
-  const dirty = useMemo(() => {
-    const d = defaultFilters();
-    const same = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].every((x) => b.has(x));
-    return (
-      query.length > 0 ||
-      !same(filters.factions, d.factions) ||
-      !same(filters.techs, d.techs) ||
-      !same(filters.kinds, d.kinds) ||
-      !same(filters.roles, d.roles)
-    );
-  }, [query, filters]);
+  const update = useCallback(
+    (patch: Partial<BrowseState>) => {
+      const next = { ...parseBrowseState(window.location.search, viewPreference), ...patch };
+      setSearch(serialiseBrowseState(next, viewPreference));
+    },
+    [setSearch, viewPreference]
+  );
 
-  const toggle = useCallback((group: keyof FilterState, value: string) => {
-    setFilters((prev) => {
-      const next = new Set(prev[group]);
+  const setQuery = useCallback((q: string) => update({ query: q }), [update]);
+  const setSortKey = useCallback((s: SortKey) => update({ sort: s }), [update]);
+
+  // The layout is a lasting preference as well as a shareable one: a link that
+  // names a view wins for that visit, but choosing one also remembers it.
+  const setView = useCallback(
+    (v: ViewMode) => {
+      setViewPreference(v);
+      update({ view: v });
+    },
+    [setViewPreference, update]
+  );
+
+  const dirty = !isDefault(state, viewPreference);
+
+  const toggle = useCallback(
+    (group: keyof FilterState, value: string) => {
+      const next = new Set(state[group]);
       if (next.has(value)) next.delete(value);
       else next.add(value);
-      return { ...prev, [group]: next };
-    });
-  }, []);
+      update({ [group]: next } as Partial<BrowseState>);
+    },
+    [state, update]
+  );
 
-  const reset = useCallback(() => {
-    setFilters(defaultFilters());
-    setQuery('');
-  }, []);
+  const reset = useCallback(() => setSearch(''), [setSearch]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -128,7 +128,7 @@ export function BrowseClient({
   );
 
   const activeFilterCount = useMemo(() => {
-    const d = defaultFilters();
+    const d = defaults(viewPreference);
     let n = 0;
     if (query) n++;
     n += FACTIONS.filter((f) => filters.factions.has(f) !== d.factions.has(f)).length;
@@ -136,7 +136,7 @@ export function BrowseClient({
     n += KINDS.filter((k) => filters.kinds.has(k) !== d.kinds.has(k)).length;
     n += ROLE_KEYS.filter((r) => filters.roles.has(r) !== d.roles.has(r)).length;
     return n;
-  }, [query, filters]);
+  }, [query, filters, viewPreference]);
 
   const title = useMemo(() => {
     const parts: string[] = [];

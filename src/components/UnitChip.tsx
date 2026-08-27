@@ -33,19 +33,21 @@ export function UnitChip({
   eager?: boolean;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
-  const [flip, setFlip] = useState<{ x: boolean; y: boolean }>({ x: false, y: false });
+  const [flip, setFlip] = useState({ x: false, up: false, down: false });
 
-  // Measured on hover rather than guessed: rows wrap, so which chips sit near an
-  // edge is not knowable when rendering.
+  // Measured on hover rather than guessed: which chips sit near an edge depends
+  // on layout and scroll position, neither known at render time.
   const measure = useCallback(() => {
     const el = wrapRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
-    const CARD_W = 236;
-    const CARD_H = 190;
+    const CARD_W = 252;
+    const CARD_H = 200;
+    const centre = r.top + r.height / 2;
     setFlip({
-      x: r.left + CARD_W + 16 > window.innerWidth,
-      y: r.bottom + CARD_H + 16 > window.innerHeight && r.top > CARD_H,
+      x: r.right + CARD_W + 12 > window.innerWidth,
+      up: centre + CARD_H / 2 > window.innerHeight - 12,
+      down: centre - CARD_H / 2 < 12,
     });
   }, []);
 
@@ -55,7 +57,8 @@ export function UnitChip({
       className={styles.wrap}
       data-selected={selected}
       data-flip={flip.x}
-      data-flip-up={flip.y}
+      data-flip-up={flip.up}
+      data-flip-down={flip.down}
       onMouseEnter={measure}
       onFocus={measure}
     >

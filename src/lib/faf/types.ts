@@ -41,6 +41,8 @@ export interface Blueprint {
   Transport?: { TransportClass?: number; CanFireFromTransport?: boolean; AirClass?: boolean };
   Wreckage?: { MassMult?: number; HealthMult?: number };
   Weapon?: Weapon[];
+  /** Commander upgrades, keyed by internal name. See lib/faf/enhancements.ts. */
+  Enhancements?: Record<string, Record<string, unknown>>;
   SplitDamage?: unknown;
 }
 

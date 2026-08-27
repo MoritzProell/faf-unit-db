@@ -60,7 +60,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
                 background: `${accent}1f`, border: `${px(2)}px solid ${accent}66`,
               }}
             >
-              <img src={render} width={162} height={162} alt="" />
+              <img src={render} width={px(162)} height={px(162)} alt="" />
             </div>
           )}
           <div style={{ display: 'flex', flexDirection: 'column', maxWidth: px(800) }}>

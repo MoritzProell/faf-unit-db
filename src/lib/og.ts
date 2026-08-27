@@ -40,14 +40,22 @@ export async function ogFonts() {
   ];
 }
 
-/** The unit render, inlined; Satori cannot fetch a relative URL. */
+/**
+ * The unit render, inlined; Satori cannot fetch a relative URL. Prefers the
+ * 256px upscale: FAF only publishes 64px renders, and Satori's own scaling of
+ * one up to card size is mush. Falls back to the original if the upscaled set
+ * has not been generated.
+ */
 export async function unitImageDataUri(id: string): Promise<string | null> {
-  try {
-    const buf = await readFile(join(process.cwd(), 'public', 'units', `${id}.png`));
-    return `data:image/png;base64,${buf.toString('base64')}`;
-  } catch {
-    return null;
+  for (const dir of ['units-lg', 'units']) {
+    try {
+      const buf = await readFile(join(process.cwd(), 'public', dir, `${id}.png`));
+      return `data:image/png;base64,${buf.toString('base64')}`;
+    } catch {
+      /* try the next source */
+    }
   }
+  return null;
 }
 
 export const groupNum = (v: number): string =>

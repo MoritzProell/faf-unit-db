@@ -12,6 +12,7 @@ import { MassMark, EnergyMark, TimeMark } from '@/components/Marks';
 import { getUnitData } from '@/lib/faf/data';
 import { fmtNum, fmtRatio, round } from '@/lib/faf/decorate';
 import { buildCohort, ordinal } from '@/lib/faf/cohort';
+import { enhancementsOf, groupBySlot, SLOT_LABEL, type Enhancement } from '@/lib/faf/enhancements';
 import { getUnitHistory } from '@/lib/faf/changelog';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { JsonLd } from '@/components/JsonLd';
@@ -68,6 +69,8 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
   // The most recent patch that touched this unit, surfaced in the hero so you
   // do not have to notice a panel in the sidebar to learn it was rebalanced.
   const lastChange = history[0];
+  const enhancements = groupBySlot(enhancementsOf(unit));
+  const enhancementCount = enhancements.reduce((n, [, l]) => n + l.length, 0);
   const primary = unit.weapons.find((w) => w.dps !== null && w.dps > 0) ?? null;
   const shownWeapons = unit.weapons.filter((w) => (w.dps !== null && w.dps > 0) || w.fullDamage > 0);
   const kindLabel = unit.kind === 'Base' ? 'Structures' : unit.kind;
@@ -138,7 +141,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
         <div className={styles.heroMark} aria-hidden="true">
           <FactionMark faction={unit.faction} size={192} opacity={0.055} />
         </div>
-        <UnitWell id={unit.Id} faction={unit.faction} techLabel={unit.techLabel} size={96} imageSize={90} pip={false} priority hasRender={unit.hasRender} />
+        <UnitWell id={unit.Id} faction={unit.faction} techLabel={unit.techLabel} size={132} imageSize={124} pip={false} priority hires hasRender={unit.hasRender} className={styles.heroWell} />
         <div className={styles.heroBody}>
           <div className={styles.heroTitleRow}>
             <h1 className={`t ${styles.heroName}`}>{unit.name}</h1>
@@ -211,11 +214,31 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
           </section>
 
           {shownWeapons.length > 0 && (
-            <section className={styles.secWeapons}>
+            <section className={styles.secWeapons} data-multi={shownWeapons.length > 1}>
               <SectionHead label="Weapons" note={String(shownWeapons.length)} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div className={styles.weaponList}>
                 {shownWeapons.map((w, i) => (
                   <WeaponCard key={`${w.Label ?? w.DisplayName ?? 'w'}-${i}`} weapon={w} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {enhancementCount > 0 && (
+            <section className={styles.secEnhance}>
+              <SectionHead label="Upgrades" note={String(enhancementCount)} />
+              <div className={styles.panel}>
+                {enhancements.map(([slot, list]) => (
+                  <div key={slot}>
+                    <div className={styles.subHead}>
+                      <span className="lbl" style={{ fontSize: 9 }}>{SLOT_LABEL[slot]}</span>
+                      <span className={`m ${styles.sectionNote}`}>{list.length}</span>
+                      <span className="rule" />
+                    </div>
+                    {list.map((e) => (
+                      <EnhancementRow key={`${slot}-${e.key}`} enhancement={e} />
+                    ))}
+                  </div>
                 ))}
               </div>
             </section>
@@ -401,6 +424,41 @@ function Field({ label, value, sub }: { label: string; value: string; sub?: stri
         <span className={`m ${styles.fieldValue}`}>{value}</span>
         {sub && <span className={styles.fieldSub}>{sub}</span>}
       </span>
+    </div>
+  );
+}
+
+function EnhancementRow({ enhancement: e }: { enhancement: Enhancement }) {
+  return (
+    // Anchored so a single upgrade can be linked to on its own.
+    <div className={styles.enhRow} id={`upgrade-${e.key.toLowerCase()}`}>
+      <div className={styles.enhTop}>
+        <span className={`t ${styles.enhName}`}>{e.name}</span>
+        <span className={styles.enhCosts}>
+          <span className={styles.enhCost}><MassMark size={11} /><span className="m">{fmtNum(e.mass)}</span></span>
+          <span className={styles.enhCost}><EnergyMark size={11} /><span className="m">{fmtNum(e.energy)}</span></span>
+          <span className={styles.enhCost}><TimeMark size={11} /><span className="m">{fmtNum(e.buildTime)}</span></span>
+        </span>
+      </div>
+      {(e.effects.length > 0 || e.unlocks) && (
+        <div className={styles.enhEffects}>
+          {e.effects.map((f) => (
+            <span key={f.label} className={styles.enhPill}>
+              <span className={styles.enhPillLabel}>{f.label}</span>
+              <span className="m">{f.value}</span>
+            </span>
+          ))}
+          {e.unlocks && (
+            <span className={styles.enhPill}>
+              <span className={styles.enhPillLabel}>Unlocks</span>
+              <span className="m">{e.unlocks}</span>
+            </span>
+          )}
+        </div>
+      )}
+      {e.prerequisite && (
+        <div className={styles.enhPrereq}>Requires {e.prerequisite}</div>
+      )}
     </div>
   );
 }

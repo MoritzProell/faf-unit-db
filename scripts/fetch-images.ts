@@ -8,6 +8,7 @@
  */
 import { mkdir, writeFile, readdir, readFile, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
+import sharp from 'sharp';
 
 const API = 'https://api.github.com/repos/FAForever/spooky-db/contents/app/img/units?ref=master';
 const OUT = join(process.cwd(), 'public', 'units');
@@ -49,6 +50,7 @@ async function main() {
 
   console.log(`${usable.length} usable upstream images, ${existing.size} already local, ${todo.length} to fetch`);
   if (!todo.length) {
+    await writeUpscaled();
     await writeManifest();
     return;
   }
@@ -70,7 +72,35 @@ async function main() {
   });
   await Promise.all(workers);
   console.log(`fetched ${done} images, ${(bytes / 1048576).toFixed(1)} MB -> public/units/`);
+  await writeUpscaled();
   await writeManifest();
+}
+
+/**
+ * Renders are only 64x64, which is all FAF publishes. Drawn large they go soft,
+ * and the browser's and Satori's own scaling is poor. A Lanczos upscale to 256
+ * does not invent detail but it does avoid the mush, and lets the unit page and
+ * the social cards downscale into their slot rather than upscale out of it.
+ */
+async function writeUpscaled() {
+  const dest = join(process.cwd(), 'public', 'units-lg');
+  await mkdir(dest, { recursive: true });
+  const files = (await readdir(OUT)).filter((f) => f.endsWith('.png'));
+  const existing = new Set(await readdir(dest).catch(() => [] as string[]));
+
+  let made = 0;
+  for (const name of files) {
+    if (existing.has(name)) continue;
+    await sharp(join(OUT, name))
+      .resize(256, 256, { kernel: 'lanczos3', fit: 'fill' })
+      .png({ palette: true, quality: 90, effort: 10 })
+      .toFile(join(dest, name));
+    made++;
+  }
+  for (const name of existing) {
+    if (!files.includes(name)) await unlink(join(dest, name));
+  }
+  console.log(`upscaled ${made} render(s) to 256px -> public/units-lg/`);
 }
 
 /**

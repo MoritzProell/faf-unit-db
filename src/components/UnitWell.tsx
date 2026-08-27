@@ -5,7 +5,8 @@ import styles from './UnitWell.module.css';
 
 /**
  * The faction-tinted plate a unit render sits in. Images are vendored under
- * public/units/<Id>.png by scripts/fetch-images.ts.
+ * public/units/<Id>.png by scripts/fetch-images.ts, with a 256px Lanczos
+ * upscale alongside in public/units-lg for the few places drawn large.
  */
 export function UnitWell({
   id,
@@ -16,6 +17,8 @@ export function UnitWell({
   pip = true,
   priority = false,
   hasRender = true,
+  hires = false,
+  className,
 }: {
   id: string;
   faction: Faction;
@@ -26,14 +29,25 @@ export function UnitWell({
   priority?: boolean;
   /** A few blueprints have no render; show the faction mark rather than a gap. */
   hasRender?: boolean;
+  /**
+   * Draw from the 256px upscale. Worth ~20 KB a unit, so it is opt-in: the
+   * browse grid renders hundreds of small wells and keeps the 64px original.
+   */
+  hires?: boolean;
+  /** Lets a caller hang its own rules on the well (the unit hero resizes in dense mode). */
+  className?: string;
 }) {
   const inner = imageSize ?? Math.round(size * 0.93);
   return (
-    <div className={styles.well} data-faction={faction} style={{ width: size, height: size }}>
+    <div
+      className={className ? `${styles.well} ${className}` : styles.well}
+      data-faction={faction}
+      style={{ width: size, height: size }}
+    >
       {hasRender ? (
         <img
           className={styles.img}
-          src={`/units/${id}.png`}
+          src={`/units${hires ? '-lg' : ''}/${id}.png`}
           alt=""
           width={inner}
           height={inner}
