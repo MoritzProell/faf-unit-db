@@ -10,6 +10,8 @@ import { AbilityChips } from '@/components/AbilityChips';
 import { AddToCompareButton, DensityToggle } from '@/components/UnitActions';
 import { MassMark, EnergyMark, TimeMark } from '@/components/Marks';
 import { getUnitData } from '@/lib/faf/data';
+import { engagementOf } from '@/lib/faf/engagement';
+import { UNIT_NOTES } from '@/data/unit-notes';
 import { fmtNum, fmtRatio, round } from '@/lib/faf/decorate';
 import { buildCohort, ordinal } from '@/lib/faf/cohort';
 import { enhancementsOf, groupBySlot, SLOT_LABEL, type Enhancement } from '@/lib/faf/enhancements';
@@ -75,6 +77,8 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
   const lastChange = history[0];
   const enhancements = groupBySlot(enhancementsOf(unit));
   const enhancementCount = enhancements.reduce((n, [, l]) => n + l.length, 0);
+  const engagement = engagementOf(unit, units);
+  const note = UNIT_NOTES[unit.Id];
   const primary = unit.weapons.find((w) => w.dps !== null && w.dps > 0) ?? null;
   const shownWeapons = unit.weapons.filter((w) => (w.dps !== null && w.dps > 0) || w.fullDamage > 0);
   const kindLabel = unit.kind === 'Base' ? 'Structures' : unit.kind;
@@ -328,6 +332,73 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
               </div>
             </div>
           </section>
+
+          {(engagement.cannotAnswer.length > 0 || engagement.safeFrom.length > 0) && (
+            <section className={styles.secTargeting}>
+              <SectionHead label="Targeting" note="from blueprints" />
+              <div className={styles.panel}>
+                <div className={styles.reachRow}>
+                  <span className="lbl" style={{ fontSize: 9 }}>Its weapons reach</span>
+                  <span className={`m ${styles.reachValue}`}>
+                    {engagement.armed ? engagement.reaches.join(' / ') : 'unarmed'}
+                  </span>
+                  <span className={styles.reachSep} />
+                  <span className="lbl" style={{ fontSize: 9 }}>It sits on</span>
+                  <span className={`m ${styles.reachValue}`}>{engagement.occupies.join(' / ')}</span>
+                </div>
+
+                {engagement.safeFrom.length > 0 && (
+                  <div className={styles.safeRow}>
+                    <Icon name="shield" size={13} />
+                    <span className={styles.safeLabel}>Nothing in these roles can touch it</span>
+                    <span className={styles.safeList}>{engagement.safeFrom.join(' · ')}</span>
+                  </div>
+                )}
+
+                {engagement.cannotAnswer.length > 0 && (
+                  <>
+                    <div className={styles.subHead}>
+                      <span className="lbl" style={{ fontSize: 9 }}>Can hit it, and it cannot hit back</span>
+                      <span className="rule" />
+                    </div>
+                    {engagement.cannotAnswer.map((t) => (
+                      <div key={t.role} className={styles.threatRow}>
+                        <span className={styles.threatRole}>{t.role}</span>
+                        <span className={`m ${styles.threatCount}`}>{t.count}</span>
+                        <span className={styles.threatExamples}>
+                          {t.examples.map((x, i) => (
+                            <span key={x.slug}>
+                              {i > 0 && ', '}
+                              <Link href={`/unit/${x.slug}`} className={styles.threatLink}>{x.name}</Link>
+                            </span>
+                          ))}
+                          {t.count > t.examples.length && ` +${t.count - t.examples.length} more`}
+                        </span>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
+            </section>
+          )}
+
+          {note && (
+            <section className={styles.secPlay}>
+              <SectionHead label="How it plays" />
+              <div className={`${styles.panel} ${styles.playPanel}`}>
+                <p className={styles.playText}>{note.text}</p>
+                <div className={styles.playMeta}>
+                  {note.source?.url ? (
+                    <a href={note.source.url} target="_blank" rel="noopener noreferrer">{note.source.label}</a>
+                  ) : (
+                    note.source?.label ?? note.by
+                  )}
+                  {(note.source || note.by) && ' · '}
+                  Written for patch {note.patch}
+                </div>
+              </div>
+            </section>
+          )}
         </div>
 
         <aside className={styles.aside}>

@@ -35,6 +35,9 @@ export interface Blueprint {
   };
   Intel?: { VisionRadius?: number; WaterVisionRadius?: number; RadarRadius?: number; SonarRadius?: number };
   Physics?: {
+    /** RULEUMT_Land, RULEUMT_Air, RULEUMT_SurfacingSub … decides which layer a
+     *  unit occupies, and so what is able to shoot it. */
+    MotionType?: string;
     MaxSpeed?: number; TurnRate?: number; BackUpDistance?: number; Elevation?: number;
     FuelUseTime?: number; FuelRechargeRate?: number;
   };
