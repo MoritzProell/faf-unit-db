@@ -80,6 +80,27 @@ export function notablesOf(unit: Unit): Notable[] {
     out.push({ label: 'Personal shield', detail: 'Carries its own shield bubble rather than relying on cover.' });
   }
 
+  // A warship that walks ashore, or a destroyer that dives, is the kind of thing
+  // players find out about by losing to it. Both are motion-type facts that no
+  // stat on the page exposes.
+  if (c.has('NAVAL') && c.has('AMPHIBIOUS')) {
+    out.push({
+      label: 'Comes ashore',
+      detail: 'A warship that can climb out of the water and keep fighting on land.',
+    });
+  }
+
+  // There is no SUBMARINE category — a submarine is just NAVAL + SUBMERSIBLE,
+  // so diving is only worth remarking on for something with a surface ship's
+  // class. Otherwise this fires on every submarine to announce it submerges.
+  const SURFACE_CLASS = ['DESTROYER', 'FRIGATE', 'CRUISER', 'BATTLESHIP', 'BATTLECRUISER'];
+  if (c.has('SUBMERSIBLE') && SURFACE_CLASS.some((k) => c.has(k))) {
+    out.push({
+      label: 'Submerges',
+      detail: 'Dives like a submarine, so surface-only weapons lose the target.',
+    });
+  }
+
   if (c.has('AMPHIBIOUS') && c.has('LAND')) {
     out.push({ label: 'Amphibious', detail: 'Walks along the seabed, so water is not a wall.' });
   } else if (c.has('HOVER')) {

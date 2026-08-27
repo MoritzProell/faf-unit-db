@@ -33,6 +33,11 @@ const FORUM_BRICK_LOYALIST = {
   url: 'https://forums.faforever.com/viewtopic.php?f=40&t=4069',
 };
 
+const FORUM_BEST_NAVY = {
+  label: 'FAF forums: what is the best navy?',
+  url: 'https://forums.faforever.com/viewtopic.php?f=2&t=6323',
+};
+
 export const UNIT_NOTES: Record<string, UnitNote> = {
   // T3 land. Every figure below was checked against this patch's blueprints
   // before it was written down; the source thread quotes 1600 damage for the
@@ -53,6 +58,26 @@ export const UNIT_NOTES: Record<string, UnitNote> = {
     text:
       'Carries a tactical missile deflector, and for the same 480 mass as a Titan it brings more health and more damage. Its 20 range is the shortest of the T3 bots, so it has to close, which its 3.8 speed lets it do.',
     source: FORUM_BRICK_LOYALIST,
+    patch: '3838',
+  },
+  // Naval. The source thread also claims the UEF Valiant is the one destroyer
+  // that cannot kill submarines; the blueprint disagrees (it carries torpedoes
+  // and ANTINAVY like the rest), so that claim is not repeated here.
+  URS0201: {
+    text:
+      'The only destroyer that can climb out of the water, which makes it a shore assault unit as much as a warship: it will walk onto a beach and shoot a base that has no naval defence. Costs the same 2250 mass as the other T2 destroyers and gives up a little health for it.',
+    source: FORUM_BEST_NAVY,
+    patch: '3838',
+  },
+  XSS0201: {
+    text:
+      'The only destroyer that submerges. Surface-only weapons lose it entirely, so it can pick fights that other destroyers cannot break off from, and it beats frigates in a way no other destroyer does.',
+    source: FORUM_BEST_NAVY,
+    patch: '3838',
+  },
+  XSS0203: {
+    text:
+      'Carries anti-torpedo as well as torpedoes, which most T1 submarines do not, so it survives a torpedo exchange its counterparts lose.',
     patch: '3838',
   },
   XSL0303: {
