@@ -99,7 +99,14 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
     role === 'Special' ? (cats.has('BOMB') ? 'one-shot unit' : 'sniper') : undefined;
   const roleLabel =
     specialLabel ?? (unit.kind === 'Base' ? STRUCTURE_SLOT[role] : undefined) ?? role.toLowerCase();
-  const slotLabel = `${unit.techLabel} ${roleLabel}`;
+  // Name the domain when the same job exists in more than one of them,
+  // otherwise a land one-shot unit and an air one-shot unit each announce
+  // themselves as "the only T2 one-shot unit in the game".
+  const sameJobElsewhere = all.some(
+    (u) => roleOf(u.Categories) === role && u.tech === unit.tech && u.kind !== unit.kind
+  );
+  const domain = sameJobElsewhere && unit.kind !== 'Base' ? `${unit.kind.toLowerCase()} ` : '';
+  const slotLabel = `${unit.techLabel} ${domain}${roleLabel}`;
 
   // Only claim a superlative when there is a field to lead. Two units make a
   // pair, not a ranking.
