@@ -11,6 +11,7 @@ import { AddToCompareButton, DensityToggle } from '@/components/UnitActions';
 import { MassMark, EnergyMark, TimeMark } from '@/components/Marks';
 import { getUnitData } from '@/lib/faf/data';
 import { engagementOf } from '@/lib/faf/engagement';
+import { notablesOf } from '@/lib/faf/notable';
 import { UNIT_NOTES } from '@/data/unit-notes';
 import { fmtNum, fmtRatio, round } from '@/lib/faf/decorate';
 import { buildCohort, ordinal } from '@/lib/faf/cohort';
@@ -79,6 +80,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
   const enhancementCount = enhancements.reduce((n, [, l]) => n + l.length, 0);
   const engagement = engagementOf(unit, units);
   const note = UNIT_NOTES[unit.Id];
+  const notables = notablesOf(unit);
   const primary = unit.weapons.find((w) => w.dps !== null && w.dps > 0) ?? null;
   const shownWeapons = unit.weapons.filter((w) => (w.dps !== null && w.dps > 0) || w.fullDamage > 0);
   const kindLabel = unit.kind === 'Base' ? 'Structures' : unit.kind;
@@ -333,51 +335,45 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
             </div>
           </section>
 
-          {(engagement.cannotAnswer.length > 0 || engagement.safeFrom.length > 0) && (
-            <section className={styles.secTargeting}>
-              <SectionHead label="Targeting" note="from blueprints" />
+          {(cohort.unique || cohort.superlatives.length > 0 || notables.length > 0 || !engagement.reaches.includes('Air')) && (
+            <section className={styles.secStandout}>
+              <SectionHead label="Worth knowing" note="from blueprints" />
               <div className={styles.panel}>
-                <div className={styles.reachRow}>
-                  <span className="lbl" style={{ fontSize: 9 }}>Its weapons reach</span>
-                  <span className={`m ${styles.reachValue}`}>
-                    {engagement.armed ? engagement.reaches.join(' / ') : 'unarmed'}
-                  </span>
-                  <span className={styles.reachSep} />
-                  <span className="lbl" style={{ fontSize: 9 }}>It sits on</span>
-                  <span className={`m ${styles.reachValue}`}>{engagement.occupies.join(' / ')}</span>
-                </div>
-
-                {engagement.safeFrom.length > 0 && (
-                  <div className={styles.safeRow}>
-                    <Icon name="shield" size={13} />
-                    <span className={styles.safeLabel}>Nothing in these roles can touch it</span>
-                    <span className={styles.safeList}>{engagement.safeFrom.join(' · ')}</span>
+                {cohort.unique && (
+                  <div className={styles.standoutRow} data-kind="unique">
+                    <Icon name="target" size={13} />
+                    <span className={styles.standoutLabel}>
+                      The only {cohort.slotLabel} in the game
+                    </span>
+                    <span className={styles.standoutValue}>no faction fields an equivalent</span>
                   </div>
                 )}
 
-                {engagement.cannotAnswer.length > 0 && (
-                  <>
-                    <div className={styles.subHead}>
-                      <span className="lbl" style={{ fontSize: 9 }}>Can hit it, and it cannot hit back</span>
-                      <span className="rule" />
-                    </div>
-                    {engagement.cannotAnswer.map((t) => (
-                      <div key={t.role} className={styles.threatRow}>
-                        <span className={styles.threatRole}>{t.role}</span>
-                        <span className={`m ${styles.threatCount}`}>{t.count}</span>
-                        <span className={styles.threatExamples}>
-                          {t.examples.map((x, i) => (
-                            <span key={x.slug}>
-                              {i > 0 && ', '}
-                              <Link href={`/unit/${x.slug}`} className={styles.threatLink}>{x.name}</Link>
-                            </span>
-                          ))}
-                          {t.count > t.examples.length && ` +${t.count - t.examples.length} more`}
-                        </span>
-                      </div>
-                    ))}
-                  </>
+                {cohort.superlatives.map((sup) => (
+                  <div key={sup.label} className={styles.standoutRow} data-kind="best">
+                    <Icon name="up" size={13} strokeWidth={2.2} />
+                    <span className={styles.standoutLabel}>{sup.label}</span>
+                    <span className={`m ${styles.standoutValue}`}>{sup.value}</span>
+                  </div>
+                ))}
+
+                {engagement.armed && !engagement.reaches.includes('Air') && (
+                  <div className={styles.standoutRow} data-kind="warn">
+                    <Icon name="close" size={12} strokeWidth={2.4} />
+                    <span className={styles.standoutLabel}>Cannot target air</span>
+                    <span className={styles.standoutValue}>
+                      reaches {engagement.reaches.join(', ').toLowerCase() || 'nothing'} only
+                    </span>
+                  </div>
                 )}
+
+                {notables.map((n) => (
+                  <div key={n.label} className={styles.standoutRow}>
+                    <Icon name="check" size={13} strokeWidth={2.2} />
+                    <span className={styles.standoutLabel}>{n.label}</span>
+                    <span className={styles.standoutValue}>{n.detail}</span>
+                  </div>
+                ))}
               </div>
             </section>
           )}
@@ -428,8 +424,8 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
           {cohort.peers.length > 0 && (
             <div className={styles.panel}>
               <div className={styles.panelHead}>
-                <span className={`lbl ${styles.panelTitle}`}>Compare with</span>
-                <span className={`m ${styles.sectionNote}`}>vs {unit.name}</span>
+                <span className={`lbl ${styles.panelTitle}`}>Other factions</span>
+                <span className={`m ${styles.sectionNote}`}>same {cohort.slotLabel}</span>
               </div>
               {cohort.peers.map((p) => (
                 <PeerRow key={p.Id} peer={p} base={unit} />

@@ -33,6 +33,8 @@ export interface Weapon {
   TractorDamageInterval?: number;
   InitialDamage?: number;
   DamageToShields?: number;
+  /** Projectiles released per trigger pull; >1 splits the shot. */
+  ProjectilesPerOnFire?: number;
   DamageRadius?: number;
   DoTPulses?: number;
   DoTTime?: number;
