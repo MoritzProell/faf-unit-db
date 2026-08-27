@@ -1,0 +1,43 @@
+.wrap { position: relative; display: block; border-radius: 5px; }
+.wrap[data-selected='true'] { box-shadow: 0 0 0 2px var(--primary); }
+.btn { display: block; border-radius: 5px; }
+
+/*
+ * The card's box starts flush against the well and pads itself down, so moving
+ * the pointer from the icon to the card never crosses a dead gap and closes it.
+ */
+.card {
+  position: absolute; left: 0; top: 100%; z-index: 30;
+  width: 236px; padding-top: 8px;
+  opacity: 0; visibility: hidden; transition: opacity 0.09s;
+  pointer-events: none;
+}
+.wrap:hover .card,
+.wrap:focus-within .card { opacity: 1; visibility: visible; pointer-events: auto; }
+/* Near the right edge the card would run off screen. */
+.wrap[data-flip='true'] .card { left: auto; right: 0; }
+
+.panel {
+  background: #12161a; border: 1px solid var(--line-2); border-radius: var(--radius-lg);
+  padding: 12px; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.66);
+}
+.top { display: flex; align-items: center; gap: 8px; }
+.name { font-size: 14.5px; font-weight: 600; }
+.id { font-size: 9.5px; color: var(--text-3); }
+.role { font-size: 11px; color: var(--text-2); margin-top: 4px; }
+.rule { height: 1px; background: var(--line); margin: 10px -12px; }
+.stats { display: flex; gap: 20px; }
+.stat { display: flex; flex-direction: column; gap: 3px; }
+.figure { font-size: 12.5px; }
+
+.compare {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  width: 100%; height: 30px; margin-top: 11px;
+  border-radius: var(--radius);
+  background: var(--panel-2); border: 1px solid var(--line-2);
+  font-size: 12px; font-weight: 600; color: var(--text-2);
+}
+.compare:hover { border-color: var(--primary); color: var(--text); }
+.compare[data-on='true'] {
+  background: var(--best-bg); border-color: var(--best-line); color: var(--best);
+}

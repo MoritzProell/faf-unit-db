@@ -1,0 +1,113 @@
+name: Update unit data
+
+# FAF pushes balance and unit changes to FAForever/fa @ deploy/faf. This
+# regenerates from that, refuses to commit if the derived stats stop matching,
+# and pushes when something actually changed.
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install Lua
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - run: npm ci
+
+      - name: Generate from FAForever/fa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run generate
+
+      - name: Fetch any new unit renders
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run fetch-images
+
+      # The gate. A balance patch that legitimately changes a unit's DPS will
+      # fail this, and it should: only a human can tell "FAF rebalanced Percival"
+      # from "our maths broke". Update the expected values in the script, and say
+      # in the commit which patch changed them.
+      - name: Verify derived stats
+        id: verify
+        run: npm run verify
+
+      - name: Type-check and build
+        run: |
+          npx tsc --noEmit
+          npm run build
+
+      - name: Commit if anything changed
+        id: commit
+        run: |
+          if git diff --quiet -- src/data public/units; then
+            echo "No change in unit data."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          VERSION=$(node -e "console.log(require('./src/data/units.json').version)")
+          COUNT=$(node -e "console.log(require('./src/data/units.json').units.length)")
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data public/units
+          git commit -m "Update unit data to patch ${VERSION} (${COUNT} units)"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # Two ways to ship the commit above:
+      #   1. Install the Vercel GitHub App on this repo (Vercel dashboard ->
+      #      Project -> Settings -> Git). Vercel then deploys on push and this
+      #      step is skipped. Also gives preview deploys on pull requests.
+      #   2. Add a VERCEL_TOKEN repo secret. This step deploys with it.
+      - name: Deploy to Vercel
+        if: steps.commit.outputs.changed == 'true' && env.VERCEL_TOKEN != ''
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel deploy --prod --yes --token "$VERCEL_TOKEN"
+
+      - name: Open an issue if the stats no longer match
+        if: failure() && steps.verify.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = 'Unit data update blocked: derived stats no longer match';
+            const { data: open } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'data-update',
+            });
+            if (open.some((i) => i.title === title)) return;
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo,
+              title,
+              labels: ['data-update'],
+              body: [
+                '`npm run verify` failed, so the unit data was **not** committed.',
+                '',
+                'This is usually one of two things:',
+                '',
+                '1. **FAF shipped a balance patch.** Expected. Check the failing units against',
+                '   the in-game unit view, update the values in `scripts/verify-stats.ts`, and',
+                '   note which patch changed them in the commit message.',
+                '2. **Something in `src/lib/faf/` broke.** Fix the code, not the expectations.',
+                '',
+                `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              ].join('\n'),
+            });

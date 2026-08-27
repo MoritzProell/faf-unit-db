@@ -1,0 +1,92 @@
+/*
+ * Tokens are lifted from the reference app's own stylesheet so this reads as the
+ * same tool: faction hexes from its `.uef/.cybran/...` rules, the mass and energy
+ * ring colours from `.mass-icon__wrap` / `.energy-icon__img`, #090909 page.
+ */
+:root {
+  --bg: #090909;
+  --panel: #0d0f11;
+  --panel-2: #131619;
+  --rail: #0b0c0e;
+  --tile: #101316;
+
+  --line: rgba(255, 255, 255, 0.08);
+  --line-2: rgba(255, 255, 255, 0.15);
+
+  --text: #f2f4f5;
+  --text-2: #99a0a7;
+  --text-3: #6b7278;
+
+  --mass: #88d81b;
+  --mass-bg: #162304;
+  --energy: #edc319;
+  --energy-bg: #2c2403;
+  --time: #aab3bd;
+
+  --best: #a8e84a;
+  --best-bg: rgba(136, 216, 27, 0.13);
+  --best-line: rgba(136, 216, 27, 0.38);
+  --worse: #e07a63;
+  --primary: #dfe6ec;
+
+  --uef: #2d78b2;
+  --cybran: #df2d0e;
+  --aeon: #19b340;
+  --seraphim: #fcb419;
+  --nomads: #e17d23;
+
+  --radius: 6px;
+  --radius-lg: 8px;
+}
+
+[data-faction='UEF'] { --fac: var(--uef); }
+[data-faction='Cybran'] { --fac: var(--cybran); }
+[data-faction='Aeon'] { --fac: var(--aeon); }
+[data-faction='Seraphim'] { --fac: var(--seraphim); }
+[data-faction='Nomads'] { --fac: var(--nomads); }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body), 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+}
+
+a { color: #7fb6e0; text-decoration: none; }
+a:hover { color: #a7d0ee; }
+
+button { font: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer; }
+
+input { font: inherit; color: inherit; }
+
+/* Type roles. Montserrat for display, Nunito for body, Plex Mono for figures. */
+.t { font-family: var(--font-title), 'Helvetica Neue', Helvetica, sans-serif; }
+.m { font-family: var(--font-mono), ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+
+.lbl {
+  font-family: var(--font-title), 'Helvetica Neue', Helvetica, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.rule { flex: 1; height: 1px; background: var(--line); }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
+
+::selection { background: rgba(223, 230, 236, 0.22); }
+
+* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.18) transparent; }

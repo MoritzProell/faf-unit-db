@@ -1,0 +1,467 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { TopBar } from '@/components/TopBar';
+import { SiteFooter } from '@/components/SiteFooter';
+import { UnitWell } from '@/components/UnitWell';
+import { FactionMark } from '@/components/FactionMark';
+import { Icon } from '@/components/Icon';
+import { AbilityChips } from '@/components/AbilityChips';
+import { AddToCompareButton, DensityToggle } from '@/components/UnitActions';
+import { MassMark, EnergyMark, TimeMark } from '@/components/Marks';
+import { getUnitData } from '@/lib/faf/data';
+import { fmtNum, fmtRatio, round } from '@/lib/faf/decorate';
+import { buildCohort, ordinal } from '@/lib/faf/cohort';
+import { getUnitHistory } from '@/lib/faf/changelog';
+import { SITE_NAME, SITE_URL } from '@/lib/site';
+import { JsonLd } from '@/components/JsonLd';
+import { FieldPill } from '@/app/changelog/page';
+import type { DecoratedWeapon, Unit } from '@/lib/faf/types';
+import styles from './detail.module.css';
+
+export const revalidate = 21600;
+
+export async function generateStaticParams() {
+  const { units } = await getUnitData();
+  return units.map((u) => ({ slug: u.slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const { bySlug, version } = await getUnitData();
+  const unit = bySlug.get(slug);
+  if (!unit) return { title: 'Unit not found' };
+  const dps = unit.directDps ? `, ${fmtRatio(unit.directDps, 1)} DPS` : '';
+  // Lead with the unit name and the words people type: "percival stats faf".
+  const title = `${unit.name} stats · ${unit.techLabel} ${unit.faction} ${unit.role}`;
+  const description =
+    `${unit.name} is a ${unit.techLabel} ${unit.faction} ${unit.role} in Supreme Commander: ` +
+    `Forged Alliance Forever. ${fmtNum(unit.mass)} mass, ${fmtNum(unit.energy)} energy, ` +
+    `${fmtNum(unit.health)} health${dps}. Full weapon, veterancy and wreckage stats for patch ${version}.`;
+  const url = `${SITE_URL}/unit/${unit.slug}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/unit/${unit.slug}` },
+    // No `images` here on purpose: setting it overrides the generated card in
+    // opengraph-image.tsx, which is what actually gets shown in Discord.
+    openGraph: {
+      type: 'article',
+      siteName: SITE_NAME,
+      url,
+      title: `${unit.name} · ${SITE_NAME}`,
+      description,
+    },
+    twitter: { card: 'summary_large_image', title: `${unit.name} · ${SITE_NAME}`, description },
+  };
+}
+
+export default async function UnitPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const { bySlug, units, version } = await getUnitData();
+  const unit = bySlug.get(slug);
+  if (!unit) notFound();
+
+  const cohort = buildCohort(unit, units);
+  const history = await getUnitHistory(unit.Id);
+  const primary = unit.weapons.find((w) => w.dps !== null && w.dps > 0) ?? null;
+  const shownWeapons = unit.weapons.filter((w) => (w.dps !== null && w.dps > 0) || w.fullDamage > 0);
+  const kindLabel = unit.kind === 'Base' ? 'Structures' : unit.kind;
+
+  const stat = (name: string, value: number | string | null | undefined, unitCode?: string) =>
+    value === null || value === undefined
+      ? null
+      : { '@type': 'PropertyValue', name, value, ...(unitCode ? { unitText: unitCode } : {}) };
+
+  return (
+    <div className={styles.shell} data-faction={unit.faction}>
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'ItemPage',
+          url: `${SITE_URL}/unit/${unit.slug}`,
+          name: `${unit.name} stats`,
+          isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL },
+          breadcrumb: {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'All units', item: SITE_URL },
+              { '@type': 'ListItem', position: 2, name: kindLabel, item: SITE_URL },
+              { '@type': 'ListItem', position: 3, name: unit.name },
+            ],
+          },
+          about: {
+            '@type': 'Thing',
+            name: unit.name,
+            alternateName: unit.Id,
+            description: `${unit.techLabel} ${unit.faction} ${unit.role} in Supreme Commander: Forged Alliance Forever.`,
+            image: `${SITE_URL}/units/${unit.Id}.png`,
+            additionalProperty: [
+              stat('Faction', unit.faction),
+              stat('Tech level', unit.techLabel),
+              stat('Mass cost', unit.mass),
+              stat('Energy cost', unit.energy),
+              stat('Build time', unit.buildTime),
+              stat('Health', unit.health),
+              stat('Health per mass', Number(fmtRatio(unit.hpPerMass))),
+              unit.directDps ? stat('Direct-fire DPS', Number(fmtRatio(unit.directDps, 1))) : null,
+              stat('Speed', unit.Physics?.MaxSpeed),
+              stat('Vision radius', unit.Intel?.VisionRadius),
+            ].filter(Boolean),
+          },
+        }}
+      />
+      <TopBar version={version} totalUnits={units.length} />
+
+      <div className={styles.contextBar}>
+        <Link href="/" className={styles.back}>
+          <Icon name="chevronLeft" size={14} strokeWidth={2} /> All units
+        </Link>
+        <span className={styles.divider} />
+        <nav className={styles.crumbs}>
+          <span>{kindLabel}</span>
+          <span className={styles.crumbSep}>/</span>
+          <span>{unit.techLabel}</span>
+          <span className={styles.crumbSep}>/</span>
+          <span>{unit.faction}</span>
+        </nav>
+        <span className={styles.spacer} />
+        <DensityToggle />
+        <AddToCompareButton id={unit.Id} name={unit.name} />
+      </div>
+
+      <header className={styles.hero}>
+        <div className={styles.heroMark} aria-hidden="true">
+          <FactionMark faction={unit.faction} size={192} opacity={0.055} />
+        </div>
+        <UnitWell id={unit.Id} faction={unit.faction} techLabel={unit.techLabel} size={96} imageSize={90} pip={false} priority hasRender={unit.hasRender} />
+        <div className={styles.heroBody}>
+          <div className={styles.heroTitleRow}>
+            <h1 className={`t ${styles.heroName}`}>{unit.name}</h1>
+            <span className={`${styles.badge} ${styles.badgeFaction}`}>
+              <FactionMark faction={unit.faction} size={12} /> {unit.faction}
+            </span>
+            <span className={styles.badge}>{unit.techLabel === 'T4' ? 'T4 EXPERIMENTAL' : unit.techLabel}</span>
+            <span className={`m ${styles.badge}`}>{unit.Id}</span>
+          </div>
+          {unit.name !== unit.role && <div className={styles.heroRole}>{unit.role}</div>}
+          <AbilityChips abilities={unit.abilities} cap={4} avail={420} />
+        </div>
+
+        <div className={styles.costs}>
+          <Cost label="Mass" value={fmtNum(unit.mass)} mark={<MassMark size={15} />} />
+          <span className={styles.costDivider} />
+          <Cost label="Energy" value={fmtNum(unit.energy)} mark={<EnergyMark size={15} />} />
+          <span className={styles.costDivider} />
+          <Cost label="Build time" value={fmtNum(unit.buildTime)} mark={<TimeMark size={15} />} />
+        </div>
+      </header>
+
+      <div className={styles.layout}>
+        <div className={styles.mainCol}>
+          <section className={styles.secGlance}>
+            <SectionHead label="At a glance" />
+            <div className={styles.glanceGrid}>
+              <Glance
+                label="Health"
+                figure={fmtNum(unit.health)}
+                unit="hp"
+                foot={
+                  <Rank
+                    percent={cohort.healthPercent}
+                    text={`${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label}`}
+                  />
+                }
+              />
+              <Glance
+                label="HP per mass"
+                figure={fmtRatio(unit.hpPerMass)}
+                foot={
+                  <Rank
+                    percent={cohort.hpPerMassPercent}
+                    text={`${ordinal(cohort.hpPerMassRank)} of ${cohort.size} in ${cohort.label}`}
+                  />
+                }
+              />
+              <Glance
+                label={primary ? `${primary.category} DPS` : 'Weapons'}
+                figure={primary?.dps ? fmtRatio(primary.dps, 1) : 'None'}
+                foot={<span className={styles.glanceFoot}>{primary?.cycleText ?? 'This unit is unarmed.'}</span>}
+              />
+              <Glance
+                label="Range"
+                figure={primary?.MaxRadius ? fmtNum(primary.MaxRadius) : '–'}
+                foot={
+                  <span className={styles.glanceFoot}>
+                    {primary?.MuzzleVelocity ? `Muzzle velocity ${primary.MuzzleVelocity}` : 'No ranged weapon'}
+                  </span>
+                }
+              />
+            </div>
+          </section>
+
+          {shownWeapons.length > 0 && (
+            <section className={styles.secWeapons}>
+              <SectionHead label="Weapons" note={String(shownWeapons.length)} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {shownWeapons.map((w, i) => (
+                  <WeaponCard key={`${w.Label ?? w.DisplayName ?? 'w'}-${i}`} weapon={w} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          <section className={styles.secSurvive}>
+            <SectionHead label="Survivability" />
+            <div className={styles.panel}>
+              <div className={styles.hpBarRow}>
+                <div className={styles.hpBar}>
+                  <div className={styles.hpFill} />
+                  <span className={`t ${styles.hpLabel}`}>{fmtNum(unit.health)} HP</span>
+                </div>
+                <span className={styles.hpRatio}>
+                  <span className="m" style={{ color: 'var(--text)' }}>{fmtRatio(unit.hpPerMass)}</span> / mass
+                </span>
+              </div>
+              {unit.Defense?.Shield?.ShieldMaxHealth ? (
+                <>
+                  <div className={styles.subHead}>
+                    <span className="lbl" style={{ fontSize: 9 }}>Shield</span>
+                    <span className="rule" />
+                  </div>
+                  <div className={styles.fieldGrid}>
+                    <Field label="Shield health" value={fmtNum(unit.Defense.Shield.ShieldMaxHealth)} />
+                    <Field label="Regen" value={`+${fmtNum(unit.Defense.Shield.ShieldRegenRate ?? 0)}`} sub="hp/s" />
+                    <Field label="Recharge" value={fmtNum(unit.Defense.Shield.ShieldRechargeTime ?? 0)} sub="s" />
+                  </div>
+                </>
+              ) : null}
+              {unit.wreckage && (
+                <>
+                  <div className={styles.subHead}>
+                    <span className="lbl" style={{ fontSize: 9 }}>Wreckage</span>
+                    <span className="rule" />
+                  </div>
+                  <div className={styles.fieldGrid}>
+                    <Field label="Mass" value={fmtNum(unit.wreckage.mass)} />
+                    <Field label="Mass in water" value={fmtNum(unit.wreckage.massInWater)} />
+                    <Field label="Health" value={fmtNum(unit.wreckage.health)} />
+                  </div>
+                </>
+              )}
+              {unit.veterancy && (
+                <>
+                  <div className={styles.subHead}>
+                    <span className="lbl" style={{ fontSize: 9 }}>Per veterancy level</span>
+                    <span className="rule" />
+                  </div>
+                  <div className={styles.fieldGrid}>
+                    <Field label="Health" value={`+${fmtNum(unit.veterancy.healthPerLevel)}`} />
+                    <Field label="Regen" value={`+${unit.veterancy.regenPerLevel}`} sub="hp/s" />
+                    <Field label="Mass to kill" value={fmtNum(unit.veterancy.massToKillPerLevel)} />
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
+
+          <section className={styles.secMobility}>
+            <SectionHead label="Mobility & intel" />
+            <div className={styles.panel}>
+              <div className={styles.fieldGrid}>
+                {unit.Physics?.MaxSpeed !== undefined && <Field label="Speed" value={String(unit.Physics.MaxSpeed)} />}
+                {unit.Physics?.TurnRate !== undefined && <Field label="Turn rate" value={String(unit.Physics.TurnRate)} />}
+                {unit.Intel?.VisionRadius !== undefined && <Field label="Vision radius" value={String(unit.Intel.VisionRadius)} />}
+                {unit.Intel?.WaterVisionRadius !== undefined && <Field label="Water vision" value={String(unit.Intel.WaterVisionRadius)} />}
+                {unit.Intel?.RadarRadius !== undefined && <Field label="Radar radius" value={String(unit.Intel.RadarRadius)} />}
+                {unit.Intel?.SonarRadius !== undefined && <Field label="Sonar radius" value={String(unit.Intel.SonarRadius)} />}
+                {unit.Transport?.TransportClass !== undefined && <Field label="Transport class" value={String(unit.Transport.TransportClass)} />}
+                {unit.Transport?.CanFireFromTransport !== undefined && (
+                  <Field label="Fire from transport" value={unit.Transport.CanFireFromTransport ? 'Yes' : 'No'} />
+                )}
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside className={styles.aside}>
+          {history.length > 0 && (
+            <div className={styles.panel}>
+              <div className={styles.panelHead}>
+                <span className={`lbl ${styles.panelTitle}`}>Recent changes</span>
+                <Link href="/changelog" className={`m ${styles.sectionNote}`}>all patches</Link>
+              </div>
+              {history.slice(0, 3).map((h) => (
+                <div key={h.version} className={styles.historyRow}>
+                  <span className={`m ${styles.historyVersion}`}>Patch {h.version}</span>
+                  <div className={styles.historyFields}>
+                    {h.change.fields.map((f, i) => (
+                      <FieldPill key={i} field={f} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {cohort.peers.length > 0 && (
+            <div className={styles.panel}>
+              <div className={styles.panelHead}>
+                <span className={`lbl ${styles.panelTitle}`}>Compare with</span>
+                <span className={`m ${styles.sectionNote}`}>vs {unit.name}</span>
+              </div>
+              {cohort.peers.map((p) => (
+                <PeerRow key={p.Id} peer={p} base={unit} />
+              ))}
+            </div>
+          )}
+
+          <div className={styles.panel}>
+            <div className={styles.panelHead}>
+              <span className={`lbl ${styles.panelTitle}`}>Categories</span>
+              <span className={`m ${styles.sectionNote}`}>{unit.Categories?.length ?? 0}</span>
+            </div>
+            <div className={styles.cats}>
+              {(unit.Categories ?? []).map((c) => (
+                <span key={c} className={`m ${styles.cat}`}>{c}</span>
+              ))}
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <SiteFooter version={version} />
+    </div>
+  );
+}
+
+function Cost({ label, value, mark }: { label: string; value: string; mark: React.ReactNode }) {
+  return (
+    <div className={styles.costCell}>
+      <span className="lbl" style={{ fontSize: 9 }}>{label}</span>
+      <span className={styles.costValue}>
+        {mark}
+        <span className={`m ${styles.costFigure}`}>{value}</span>
+      </span>
+    </div>
+  );
+}
+
+function SectionHead({ label, note }: { label: string; note?: string }) {
+  return (
+    <div className={styles.sectionHead}>
+      <span className={`lbl ${styles.sectionLabel}`}>{label}</span>
+      {note && <span className={`m ${styles.sectionNote}`}>{note}</span>}
+      <span className="rule" />
+    </div>
+  );
+}
+
+function Glance({ label, figure, unit, foot }: { label: string; figure: string; unit?: string; foot: React.ReactNode }) {
+  return (
+    <div className={styles.glance}>
+      <span className="lbl">{label}</span>
+      <div className={styles.glanceValue}>
+        <span className={`m ${styles.glanceFigure}`}>{figure}</span>
+        {unit && <span className={styles.glanceUnit}>{unit}</span>}
+      </div>
+      {foot}
+    </div>
+  );
+}
+
+function Rank({ percent, text }: { percent: number; text: string }) {
+  return (
+    <div className={styles.rankRow}>
+      <div className={styles.track}><div className={styles.trackFill} style={{ width: `${percent}%` }} /></div>
+      <span className={styles.glanceFoot}>{text}</span>
+    </div>
+  );
+}
+
+function Field({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className={styles.field}>
+      <span className="lbl" style={{ fontSize: 9 }}>{label}</span>
+      <span>
+        <span className={`m ${styles.fieldValue}`}>{value}</span>
+        {sub && <span className={styles.fieldSub}>{sub}</span>}
+      </span>
+    </div>
+  );
+}
+
+function WeaponCard({ weapon: w }: { weapon: DecoratedWeapon }) {
+  const layers = w.FireTargetLayerCapsTable
+    ? [...new Set(Object.values(w.FireTargetLayerCapsTable).flatMap((v) => v.split('|')))].join(' / ')
+    : null;
+  return (
+    <div className={styles.panel}>
+      <div className={styles.weaponHead}>
+        <Icon name="target" size={15} />
+        <span className={`t ${styles.weaponName}`}>{w.DisplayName ?? w.Label ?? 'Weapon'}</span>
+        <span className={styles.badge}>{w.category.toUpperCase()}</span>
+        {w.DamageType && <span className={styles.badge}>{w.DamageType} damage</span>}
+        <span className={styles.spacer} />
+        {w.dps ? (
+          <span className={styles.dpsPill}>
+            <span className={`m ${styles.dpsFigure}`}>{fmtRatio(w.dps, 1)}</span>
+            <span className="lbl" style={{ fontSize: 9, color: 'var(--best)' }}>DPS</span>
+          </span>
+        ) : null}
+      </div>
+      <div className={styles.fieldGrid}>
+        <Field label="Damage" value={fmtNum(round(w.fullDamage, 1))} />
+        {w.firingCycle?.cycleTime ? <Field label="Reload" value={w.firingCycle.cycleTime.toFixed(1)} sub="s" /> : null}
+        {w.MaxRadius !== undefined ? <Field label="Range" value={fmtNum(w.MaxRadius)} /> : null}
+        {w.MuzzleVelocity !== undefined ? <Field label="Muzzle velocity" value={String(w.MuzzleVelocity)} /> : null}
+        {w.DamageRadius !== undefined ? (
+          <Field label="Damage radius" value={String(w.DamageRadius)} sub={w.DamageRadius === 0 ? 'single target' : undefined} />
+        ) : null}
+        {w.TurretYawRange !== undefined ? <Field label="Turret yaw" value={`±${w.TurretYawRange}°`} /> : null}
+        {w.DoTPulses && w.DoTPulses > 1 ? <Field label="Damage over time" value={`${w.DoTPulses} pulses`} sub={`${w.DoTTime}s`} /> : null}
+        {layers ? <Field label="Fires at" value={layers} /> : null}
+      </div>
+      {w.firingCycle?.cycleTime && w.cycleText ? (
+        <div className={styles.cycle}>
+          <span className="lbl" style={{ fontSize: 9 }}>Cycle</span>
+          <span className={styles.cycleTrack}>
+            <span className={styles.cycleTick} />
+            <span className={styles.cycleLine} />
+            <span className={`m ${styles.cycleText}`}>reload {w.firingCycle.cycleTime.toFixed(1)} s</span>
+            <span className={styles.cycleLine} />
+            <span className={styles.cycleTick} />
+          </span>
+          <span className={styles.cycleText}>{w.cycleText}</span>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
+  const hpDelta = peer.health - base.health;
+  const dpsDelta =
+    peer.directDps !== null && base.directDps !== null ? peer.directDps - base.directDps : null;
+  const sign = (n: number) => (n > 0 ? '+' : n < 0 ? '−' : '');
+  return (
+    <Link href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
+      <UnitWell id={peer.Id} faction={peer.faction} techLabel={peer.techLabel} size={38} imageSize={34} pip={false} hasRender={peer.hasRender} />
+      <div className={styles.peerBody}>
+        <div className={`t ${styles.peerName}`}>{peer.name}</div>
+        <div className={styles.peerRole}>{peer.role}</div>
+      </div>
+      <div className={styles.deltas}>
+        <span className={`m ${styles.delta} ${hpDelta >= 0 ? styles.deltaUp : styles.deltaDown}`}>
+          {sign(hpDelta)}{fmtNum(Math.abs(hpDelta))} hp
+        </span>
+        {dpsDelta !== null && (
+          <span className={`m ${styles.delta} ${dpsDelta >= 0 ? styles.deltaUp : styles.deltaDown}`}>
+            {sign(dpsDelta)}{fmtRatio(Math.abs(dpsDelta), 1)} dps
+          </span>
+        )}
+      </div>
+    </Link>
+  );
+}

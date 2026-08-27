@@ -1,0 +1,106 @@
+.tile {
+  position: relative;
+  min-height: 140px;
+  background: var(--tile);
+  border: 1px solid color-mix(in srgb, var(--fac) 28%, transparent);
+  border-radius: var(--radius);
+  padding: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  width: 100%;
+  transition: border-color 0.12s, box-shadow 0.12s, transform 0.12s;
+}
+.tile:hover { border-color: color-mix(in srgb, var(--fac) 52%, transparent); transform: translateY(-1px); }
+.tile[data-selected='true'] {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary), 0 0 14px rgba(223, 230, 236, 0.18);
+}
+.watermark { position: absolute; right: -8px; top: -6px; pointer-events: none; color: var(--fac); }
+.head { display: flex; gap: 10px; position: relative; }
+.body { flex: 1; min-width: 0; }
+.name {
+  font-size: 14.5px; font-weight: 600; line-height: 1.15; color: var(--text);
+  text-wrap: balance;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.role { font-size: 10.5px; line-height: 1.3; color: var(--text-2); margin-top: 4px; }
+.hairline { height: 1px; background: var(--line); margin: auto -10px 0 -10px; }
+.stats { display: flex; gap: 8px; padding-top: 9px; }
+.cell { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.cellLabel { font-size: 8.5px; letter-spacing: 0.1em; }
+.cellValue { display: flex; align-items: center; gap: 5px; }
+.figure { font-size: 12.5px; font-weight: 500; color: var(--text); }
+.figureAccent { color: var(--best); }
+/* Stretched link: the whole tile opens the unit. It sits above the content so
+   the tile is one big hit target, and below the compare button. */
+.open { position: absolute; inset: 0; z-index: 2; border-radius: var(--radius); }
+.tile:hover .name { text-decoration: underline; text-underline-offset: 2px; }
+
+/* Comparison is a deliberate second action, not what a click does. */
+.compare {
+  position: absolute; top: 7px; right: 7px; z-index: 3;
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 6px;
+  background: rgba(10, 12, 14, 0.72);
+  border: 1px solid var(--line-2);
+  color: var(--text-2);
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s, color 0.12s, border-color 0.12s;
+}
+.tile:hover .compare,
+.tile:focus-within .compare,
+.tile[data-selected='true'] .compare { opacity: 1; }
+.compare:hover { background: #12161a; color: var(--text); border-color: var(--primary); }
+.tile[data-selected='true'] .compare {
+  background: var(--best-bg); border-color: var(--best-line); color: var(--best);
+}
+/* Touch has no hover, so the control is always visible there. */
+@media (hover: none) {
+  .compare { opacity: 1; }
+}
+
+/* While picking, the whole tile is the target and the mark is always shown. */
+.pickMark {
+  position: absolute; top: 7px; right: 7px; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 6px;
+  background: rgba(10, 12, 14, 0.72); border: 1px solid var(--line-2); color: var(--text-2);
+}
+.tile[data-pick='true'] { cursor: pointer; }
+.tile[data-pick='true']:hover { border-color: var(--primary); }
+.tile[data-pick='true'][data-selected='true'] .pickMark {
+  background: var(--best-bg); border-color: var(--best-line); color: var(--best);
+}
+.tile[data-pick='true'] .name { text-decoration: none; }
+
+/* Phone: the card becomes a list row. A 140px card at two-up is unreadable, and
+   the design calls for a list here. */
+@media (max-width: 560px) {
+  .tile {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    min-height: 74px;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+  }
+  .head { flex: 1; min-width: 0; gap: 12px; }
+  .hairline { display: none; }
+  .watermark { display: none; }
+  .stats {
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    padding-top: 0;
+  }
+  .cell { flex: 0 0 auto; align-items: flex-end; gap: 2px; }
+  .cell[data-cell='health'] { display: none; }
+  .cell[data-cell='sort'] .figure { font-size: 15px; }
+  .name { font-size: 15px; -webkit-line-clamp: 1; }
+}

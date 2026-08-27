@@ -1,0 +1,18 @@
+.row { display: flex; gap: 4px; margin-top: 6px; overflow: hidden; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 15px;
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  max-width: 104px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: color-mix(in srgb, var(--fac) 16%, transparent);
+  color: var(--fac);
+}
+.more { background: rgba(255, 255, 255, 0.05); color: var(--text-3); }

@@ -1,0 +1,41 @@
+.groups { display: flex; flex-direction: column; gap: 14px; }
+
+.box {
+  background: rgba(255, 255, 255, 0.012);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.boxHead {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  height: 34px; padding: 0 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--line);
+}
+.boxTitle { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.boxCount { font-size: 11px; color: var(--text-3); }
+
+.body { display: flex; flex-direction: column; }
+
+/* One row per faction, colour-banded like the in-game roster. */
+.facRow {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 12px;
+  background: color-mix(in srgb, var(--fac) 5%, transparent);
+  border-bottom: 1px solid var(--line);
+}
+.facRow:last-child { border-bottom: none; }
+.facMark { display: flex; width: 22px; flex-shrink: 0; color: var(--fac); }
+.units { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+
+/* Dashed rules separate tech tiers, as the reference layout does. */
+.techSep {
+  display: block; align-self: stretch; width: 0;
+  border-left: 1px dashed color-mix(in srgb, var(--fac) 45%, transparent);
+  margin: 0 5px;
+}
+
+@media (max-width: 700px) {
+  .facRow { padding: 6px 8px; gap: 6px; }
+  .facMark { width: 16px; }
+}

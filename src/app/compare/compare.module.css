@@ -1,0 +1,92 @@
+/* The page shell owns the viewport height; the table just fills what is left.
+   With min-height on the table instead, the footer sat a full viewport below it. */
+.pageShell { display: flex; flex-direction: column; min-height: 100vh; }
+.shell { display: flex; flex-direction: column; flex: 1; }
+.toolbar {
+  display: flex; align-items: center; gap: 12px; height: 52px; padding: 0 22px;
+  border-bottom: 1px solid var(--line); flex-shrink: 0; flex-wrap: wrap;
+}
+.back { display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+.back:hover { color: var(--text); }
+.divider { width: 1px; height: 16px; background: var(--line-2); }
+.title { font-size: 16px; font-weight: 600; }
+.sub { font-size: 12.5px; color: var(--text-2); }
+.spacer { flex: 1; }
+
+.toggle {
+  display: flex; align-items: center; gap: 9px; height: 32px; padding: 0 12px;
+  background: var(--panel-2); border: 1px solid var(--line-2); border-radius: var(--radius);
+  font-size: 12.5px; font-weight: 600;
+}
+.switch { position: relative; display: block; width: 28px; height: 16px; border-radius: 8px; background: #2a2f34; transition: background 0.12s; }
+.switch[data-on='true'] { background: var(--primary); }
+.knob { position: absolute; left: 2px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: #0b0c0e; transition: transform 0.12s; }
+.switch[data-on='true'] .knob { transform: translateX(12px); }
+
+.wrap { padding: 22px; }
+.scroller { overflow-x: auto; border: 1px solid var(--line-2); border-radius: 9px; background: var(--panel); }
+.table { min-width: 720px; }
+
+.headRow { display: flex; background: #0c0e10; }
+.stub { width: 200px; flex-shrink: 0; display: flex; align-items: flex-end; padding: 16px; }
+.col {
+  position: relative; flex: 1; min-width: 220px; padding: 14px 16px;
+  background: color-mix(in srgb, var(--fac) 7%, transparent);
+  border-left: 1px solid var(--line); overflow: hidden;
+}
+.colMark { position: absolute; right: -10px; top: -12px; pointer-events: none; color: var(--fac); }
+.colTop { position: relative; display: flex; gap: 11px; align-items: center; }
+.colName { font-size: 17px; font-weight: 600; line-height: 1.1; color: inherit; }
+.colName:hover { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.colRole { font-size: 11px; color: var(--text-2); margin-top: 4px; }
+.colCosts { display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+.costItem { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--text-2); }
+.addCol {
+  flex: 0 0 132px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; border-left: 1px dashed var(--line-2); color: var(--text-3); font-size: 11.5px; font-weight: 600;
+}
+.addCol:hover { color: var(--text); }
+
+.groupRow {
+  display: flex; align-items: center; gap: 9px; height: 32px; padding: 0 16px;
+  background: #0c0e10; border-top: 1px solid var(--line-2);
+}
+.groupLabel { font-size: 10px; color: var(--text-2); }
+.groupNote { display: flex; align-items: center; gap: 4px; font-size: 10.5px; color: var(--text-3); }
+
+.row { display: flex; border-top: 1px solid var(--line); }
+.row[data-stripe='true'] { background: rgba(255, 255, 255, 0.014); }
+.rowLabel { width: 200px; flex-shrink: 0; height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 16px; }
+/* Marks a row that runs the opposite way to its group, e.g. Reload inside Direct fire. */
+.rowDir { display: flex; color: var(--text-3); }
+.rowLabelText { font-size: 12.5px; color: var(--text-2); }
+.cell {
+  position: relative; flex: 1; min-width: 220px; height: 34px;
+  display: flex; align-items: center; gap: 8px; padding: 0 16px;
+  border-left: 1px solid var(--line); overflow: hidden;
+}
+.bar { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(255, 255, 255, 0.075); }
+.cell[data-best='true'] .bar { background: var(--best-bg); }
+.figure { position: relative; font-size: 12.5px; font-weight: 500; }
+.cell[data-best='true'] .figure { color: var(--best); }
+.cellNone { position: relative; font-size: 12px; color: var(--text-3); }
+.tick {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  width: 14px; height: 14px; border-radius: 50%; background: rgba(136, 216, 27, 0.22); color: var(--best);
+}
+.filler { flex: 0 0 132px; border-left: 1px solid var(--line); }
+
+.abilityRow { display: flex; border-top: 1px solid var(--line); }
+.abilityLabel { width: 200px; flex-shrink: 0; display: flex; align-items: center; padding: 12px 16px; }
+.abilityCell {
+  flex: 1; min-width: 220px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px;
+  padding: 12px 16px; border-left: 1px solid var(--line);
+}
+.ability {
+  display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 3px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.03em;
+  background: color-mix(in srgb, var(--fac) 16%, transparent); color: var(--fac);
+}
+.abilityNone { font-size: 11.5px; color: var(--text-3); }
+
+.notice { padding: 40px 22px; text-align: center; color: var(--text-2); font-size: 14px; }

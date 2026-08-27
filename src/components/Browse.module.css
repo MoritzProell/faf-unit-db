@@ -1,0 +1,140 @@
+.shell { display: flex; flex-direction: column; min-height: 100vh; }
+/* Room for the fixed compare tray, only when it is showing. */
+.shell[data-tray='true'] { padding-bottom: 68px; }
+.middle { display: flex; flex: 1; min-height: 0; align-items: stretch; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 20px 20px 0; gap: 14px; }
+
+.resultsBar { display: flex; flex-direction: column; gap: 10px; }
+.resultsTop { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.title { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+.count { font-size: 13px; color: var(--text-2); }
+.spacer { flex: 1; }
+
+.control {
+  display: flex; align-items: center; gap: 9px; height: 32px; padding: 0 11px;
+  background: var(--panel-2); border: 1px solid var(--line-2); border-radius: var(--radius);
+  color: var(--text);
+}
+.selectWrap { position: relative; display: flex; align-items: center; }
+.select {
+  appearance: none; background: none; border: none; outline: none;
+  font-size: 12.5px; font-weight: 600; color: var(--text); padding-right: 4px; cursor: pointer;
+}
+.select option { background: var(--panel-2); color: var(--text); }
+
+.seg { display: flex; gap: 3px; height: 32px; padding: 3px; background: var(--panel-2); border: 1px solid var(--line-2); border-radius: var(--radius); }
+.segBtn {
+  display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px;
+  border-radius: 4px; font-size: 12px; font-weight: 600; color: var(--text-3);
+}
+.segBtn[data-on='true'] { background: rgba(255, 255, 255, 0.13); color: var(--text); }
+
+.filterChips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fchip {
+  display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 7px 0 9px;
+  background: rgba(255, 255, 255, 0.06); border: 1px solid var(--line-2); border-radius: 4px;
+  font-size: 11.5px; font-weight: 600; color: var(--text);
+}
+.fchip[data-excluded='true'] { color: var(--text-2); }
+.fchipDash { display: block; width: 9px; height: 1.5px; background: var(--text-3); border-radius: 1px; }
+.fchip:hover { border-color: var(--primary); }
+
+.groupHead { display: flex; align-items: center; gap: 10px; height: 30px; }
+.groupLabel { font-size: 10.5px; color: var(--text-2); }
+.groupCount { font-size: 11px; color: var(--text-3); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 12px; }
+.cardSection { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+
+/* Shown while picking units for a comparison from the top bar. */
+.pickBar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: var(--radius);
+  background: var(--best-bg); border: 1px solid var(--best-line);
+  color: var(--best); font-size: 12.5px;
+}
+.pickGo {
+  display: flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 5px;
+  background: var(--best); color: #0b0c0e; font-size: 12px; font-weight: 700;
+}
+.pickGo:hover { color: #0b0c0e; }
+.pickDone {
+  height: 28px; padding: 0 12px; border-radius: 5px;
+  border: 1px solid var(--best-line); color: var(--best); font-size: 12px; font-weight: 600;
+}
+
+.end { display: flex; align-items: center; gap: 14px; height: 34px; margin-top: 2px; }
+.endText { font-size: 11.5px; color: var(--text-3); }
+
+.empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 60px 20px; text-align: center; }
+.emptyTitle { font-size: 16px; font-weight: 600; }
+.emptyBody { font-size: 13px; color: var(--text-2); max-width: 420px; }
+.emptyAction { font-size: 12.5px; font-weight: 600; color: var(--primary); }
+
+/* Compact mode: the reference app's icon wall, banded and labelled. */
+.bands { display: flex; flex-direction: column; gap: 8px; }
+.band {
+  display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 8px 14px;
+  background: color-mix(in srgb, var(--fac) 5.5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fac) 20%, transparent);
+  border-radius: var(--radius);
+}
+.bandHead { display: flex; align-items: center; gap: 8px; width: 122px; flex-shrink: 0; color: var(--fac); }
+.bandName { flex: 1; font-size: 13px; font-weight: 600; color: var(--text); }
+.bandCount { font-size: 11px; color: var(--text-3); }
+.bandUnits { display: flex; flex-wrap: wrap; gap: 7px; }
+
+.hoverWrap { position: relative; display: block; border-radius: 5px; }
+.hoverWrap[data-selected='true'] { box-shadow: 0 0 0 2px var(--primary); }
+.card {
+  position: absolute; left: 0; top: calc(100% + 8px); z-index: 20; width: 236px;
+  background: #12161a; border: 1px solid var(--line-2); border-radius: var(--radius-lg);
+  padding: 12px; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.66);
+  opacity: 0; visibility: hidden; transition: opacity 0.09s;
+  pointer-events: none;
+}
+.hoverWrap:hover .card, .hoverWrap:focus-within .card { opacity: 1; visibility: visible; }
+.cardTop { display: flex; align-items: center; gap: 8px; }
+.cardName { font-size: 14.5px; font-weight: 600; }
+.cardId { font-size: 9.5px; color: var(--text-3); }
+.cardRole { font-size: 11px; color: var(--text-2); margin-top: 4px; }
+.cardRule { height: 1px; background: var(--line); margin: 10px -12px; }
+.cardStats { display: flex; gap: 20px; }
+.cardStat { display: flex; flex-direction: column; gap: 3px; }
+.cardFigure { font-size: 12.5px; }
+
+/* Below the rail breakpoint the filters move into a drawer, because a phone with
+   no way to filter 506 units is worse than a phone with no rail. */
+.filtersBtn { display: none; }
+.backdrop { display: none; }
+
+@media (max-width: 980px) {
+  .filtersBtn {
+    display: flex; align-items: center; gap: 7px; height: 32px; padding: 0 11px;
+    background: var(--panel-2); border: 1px solid var(--line-2); border-radius: var(--radius);
+    font-size: 12.5px; font-weight: 600; color: var(--text);
+  }
+  .filtersCount {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px;
+    background: var(--primary); color: #0b0c0e; font-size: 10px; font-weight: 600;
+  }
+  .railWrap {
+    position: fixed; inset: 0 auto 0 0; z-index: 40;
+    transform: translateX(-100%); transition: transform 0.18s ease;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+  }
+  .railWrap[data-open='true'] { transform: translateX(0); }
+  .backdrop {
+    display: block; position: fixed; inset: 0; z-index: 39;
+    background: rgba(0, 0, 0, 0.55);
+  }
+  .main { padding: 14px 14px 0; }
+  .title { font-size: 16px; }
+}
+
+@media (max-width: 560px) {
+  .grid { grid-template-columns: 1fr; gap: 8px; }
+  .resultsTop { gap: 8px; }
+  .main { padding: 12px 12px 0; }
+}

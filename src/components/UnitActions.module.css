@@ -1,0 +1,30 @@
+.btn {
+  display: flex; align-items: center; gap: 7px; height: 32px; padding: 0 12px;
+  background: var(--panel-2); border: 1px solid var(--line-2); border-radius: var(--radius);
+  font-size: 12.5px; font-weight: 600; color: var(--text);
+}
+.btn:hover:not(:disabled) { border-color: var(--primary); }
+.btn[data-on='true'] { background: var(--best-bg); border-color: var(--best-line); color: var(--best); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px;
+  background: var(--primary); color: #0b0c0e; font-size: 10px; font-weight: 600;
+}
+.btn[data-on='true'] .count { background: var(--best); }
+
+.seg {
+  display: flex; gap: 3px; height: 32px; padding: 3px;
+  background: var(--panel-2); border: 1px solid var(--line-2); border-radius: var(--radius);
+}
+.segBtn {
+  display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px;
+  border-radius: 4px; font-size: 12px; font-weight: 600; color: var(--text-3);
+}
+/* Which half is lit is driven by the document attribute, so it is correct on
+   first paint without the component reading localStorage during render. */
+:global(html[data-density='dense']) .segBtn[data-for='dense'],
+:global(html:not([data-density='dense'])) .segBtn[data-for='comfortable'] {
+  background: rgba(255, 255, 255, 0.13);
+  color: var(--text);
+}

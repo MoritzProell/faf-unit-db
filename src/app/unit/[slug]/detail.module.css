@@ -1,0 +1,192 @@
+.shell { display: flex; flex-direction: column; min-height: 100vh; }
+
+.contextBar {
+  display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 22px;
+  border-bottom: 1px solid var(--line); flex-shrink: 0; flex-wrap: wrap;
+}
+.back { display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+.back:hover { color: var(--text); }
+.divider { width: 1px; height: 16px; background: var(--line-2); }
+.crumbs { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-2); }
+.crumbSep { color: var(--text-3); }
+.spacer { flex: 1; }
+.ghostBtn {
+  display: flex; align-items: center; gap: 7px; height: 32px; padding: 0 12px;
+  background: var(--panel-2); border: 1px solid var(--line-2); border-radius: var(--radius);
+  font-size: 12.5px; font-weight: 600; color: var(--text);
+}
+.ghostBtn:hover { border-color: var(--primary); }
+
+.hero {
+  position: relative; display: flex; align-items: center; gap: 20px;
+  min-height: 140px; padding: 18px 22px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--fac) 15%, transparent), color-mix(in srgb, var(--fac) 3%, transparent) 44%, transparent 74%);
+  border-bottom: 1px solid var(--line); overflow: hidden; flex-shrink: 0; flex-wrap: wrap;
+}
+.heroMark { position: absolute; right: -26px; top: -26px; pointer-events: none; color: var(--fac); }
+.heroBody { position: relative; min-width: 0; }
+.heroTitleRow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.heroName { font-size: 34px; font-weight: 700; letter-spacing: -0.015em; line-height: 1; }
+.heroRole { font-size: 15px; color: var(--text-2); margin-top: 8px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px;
+  border-radius: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+  background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line-2); color: var(--text-2);
+}
+.badgeFaction {
+  background: color-mix(in srgb, var(--fac) 14%, transparent);
+  border-color: color-mix(in srgb, var(--fac) 42%, transparent);
+  color: var(--fac);
+}
+.costs { position: relative; display: flex; align-items: center; margin-left: auto; }
+.costCell { display: flex; flex-direction: column; gap: 7px; padding: 0 20px; }
+.costValue { display: flex; align-items: center; gap: 8px; }
+.costFigure { font-size: 22px; font-weight: 500; }
+.costDivider { width: 1px; height: 38px; background: var(--line-2); }
+
+.layout { display: flex; gap: 22px; padding: 22px; align-items: flex-start; }
+.mainCol { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+.aside { width: 344px; flex-shrink: 0; display: flex; flex-direction: column; gap: 20px; }
+
+.sectionHead { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; }
+.sectionLabel { font-size: 10.5px; color: var(--text-2); }
+.sectionNote { font-size: 11px; color: var(--text-3); }
+
+.glanceGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.glance {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 7px;
+  padding: 13px 14px; display: flex; flex-direction: column; gap: 9px;
+}
+.glanceValue { display: flex; align-items: baseline; gap: 7px; }
+.glanceFigure { font-size: 27px; font-weight: 500; line-height: 1; }
+.glanceUnit { font-size: 11px; color: var(--text-3); }
+.glanceFoot { font-size: 10.5px; color: var(--text-3); }
+.track { height: 4px; border-radius: 2px; background: #1b1f22; overflow: hidden; }
+.trackFill { height: 100%; border-radius: 2px; background: var(--best); }
+.rankRow { display: flex; flex-direction: column; gap: 6px; margin-top: 2px; }
+
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
+.panelHead { display: flex; align-items: center; gap: 8px; padding: 11px 13px; border-bottom: 1px solid var(--line); }
+.panelTitle { font-size: 10px; color: var(--text-2); }
+
+.weaponHead {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px; flex-wrap: wrap;
+  background: color-mix(in srgb, var(--fac) 7%, transparent); border-bottom: 1px solid var(--line);
+  color: var(--fac);
+}
+.weaponName { font-size: 15.5px; font-weight: 600; color: var(--text); }
+.dpsPill {
+  display: inline-flex; align-items: baseline; gap: 5px; height: 26px; padding: 0 10px;
+  border-radius: 5px; background: var(--best-bg); border: 1px solid var(--best-line); color: var(--best);
+}
+.dpsFigure { font-size: 15px; font-weight: 500; }
+
+.fieldGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.field { padding: 11px 14px; display: flex; flex-direction: column; gap: 6px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.fieldValue { font-size: 14px; }
+.fieldSub { font-size: 10px; color: var(--text-3); margin-left: 6px; }
+
+.cycle {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border-top: 1px solid var(--line); background: rgba(255, 255, 255, 0.015); flex-wrap: wrap;
+}
+.cycleTrack { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 200px; }
+.cycleTick { display: block; width: 3px; height: 15px; border-radius: 1.5px; background: var(--fac); flex-shrink: 0; }
+.cycleLine { flex: 1; height: 1px; background: var(--line-2); }
+.cycleText { font-size: 11px; color: var(--text-2); }
+
+.hpBarRow { display: flex; align-items: center; gap: 14px; padding: 14px; flex-wrap: wrap; }
+.hpBar {
+  flex: 1; min-width: 200px; position: relative; height: 22px; border-radius: 4px;
+  background: #1b1f22; border: 1px solid rgba(255, 255, 255, 0.07); overflow: hidden;
+}
+.hpFill { position: absolute; inset: 0; background: linear-gradient(180deg, #63bd28, #3f8c17); }
+.hpLabel {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+}
+.hpRatio { font-size: 13px; color: var(--text-2); }
+.subHead {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  border-top: 1px solid var(--line); background: rgba(255, 255, 255, 0.015);
+}
+
+.peerRow { display: flex; align-items: center; gap: 11px; padding: 11px 13px; border-bottom: 1px solid var(--line); color: inherit; }
+.peerRow:last-child { border-bottom: none; }
+.peerRow:hover { background: rgba(255, 255, 255, 0.03); color: inherit; }
+.peerBody { flex: 1; min-width: 0; }
+.peerName { font-size: 13.5px; font-weight: 600; }
+.peerRole { font-size: 10.5px; color: var(--text-3); margin-top: 3px; }
+.deltas { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+.delta {
+  display: inline-flex; align-items: center; height: 18px; padding: 0 6px;
+  border-radius: 3px; font-size: 10.5px; font-weight: 500; white-space: nowrap;
+}
+.deltaUp { background: rgba(168, 232, 74, 0.13); color: var(--best); }
+.deltaDown { background: rgba(224, 122, 99, 0.13); color: var(--worse); }
+
+.historyRow { padding: 11px 13px; border-bottom: 1px solid var(--line); }
+.historyRow:last-child { border-bottom: none; }
+.historyVersion { font-size: 11px; color: var(--text-3); }
+.historyFields { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+
+.cats { display: flex; flex-wrap: wrap; gap: 5px; padding: 13px; }
+.cat {
+  display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 3px;
+  background: rgba(255, 255, 255, 0.045); border: 1px solid var(--line); font-size: 10px; color: var(--text-2);
+}
+
+@media (max-width: 1100px) {
+  .layout { flex-direction: column; }
+  .aside { width: 100%; }
+}
+@media (max-width: 700px) {
+  .hero { gap: 14px; }
+  .heroName { font-size: 26px; }
+  .costs { margin-left: 0; width: 100%; }
+  .costCell:first-child { padding-left: 0; }
+}
+
+/* ---------------------------------------------------------------------------
+   Dense mode: every stat for a unit on one screen, no scrolling.
+   Two columns for the main body, tighter rhythm throughout. The roomy default
+   is unchanged.
+   --------------------------------------------------------------------------- */
+:global(html[data-density='dense']) .hero { min-height: 104px; padding: 12px 18px; gap: 14px; }
+:global(html[data-density='dense']) .heroName { font-size: 26px; }
+:global(html[data-density='dense']) .heroRole { font-size: 13px; margin-top: 5px; }
+:global(html[data-density='dense']) .costFigure { font-size: 18px; }
+:global(html[data-density='dense']) .costCell { padding: 0 14px; gap: 5px; }
+
+:global(html[data-density='dense']) .layout { padding: 14px 18px; gap: 14px; }
+:global(html[data-density='dense']) .aside { width: 300px; gap: 14px; }
+
+:global(html[data-density='dense']) .mainCol {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+}
+:global(html[data-density='dense']) .secGlance { grid-column: 1 / -1; }
+:global(html[data-density='dense']) .secWeapons { grid-column: 1; grid-row: 2 / span 2; }
+:global(html[data-density='dense']) .secSurvive { grid-column: 2; grid-row: 2; }
+:global(html[data-density='dense']) .secMobility { grid-column: 2; grid-row: 3; }
+
+:global(html[data-density='dense']) .sectionHead { margin-bottom: 7px; }
+:global(html[data-density='dense']) .glance { padding: 9px 11px; gap: 6px; }
+:global(html[data-density='dense']) .glanceFigure { font-size: 20px; }
+:global(html[data-density='dense']) .glanceGrid { gap: 8px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+:global(html[data-density='dense']) .field { padding: 7px 11px; gap: 4px; }
+:global(html[data-density='dense']) .fieldValue { font-size: 12.5px; }
+:global(html[data-density='dense']) .weaponHead { padding: 8px 11px; gap: 7px; }
+:global(html[data-density='dense']) .weaponName { font-size: 13.5px; }
+:global(html[data-density='dense']) .cycle { padding: 8px 11px; }
+:global(html[data-density='dense']) .hpBarRow { padding: 10px 11px; }
+:global(html[data-density='dense']) .subHead { padding: 7px 11px; }
+:global(html[data-density='dense']) .peerRow { padding: 8px 11px; gap: 9px; }
+:global(html[data-density='dense']) .cats { padding: 9px; gap: 4px; }
+:global(html[data-density='dense']) .fieldGrid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+
+@media (max-width: 1240px) {
+  :global(html[data-density='dense']) .mainCol { display: flex; flex-direction: column; }
+}
