@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { getUnitData } from '@/lib/faf/data';
 import { fmtRatio } from '@/lib/faf/decorate';
-import { FACTION_COLOR, OG_CONTENT_TYPE, OG_SIZE, groupNum, ogFonts, unitImageDataUri } from '@/lib/og';
+import { FACTION_COLOR, OG_CONTENT_TYPE, OG_SIZE, groupNum, ogFonts, px, unitImageDataUri } from '@/lib/og';
 
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
@@ -34,41 +34,41 @@ export default async function Image({ params }: { params: Promise<{ slug: string
         style={{
           width: '100%', height: '100%', display: 'flex', flexDirection: 'column',
           background: '#090909', color: '#f2f4f5', fontFamily: 'Montserrat',
-          borderTop: `10px solid ${accent}`, padding: '52px 60px', position: 'relative',
+          borderTop: `${px(10)}px solid ${accent}`, padding: '104px 120px', position: 'relative',
         }}
       >
         <div
           style={{
-            position: 'absolute', top: 0, left: 0, right: 0, height: 340,
+            position: 'absolute', top: px(0), left: px(0), right: px(0), height: px(340),
             background: `linear-gradient(160deg, ${accent}2e, ${accent}00 62%)`,
             display: 'flex',
           }}
         />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 3 }}>FAF UNIT DB</div>
-          <div style={{ width: 1, height: 20, background: '#3a4046', display: 'flex' }} />
-          <div style={{ fontSize: 19, fontFamily: 'Plex', color: '#8b9299' }}>{`PATCH ${version}`}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: px(16) }}>
+          <div style={{ fontSize: px(22), fontWeight: 700, letterSpacing: px(3) }}>FAF UNIT DB</div>
+          <div style={{ width: px(1), height: px(20), background: '#3a4046', display: 'flex' }} />
+          <div style={{ fontSize: px(19), fontFamily: 'Plex', color: '#8b9299' }}>{`PATCH ${version}`}</div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 40, marginTop: 46 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: px(40), marginTop: px(46) }}>
           {render && (
             <div
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: 190, height: 190, borderRadius: 16,
-                background: `${accent}1f`, border: `2px solid ${accent}66`,
+                width: px(190), height: px(190), borderRadius: px(16),
+                background: `${accent}1f`, border: `${px(2)}px solid ${accent}66`,
               }}
             >
               <img src={render} width={162} height={162} alt="" />
             </div>
           )}
-          <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 800 }}>
-            <div style={{ fontSize: 78, fontWeight: 700, lineHeight: 1.05, letterSpacing: -1.5 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', maxWidth: px(800) }}>
+            <div style={{ fontSize: px(78), fontWeight: 700, lineHeight: 1.05, letterSpacing: px(-1.5) }}>
               {unit.name}
             </div>
-            <div style={{ fontSize: 30, color: '#a4abb2', marginTop: 12 }}>{unit.role}</div>
-            <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+            <div style={{ fontSize: px(30), color: '#a4abb2', marginTop: px(12) }}>{unit.role}</div>
+            <div style={{ display: 'flex', gap: px(10), marginTop: px(20) }}>
               <Badge color={accent} filled>{unit.faction.toUpperCase()}</Badge>
               <Badge color="#5a6167">{unit.techLabel === 'T4' ? 'T4 EXPERIMENTAL' : unit.techLabel}</Badge>
               <Badge color="#5a6167">{unit.Id}</Badge>
@@ -76,13 +76,13 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           </div>
         </div>
 
-        <div style={{ display: 'flex', marginTop: 'auto', gap: 56 }}>
+        <div style={{ display: 'flex', marginTop: 'auto', gap: px(56) }}>
           {stats.map(([label, value]) => (
             <div key={label} style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: 17, fontWeight: 700, letterSpacing: 2.4, color: '#767d84' }}>
+              <div style={{ fontSize: px(17), fontWeight: 700, letterSpacing: px(2.4), color: '#767d84' }}>
                 {label}
               </div>
-              <div style={{ fontSize: 46, fontFamily: 'Plex', marginTop: 8 }}>{value}</div>
+              <div style={{ fontSize: px(46), fontFamily: 'Plex', marginTop: px(8) }}>{value}</div>
             </div>
           ))}
         </div>
@@ -96,11 +96,11 @@ function Badge({ children, color, filled }: { children: string; color: string; f
   return (
     <div
       style={{
-        display: 'flex', alignItems: 'center', height: 38, padding: '0 14px', borderRadius: 8,
-        border: `2px solid ${filled ? color : '#3a4046'}`,
+        display: 'flex', alignItems: 'center', height: px(38), padding: '0 28px', borderRadius: px(8),
+        border: `${px(2)}px solid ${filled ? color : '#3a4046'}`,
         background: filled ? `${color}26` : 'transparent',
         color: filled ? color : '#a4abb2',
-        fontSize: 19, fontWeight: 600, letterSpacing: 1,
+        fontSize: px(19), fontWeight: 600, letterSpacing: px(1),
       }}
     >
       {children}

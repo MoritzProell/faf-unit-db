@@ -65,6 +65,9 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
 
   const cohort = buildCohort(unit, units);
   const history = await getUnitHistory(unit.Id);
+  // The most recent patch that touched this unit, surfaced in the hero so you
+  // do not have to notice a panel in the sidebar to learn it was rebalanced.
+  const lastChange = history[0];
   const primary = unit.weapons.find((w) => w.dps !== null && w.dps > 0) ?? null;
   const shownWeapons = unit.weapons.filter((w) => (w.dps !== null && w.dps > 0) || w.fullDamage > 0);
   const kindLabel = unit.kind === 'Base' ? 'Structures' : unit.kind;
@@ -144,6 +147,12 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
             </span>
             <span className={styles.badge}>{unit.techLabel === 'T4' ? 'T4 EXPERIMENTAL' : unit.techLabel}</span>
             <span className={`m ${styles.badge}`}>{unit.Id}</span>
+            {lastChange && (
+              <Link href={`/changelog#patch-${lastChange.version}`} className={styles.changedBadge}>
+                <Icon name="up" size={11} strokeWidth={2.2} />
+                Changed in {lastChange.version}
+              </Link>
+            )}
           </div>
           {unit.name !== unit.role && <div className={styles.heroRole}>{unit.role}</div>}
           <AbilityChips abilities={unit.abilities} cap={4} avail={420} />
@@ -289,12 +298,16 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
           {history.length > 0 && (
             <div className={styles.panel}>
               <div className={styles.panelHead}>
-                <span className={`lbl ${styles.panelTitle}`}>Recent changes</span>
+                <span className={`lbl ${styles.panelTitle}`}>Patch history</span>
+                <span className={`m ${styles.sectionNote}`}>{history.length}</span>
+                <span style={{ flex: 1 }} />
                 <Link href="/changelog" className={`m ${styles.sectionNote}`}>all patches</Link>
               </div>
-              {history.slice(0, 3).map((h) => (
+              {history.slice(0, 4).map((h) => (
                 <div key={h.version} className={styles.historyRow}>
-                  <span className={`m ${styles.historyVersion}`}>Patch {h.version}</span>
+                  <Link href={`/changelog#patch-${h.version}`} className={`m ${styles.historyVersion}`}>
+                    Patch {h.version}
+                  </Link>
                   <div className={styles.historyFields}>
                     {h.change.fields.map((f, i) => (
                       <FieldPill key={i} field={f} />

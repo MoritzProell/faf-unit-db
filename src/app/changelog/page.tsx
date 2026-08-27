@@ -48,7 +48,7 @@ export default async function ChangelogPage() {
           <p className={styles.empty}>No patch history recorded yet.</p>
         ) : (
           patches.map((p) => (
-            <section key={p.version} className={styles.patch}>
+            <section key={p.version} id={`patch-${p.version}`} className={styles.patch}>
               <div className={styles.patchHead}>
                 <h2 className={`t ${styles.patchVersion}`}>Patch {p.version}</h2>
                 <span className={styles.patchMeta}>

@@ -65,8 +65,9 @@ export function TopBar({
         <span className={`t ${styles.wordmark}`}>FAF UNIT DB</span>
       </Link>
       <span className={styles.divider} />
-      <Link href="/changelog" className={`m ${styles.patch}`} title="What changed in this patch">
-        PATCH {version}
+      <Link href="/changelog" className={styles.patchLink} title="What changed in each patch">
+        Patch notes
+        <span className={`m ${styles.patchBadge}`}>{version}</span>
       </Link>
 
       <div className={styles.searchWrap}>

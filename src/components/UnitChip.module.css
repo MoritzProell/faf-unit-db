@@ -17,6 +17,12 @@
 /* Near the right edge the card would run off screen. */
 .wrap[data-flip='true'] .card { left: auto; right: 0; }
 
+/* Near the bottom it opens upward instead, padding above rather than below so
+   the pointer never crosses a gap on the way to it. */
+.wrap[data-flip-up='true'] .card {
+  top: auto; bottom: 100%; padding-top: 0; padding-bottom: 8px;
+}
+
 .panel {
   background: #12161a; border: 1px solid var(--line-2); border-radius: var(--radius-lg);
   padding: 12px; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.66);

@@ -1,8 +1,17 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-export const OG_SIZE = { width: 1200, height: 630 };
+/**
+ * Cards render at 2x the 1200x630 standard. Discord and Twitter display an OG
+ * image around 800 CSS px wide, which on any retina screen is ~1600 device
+ * pixels, so a 1200px-wide card is upscaled and looks soft.
+ */
+export const OG_SCALE = 2;
+export const OG_SIZE = { width: 1200 * OG_SCALE, height: 630 * OG_SCALE };
 export const OG_CONTENT_TYPE = 'image/png';
+
+/** Scales a layout value written against the 1200x630 design. */
+export const px = (n: number): number => n * OG_SCALE;
 
 export const FACTION_COLOR: Record<string, string> = {
   UEF: '#2d78b2',

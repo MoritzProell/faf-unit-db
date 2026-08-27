@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useCallback, useRef, useState } from 'react';
 import { UnitWell } from './UnitWell';
 import { Icon } from './Icon';
 import { fmt, type BrowseUnit, type SortDef } from '@/lib/faf/browse';
@@ -21,7 +22,6 @@ export function UnitChip({
   selected,
   onToggle,
   sort,
-  flip = false,
   eager = false,
 }: {
   unit: BrowseUnit;
@@ -29,12 +29,36 @@ export function UnitChip({
   selected: boolean;
   onToggle: (id: string) => void;
   sort: SortDef;
-  flip?: boolean;
   /** Above-the-fold chips must not lazy-load; the roster is 400+ images. */
   eager?: boolean;
 }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [flip, setFlip] = useState<{ x: boolean; y: boolean }>({ x: false, y: false });
+
+  // Measured on hover rather than guessed: rows wrap, so which chips sit near an
+  // edge is not knowable when rendering.
+  const measure = useCallback(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const CARD_W = 236;
+    const CARD_H = 190;
+    setFlip({
+      x: r.left + CARD_W + 16 > window.innerWidth,
+      y: r.bottom + CARD_H + 16 > window.innerHeight && r.top > CARD_H,
+    });
+  }, []);
+
   return (
-    <div className={styles.wrap} data-selected={selected} data-flip={flip}>
+    <div
+      ref={wrapRef}
+      className={styles.wrap}
+      data-selected={selected}
+      data-flip={flip.x}
+      data-flip-up={flip.y}
+      onMouseEnter={measure}
+      onFocus={measure}
+    >
       <Link href={`/unit/${unit.slug}`} className={styles.btn} aria-label={`${unit.name}, ${unit.role}`}>
         <UnitWell
           id={unit.id}
