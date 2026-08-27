@@ -3,7 +3,7 @@
 A frontend for the Supreme Commander: Forged Alliance Forever unit database.
 
 **Live:** https://faf-unit-db.vercel.app
-**Frontend and generator:** RhyZ1ne · **Game data and weapon maths:** [FAForever/fa](https://github.com/FAForever/fa) · **Unit renders:** [FAForever/spooky-db](https://github.com/FAForever/spooky-db)
+**Built by:** Moritz/RhyZ1ne · **Game data and weapon maths:** [FAForever/fa](https://github.com/FAForever/fa) · **Unit renders:** [FAForever/spooky-db](https://github.com/FAForever/spooky-db)
 
 The dataset is **generated here from FAForever's own game repository**, so the
 site has no runtime dependency on anyone else's server.

@@ -1,8 +1,6 @@
 .groups { display: flex; flex-direction: column; gap: 14px; }
 
-/* No overflow:hidden here. It clipped the hover cards against the bottom of the
-   section. The first and last rows round themselves instead, so the tinted
-   faction bands still respect the box corners. */
+/* No overflow:hidden: it clipped the hover cards against the section edge. */
 .box {
   background: rgba(255, 255, 255, 0.012);
   border: 1px solid var(--line-2);
@@ -20,28 +18,57 @@
 
 .body { display: flex; flex-direction: column; }
 
-/* One row per faction, colour-banded like the in-game roster. */
+/* One block per tech tier, so role columns stay aligned without the row growing
+   wide enough to wrap, which would break the alignment. */
+.tier { display: flex; align-items: stretch; border-bottom: 1px solid var(--line-2); }
+.tier:last-child { border-bottom: none; }
+.tierLabel {
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.022);
+  border-right: 1px solid var(--line);
+}
+.tierBody { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+.roleHead {
+  display: flex; align-items: center; gap: 10px;
+  padding: 5px 12px 3px;
+  border-bottom: 1px solid var(--line);
+}
+.roleLabel {
+  display: block; font-size: 8px; letter-spacing: 0.08em; color: var(--text-3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
 .facRow {
   display: flex; align-items: center; gap: 10px;
-  padding: 7px 12px;
+  padding: 6px 12px;
   background: color-mix(in srgb, var(--fac) 5%, transparent);
   border-bottom: 1px solid var(--line);
 }
-.facRow:last-child {
-  border-bottom: none;
-  border-radius: 0 0 calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px);
-}
-.facMark { display: flex; width: 22px; flex-shrink: 0; color: var(--fac); }
-.units { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.facRow:last-child { border-bottom: none; }
+.tier:last-child .facRow:last-child { border-radius: 0 0 calc(var(--radius-lg) - 1px) 0; }
+.facMark { display: flex; width: 20px; flex-shrink: 0; color: var(--fac); }
 
-/* Dashed rules separate tech tiers, as the reference layout does. */
-.techSep {
-  display: block; align-self: stretch; width: 0;
-  border-left: 1px dashed color-mix(in srgb, var(--fac) 45%, transparent);
-  margin: 0 5px;
+/* Each column is one role; a dashed rule separates them. */
+.roleCols { display: flex; flex-wrap: wrap; align-items: center; gap: 0; min-width: 0; }
+.roleCol {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 8px;
+  border-right: 1px dashed color-mix(in srgb, var(--fac) 35%, transparent);
+}
+.roleHead .roleCol { border-right-color: transparent; }
+.roleCol:first-child { padding-left: 0; }
+.roleCol:last-child { border-right: none; padding-right: 0; }
+
+/* Holds a faction's place in a role it does not have. */
+.slot {
+  display: block; width: 44px; height: 44px; border-radius: 5px;
+  border: 1px dashed color-mix(in srgb, var(--fac) 18%, transparent);
 }
 
 @media (max-width: 700px) {
-  .facRow { padding: 6px 8px; gap: 6px; }
-  .facMark { width: 16px; }
+  .facRow { padding: 5px 8px; gap: 6px; }
+  .tierLabel { width: 30px; }
+  .roleCol { padding: 0 5px; }
 }

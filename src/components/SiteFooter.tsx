@@ -29,10 +29,12 @@ export function SiteFooter({ version }: { version: string }) {
       </div>
 
       <div className={styles.block}>
-        <span className={`lbl ${styles.label}`}>Frontend</span>
-        {/* Credited by handle, not by legal name. Deliberately unlinked: the
-            GitHub profile URL carries the name this is avoiding. */}
-        <span className={styles.strong}>RhyZ1ne</span>
+        {/* "Frontend" undersold it: the generator, the stat pipeline and the
+            site are all this project's own work. Credited by first name and
+            handle, and deliberately unlinked, since the GitHub profile URL
+            carries the full name. */}
+        <span className={`lbl ${styles.label}`}>Built by</span>
+        <span className={styles.strong}>Moritz/RhyZ1ne</span>
       </div>
 
       <span className={styles.spacer} />

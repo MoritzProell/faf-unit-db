@@ -1,3 +1,4 @@
+import { roleOf } from './roles';
 import type { Faction, Kind, Tech, Unit } from './types';
 
 export const ROLE_CATEGORY: Record<string, string> = {
@@ -35,6 +36,8 @@ export interface BrowseUnit {
   role: string;
   type: string;
   section: string;
+  /** Battlefield function, used to line units up across factions. */
+  roleKey: string;
   abilities: string[];
   roles: string[];
   health: number;
@@ -69,6 +72,7 @@ export function toBrowseUnit(u: Unit): BrowseUnit {
     role: u.role,
     type: u.type,
     section: u.section,
+    roleKey: roleOf(u.Categories),
     abilities: u.abilities,
     roles: rolesOf(u),
     health: u.health,
