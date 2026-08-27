@@ -104,7 +104,7 @@ export function BrowseClient({
       // Unchecking a role excludes units that carry it; roleless units always pass.
       if (!rolesAllOn && u.roles.some((r) => !filters.roles.has(r))) return false;
       if (q) {
-        const hay = `${u.name} ${u.role} ${u.type} ${u.id} ${u.abilities.join(' ')}`.toLowerCase();
+        const hay = `${u.name} ${u.role} ${u.type} ${u.id} ${u.abilities.join(' ')} ${u.upgrades.join(' ')}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;

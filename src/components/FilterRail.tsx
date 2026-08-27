@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { FactionMark } from './FactionMark';
 import { Icon } from './Icon';
 import { ROLE_KEYS, ROLE_LABEL } from '@/lib/faf/browse';
@@ -114,6 +115,15 @@ export function FilterRail({
             );
           })}
         </div>
+      </Group>
+      {/* Upgrades hang off commanders rather than being units, so they are
+          invisible to every filter above. This is their way in. */}
+      <Group label="Browse">
+        <Link href="/upgrades" className={styles.railLink}>
+          <Icon name="layers" size={13} />
+          <span>Commander upgrades</span>
+          <Icon name="chevronRight" size={12} />
+        </Link>
       </Group>
     </aside>
   );

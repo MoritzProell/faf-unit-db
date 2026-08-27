@@ -38,3 +38,11 @@
 .chip:hover { border-color: var(--line-2); color: var(--text); }
 .chip[data-on='true'] { background: rgba(255, 255, 255, 0.12); border-color: var(--line-2); color: var(--text); }
 .chipCount { font-size: 10px; opacity: 0.72; margin-left: 5px; }
+
+.railLink {
+  display: flex; align-items: center; gap: 9px; height: 30px; padding: 0 8px;
+  border-radius: var(--radius); border: 1px solid var(--line-2);
+  background: var(--panel-2); color: var(--text-2); font-size: 12.5px; font-weight: 600;
+}
+.railLink:hover { color: var(--text); border-color: var(--primary); }
+.railLink span:first-of-type { flex: 1; }

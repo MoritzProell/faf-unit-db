@@ -5,7 +5,7 @@ import { TopBar } from '@/components/TopBar';
 import { SiteFooter } from '@/components/SiteFooter';
 import { UnitWell } from '@/components/UnitWell';
 import { FactionMark } from '@/components/FactionMark';
-import { Icon } from '@/components/Icon';
+import { Icon, type IconName } from '@/components/Icon';
 import { AbilityChips } from '@/components/AbilityChips';
 import { AddToCompareButton, DensityToggle } from '@/components/UnitActions';
 import { MassMark, EnergyMark, TimeMark } from '@/components/Marks';
@@ -177,6 +177,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
             <div className={styles.glanceGrid}>
               <Glance
                 label="Health"
+                icon="health"
                 figure={fmtNum(unit.health)}
                 unit="hp"
                 foot={
@@ -188,6 +189,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
               />
               <Glance
                 label="HP per mass"
+                icon="shield"
                 figure={fmtRatio(unit.hpPerMass)}
                 foot={
                   <Rank
@@ -198,11 +200,13 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
               />
               <Glance
                 label={primary ? `${primary.category} DPS` : 'Weapons'}
+                icon="damage"
                 figure={primary?.dps ? fmtRatio(primary.dps, 1) : 'None'}
                 foot={<span className={styles.glanceFoot}>{primary?.cycleText ?? 'This unit is unarmed.'}</span>}
               />
               <Glance
                 label="Range"
+                icon="range"
                 figure={primary?.MaxRadius ? fmtNum(primary.MaxRadius) : '–'}
                 foot={
                   <span className={styles.glanceFoot}>
@@ -263,9 +267,9 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                     <span className="rule" />
                   </div>
                   <div className={styles.fieldGrid}>
-                    <Field label="Shield health" value={fmtNum(unit.Defense.Shield.ShieldMaxHealth)} />
-                    <Field label="Regen" value={`+${fmtNum(unit.Defense.Shield.ShieldRegenRate ?? 0)}`} sub="hp/s" />
-                    <Field label="Recharge" value={fmtNum(unit.Defense.Shield.ShieldRechargeTime ?? 0)} sub="s" />
+                    <Field label="Shield health" value={fmtNum(unit.Defense.Shield.ShieldMaxHealth)} icon="shield" />
+                    <Field label="Regen" value={`+${fmtNum(unit.Defense.Shield.ShieldRegenRate ?? 0)}`} sub="hp/s" icon="regen" />
+                    <Field label="Recharge" value={fmtNum(unit.Defense.Shield.ShieldRechargeTime ?? 0)} sub="s" icon="clock" />
                   </div>
                 </>
               ) : null}
@@ -276,9 +280,9 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                     <span className="rule" />
                   </div>
                   <div className={styles.fieldGrid}>
-                    <Field label="Mass" value={fmtNum(unit.wreckage.mass)} />
-                    <Field label="Mass in water" value={fmtNum(unit.wreckage.massInWater)} />
-                    <Field label="Health" value={fmtNum(unit.wreckage.health)} />
+                    <Field label="Mass" value={fmtNum(unit.wreckage.mass)} icon="wreck" />
+                    <Field label="Mass in water" value={fmtNum(unit.wreckage.massInWater)} icon="wreck" />
+                    <Field label="Health" value={fmtNum(unit.wreckage.health)} icon="health" />
                   </div>
                 </>
               )}
@@ -289,9 +293,9 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                     <span className="rule" />
                   </div>
                   <div className={styles.fieldGrid}>
-                    <Field label="Health" value={`+${fmtNum(unit.veterancy.healthPerLevel)}`} />
-                    <Field label="Regen" value={`+${unit.veterancy.regenPerLevel}`} sub="hp/s" />
-                    <Field label="Mass to kill" value={fmtNum(unit.veterancy.massToKillPerLevel)} />
+                    <Field label="Health" value={`+${fmtNum(unit.veterancy.healthPerLevel)}`} icon="health" />
+                    <Field label="Regen" value={`+${unit.veterancy.regenPerLevel}`} sub="hp/s" icon="regen" />
+                    <Field label="Mass to kill" value={fmtNum(unit.veterancy.massToKillPerLevel)} icon="veterancy" />
                   </div>
                 </>
               )}
@@ -302,13 +306,13 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
             <SectionHead label="Mobility & intel" />
             <div className={styles.panel}>
               <div className={styles.fieldGrid}>
-                {unit.Physics?.MaxSpeed !== undefined && <Field label="Speed" value={String(unit.Physics.MaxSpeed)} />}
-                {unit.Physics?.TurnRate !== undefined && <Field label="Turn rate" value={String(unit.Physics.TurnRate)} />}
-                {unit.Intel?.VisionRadius !== undefined && <Field label="Vision radius" value={String(unit.Intel.VisionRadius)} />}
-                {unit.Intel?.WaterVisionRadius !== undefined && <Field label="Water vision" value={String(unit.Intel.WaterVisionRadius)} />}
-                {unit.Intel?.RadarRadius !== undefined && <Field label="Radar radius" value={String(unit.Intel.RadarRadius)} />}
-                {unit.Intel?.SonarRadius !== undefined && <Field label="Sonar radius" value={String(unit.Intel.SonarRadius)} />}
-                {unit.Transport?.TransportClass !== undefined && <Field label="Transport class" value={String(unit.Transport.TransportClass)} />}
+                {unit.Physics?.MaxSpeed !== undefined && <Field label="Speed" value={String(unit.Physics.MaxSpeed)} icon="speed" />}
+                {unit.Physics?.TurnRate !== undefined && <Field label="Turn rate" value={String(unit.Physics.TurnRate)} icon="yaw" />}
+                {unit.Intel?.VisionRadius !== undefined && <Field label="Vision radius" value={String(unit.Intel.VisionRadius)} icon="vision" />}
+                {unit.Intel?.WaterVisionRadius !== undefined && <Field label="Water vision" value={String(unit.Intel.WaterVisionRadius)} icon="vision" />}
+                {unit.Intel?.RadarRadius !== undefined && <Field label="Radar radius" value={String(unit.Intel.RadarRadius)} icon="radar" />}
+                {unit.Intel?.SonarRadius !== undefined && <Field label="Sonar radius" value={String(unit.Intel.SonarRadius)} icon="sonar" />}
+                {unit.Transport?.TransportClass !== undefined && <Field label="Transport class" value={String(unit.Transport.TransportClass)} icon="transport" />}
                 {unit.Transport?.CanFireFromTransport !== undefined && (
                   <Field label="Fire from transport" value={unit.Transport.CanFireFromTransport ? 'Yes' : 'No'} />
                 )}
@@ -394,10 +398,15 @@ function SectionHead({ label, note }: { label: string; note?: string }) {
   );
 }
 
-function Glance({ label, figure, unit, foot }: { label: string; figure: string; unit?: string; foot: React.ReactNode }) {
+function Glance({
+  label, figure, unit, foot, icon,
+}: { label: string; figure: string; unit?: string; foot: React.ReactNode; icon?: IconName }) {
   return (
     <div className={styles.glance}>
-      <span className="lbl">{label}</span>
+      <span className={`lbl ${styles.fieldLabel}`}>
+        {icon && <Icon name={icon} size={11} strokeWidth={1.7} />}
+        {label}
+      </span>
       <div className={styles.glanceValue}>
         <span className={`m ${styles.glanceFigure}`}>{figure}</span>
         {unit && <span className={styles.glanceUnit}>{unit}</span>}
@@ -416,10 +425,15 @@ function Rank({ percent, text }: { percent: number; text: string }) {
   );
 }
 
-function Field({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function Field({
+  label, value, sub, icon,
+}: { label: string; value: string; sub?: string; icon?: IconName }) {
   return (
     <div className={styles.field}>
-      <span className="lbl" style={{ fontSize: 9 }}>{label}</span>
+      <span className={`lbl ${styles.fieldLabel}`} style={{ fontSize: 9 }}>
+        {icon && <Icon name={icon} size={10} strokeWidth={1.7} />}
+        {label}
+      </span>
       <span>
         <span className={`m ${styles.fieldValue}`}>{value}</span>
         {sub && <span className={styles.fieldSub}>{sub}</span>}
@@ -483,16 +497,16 @@ function WeaponCard({ weapon: w }: { weapon: DecoratedWeapon }) {
         ) : null}
       </div>
       <div className={styles.fieldGrid}>
-        <Field label="Damage" value={fmtNum(round(w.fullDamage, 1))} />
-        {w.firingCycle?.cycleTime ? <Field label="Reload" value={w.firingCycle.cycleTime.toFixed(1)} sub="s" /> : null}
-        {w.MaxRadius !== undefined ? <Field label="Range" value={fmtNum(w.MaxRadius)} /> : null}
-        {w.MuzzleVelocity !== undefined ? <Field label="Muzzle velocity" value={String(w.MuzzleVelocity)} /> : null}
+        <Field label="Damage" value={fmtNum(round(w.fullDamage, 1))} icon="damage" />
+        {w.firingCycle?.cycleTime ? <Field label="Reload" value={w.firingCycle.cycleTime.toFixed(1)} sub="s" icon="clock" /> : null}
+        {w.MaxRadius !== undefined ? <Field label="Range" value={fmtNum(w.MaxRadius)} icon="range" /> : null}
+        {w.MuzzleVelocity !== undefined ? <Field label="Muzzle velocity" value={String(w.MuzzleVelocity)} icon="velocity" /> : null}
         {w.DamageRadius !== undefined ? (
-          <Field label="Damage radius" value={String(w.DamageRadius)} sub={w.DamageRadius === 0 ? 'single target' : undefined} />
+          <Field label="Damage radius" value={String(w.DamageRadius)} sub={w.DamageRadius === 0 ? 'single target' : undefined} icon="radius" />
         ) : null}
-        {w.TurretYawRange !== undefined ? <Field label="Turret yaw" value={`±${w.TurretYawRange}°`} /> : null}
-        {w.DoTPulses && w.DoTPulses > 1 ? <Field label="Damage over time" value={`${w.DoTPulses} pulses`} sub={`${w.DoTTime}s`} /> : null}
-        {layers ? <Field label="Fires at" value={layers} /> : null}
+        {w.TurretYawRange !== undefined ? <Field label="Turret yaw" value={`±${w.TurretYawRange}°`} icon="yaw" /> : null}
+        {w.DoTPulses && w.DoTPulses > 1 ? <Field label="Damage over time" value={`${w.DoTPulses} pulses`} sub={`${w.DoTTime}s`} icon="pulses" /> : null}
+        {layers ? <Field label="Fires at" value={layers} icon="target" /> : null}
       </div>
       {w.firingCycle?.cycleTime && w.cycleText ? (
         <div className={styles.cycle}>

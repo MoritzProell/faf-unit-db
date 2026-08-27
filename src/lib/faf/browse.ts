@@ -1,4 +1,5 @@
 import { roleOf } from './roles';
+import { enhancementsOf } from './enhancements';
 import type { Faction, Kind, Tech, Unit } from './types';
 
 export const ROLE_CATEGORY: Record<string, string> = {
@@ -40,6 +41,8 @@ export interface BrowseUnit {
   roleKey: string;
   abilities: string[];
   roles: string[];
+  /** Commander upgrade names, so a search for "Nano-Repair" finds its commander. */
+  upgrades: string[];
   health: number;
   mass: number;
   energy: number;
@@ -75,6 +78,7 @@ export function toBrowseUnit(u: Unit): BrowseUnit {
     roleKey: roleOf(u.Categories),
     abilities: u.abilities,
     roles: rolesOf(u),
+    upgrades: enhancementsOf(u).map((e) => e.name),
     health: u.health,
     mass: u.mass,
     energy: u.energy,

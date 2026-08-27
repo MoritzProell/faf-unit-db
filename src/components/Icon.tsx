@@ -32,6 +32,24 @@ const PATHS = {
       <rect x="2.4" y="9.2" width="11.2" height="4.4" rx="1" />
     </>
   ),
+  /* Stat glyphs. Same 16px grid and stroke family as the UI icons above, so a
+     label reads as a label rather than sprouting a second icon language. */
+  damage: <path d="M8 1.6 L9.7 6.3 L14.4 8 L9.7 9.7 L8 14.4 L6.3 9.7 L1.6 8 L6.3 6.3 Z" />,
+  health: <path d="M6.3 2.6h3.4v3.7h3.7v3.4H9.7v3.7H6.3V9.7H2.6V6.3h3.7z" />,
+  range: <path d="M2.6 8h10.8M2.6 5.4v5.2M13.4 5.4v5.2" />,
+  velocity: <path d="M2.8 4.6 L6.6 8 L2.8 11.4M8.4 4.6 L12.2 8 L8.4 11.4" />,
+  radius: <><circle cx="8" cy="8" r="5.6" /><path d="M8 8h5.6" /></>,
+  yaw: <><path d="M2.9 11.6 A6.4 6.4 0 0 1 13.1 11.6" /><path d="M8 11.6V5.2" /></>,
+  speed: <path d="M2.4 5.2h6.4M2.4 8h9.2M2.4 10.8h6.4M11.4 4 L14 8 L11.4 12" />,
+  vision: <><path d="M1.7 8C4 4.5 12 4.5 14.3 8 12 11.5 4 11.5 1.7 8Z" /><circle cx="8" cy="8" r="1.9" /></>,
+  radar: <><path d="M8 13.4V8l4.8-2.8" /><path d="M4.2 12.2 A5.4 5.4 0 0 1 4.2 4.2" /><path d="M2.2 8h.1" /></>,
+  sonar: <><path d="M8 13.6a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" /><path d="M4.6 9.2a4.8 4.8 0 0 1 6.8 0M2.4 6.4a8 8 0 0 1 11.2 0" /></>,
+  shield: <path d="M8 2 L13 4.1v4.3c0 2.8-2.1 4.8-5 5.6-2.9-.8-5-2.8-5-5.6V4.1Z" />,
+  regen: <><path d="M13.2 8a5.2 5.2 0 1 1-1.6-3.7" /><path d="M13.4 2.6v3h-3" /></>,
+  wreck: <path d="M2.6 12.6h10.8M4.6 12.6 L6.4 6.6 L9 9.4 L11 4.4 L12.4 12.6" />,
+  veterancy: <path d="M4 9.4 L8 5.6 L12 9.4M4 12.4 L8 8.6 L12 12.4" />,
+  transport: <><path d="M2.6 5.4h7.6v5.2H2.6z" /><path d="M10.2 7.4h1.9l1.3 1.6v1.6h-3.2z" /></>,
+  pulses: <><circle cx="3.4" cy="8" r="1.3" /><circle cx="8" cy="8" r="1.3" /><circle cx="12.6" cy="8" r="1.3" /></>,
   check: <path d="M3.4 8.4 L6.4 11.3 L12.6 4.8" />,
 } as const;
 

@@ -57,6 +57,8 @@
   background: var(--panel); border: 1px solid var(--line); border-radius: 7px;
   padding: 10px 12px; display: flex; flex-direction: column; gap: 7px;
 }
+.fieldLabel { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.fieldLabel svg { opacity: 0.62; }
 .glanceValue { display: flex; align-items: baseline; gap: 7px; }
 .glanceFigure { font-size: 24px; font-weight: 500; line-height: 1; }
 .glanceUnit { font-size: 11px; color: var(--text-3); }
@@ -82,7 +84,7 @@
 .dpsFigure { font-size: 15px; font-weight: 500; }
 
 .weaponList { display: flex; flex-direction: column; gap: 12px; }
-.fieldGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); }
+.fieldGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(156px, 1fr)); }
 .field { padding: 9px 12px; display: flex; flex-direction: column; gap: 4px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .fieldValue { font-size: 14px; }
 .fieldSub { font-size: 10px; color: var(--text-3); margin-left: 6px; }
@@ -212,7 +214,7 @@ a.historyVersion:hover { color: var(--text); text-decoration: underline; text-un
 :global(html[data-density='dense']) .subHead { padding: 5px 10px; }
 :global(html[data-density='dense']) .peerRow { padding: 6px 10px; gap: 9px; }
 :global(html[data-density='dense']) .cats { padding: 7px 9px; gap: 3px; }
-:global(html[data-density='dense']) .fieldGrid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+:global(html[data-density='dense']) .fieldGrid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 
 @media (max-width: 1240px) {
   :global(html[data-density='dense']) .mainCol { display: flex; flex-direction: column; }
