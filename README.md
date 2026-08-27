@@ -88,22 +88,34 @@ That is deliberate: only a person can tell "FAF rebalanced Percival" from "our
 maths broke". Check the failing units against the in-game unit view, update the
 expected values in `scripts/verify-stats.ts`, and say which patch changed them.
 
-To make the commit deploy, do one of:
-
-1. Install the Vercel GitHub App on the repo (Vercel → Project → Settings → Git).
-   Vercel then deploys on every push and you get preview deploys on PRs too.
-2. Add a `VERCEL_TOKEN` repository secret. The workflow's deploy step uses it.
+That commit deploys on its own: the Vercel project is connected to this
+repository and builds every push to `main`.
 
 ## Deploying
 
+Pushing to `main` is the deploy. Vercel is connected to the repo and builds
+production from that branch, with preview deploys on pull requests.
+
+The connection is worth knowing about because it is easy to lose. This project
+was first created by running `vercel deploy` from the CLI, and a project made
+that way has no Git connection at all: pushes did nothing and every release had
+to be deployed by hand. Only importing the repo in the dashboard, or running
+`vercel git connect`, creates the link. If pushes ever stop deploying, that is
+the first thing to check:
+
 ```bash
-vercel deploy --prod
+vercel git connect          # re-links this repo to the project
+vercel deploy --prod        # a manual deploy, if you need one now
 ```
 
-This lives on the personal Vercel account (`moritzfromsweden-9316`). Check
-`vercel whoami` before deploying: the CLI signs in through whichever Vercel
-session the browser has open, which is how an earlier deploy landed on a work
-team by mistake.
+To tell the two apart, look at what triggered the last deployments: a
+`source` of `git` means the connection is live, `cli` means someone deployed by
+hand.
+
+The project lives on the personal Vercel account (`moritzfromsweden-9316`).
+Check `vercel whoami` before any manual deploy: the CLI signs in through
+whichever Vercel session the browser has open, which is how an earlier deploy
+landed on a work team by mistake.
 
 Traffic is negligible: a few thousand visits a month sits far inside the free
 tier, and the site fetches nothing at runtime because the dataset is committed.
