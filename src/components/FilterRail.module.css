@@ -10,6 +10,7 @@
 .reset:hover { color: var(--text); }
 .reset:disabled { opacity: 0.4; cursor: default; }
 .group { display: flex; flex-direction: column; gap: 8px; }
+.group .railLink + .railLink { margin-top: 5px; }
 .groupBody { display: flex; flex-direction: column; }
 .chips { display: flex; flex-wrap: wrap; gap: 5px; }
 
