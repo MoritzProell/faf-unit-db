@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 export default async function UpgradesPage() {
-  const { units, version } = await getUnitData();
+  const { units, version, descriptions } = await getUnitData();
 
   // Commanders only: they are the units the engine lets you bolt upgrades onto.
   const hosts = units
@@ -49,7 +49,7 @@ export default async function UpgradesPage() {
 
         <div className={styles.grid}>
           {hosts.map((host) => (
-            <HostCard key={host.Id} host={host} />
+            <HostCard key={host.Id} host={host} descriptions={descriptions} />
           ))}
         </div>
       </main>
@@ -59,7 +59,7 @@ export default async function UpgradesPage() {
   );
 }
 
-function HostCard({ host }: { host: Unit }) {
+function HostCard({ host, descriptions }: { host: Unit; descriptions: Record<string, string> }) {
   const slots = groupBySlot(enhancementsOf(host));
   return (
     <section className={styles.host} data-faction={host.faction}>
@@ -88,7 +88,12 @@ function HostCard({ host }: { host: Unit }) {
             <span className="rule" />
           </div>
           {list.map((e) => (
-            <UpgradeRow key={e.key} host={host} enhancement={e} />
+            <UpgradeRow
+              key={e.key}
+              host={host}
+              enhancement={e}
+              blurb={descriptions[`${host.Id.toLowerCase()}-${(e.icon ?? e.key).toLowerCase()}`]}
+            />
           ))}
         </div>
       ))}
@@ -96,7 +101,9 @@ function HostCard({ host }: { host: Unit }) {
   );
 }
 
-function UpgradeRow({ host, enhancement: e }: { host: Unit; enhancement: Enhancement }) {
+function UpgradeRow({
+  host, enhancement: e, blurb,
+}: { host: Unit; enhancement: Enhancement; blurb?: string }) {
   return (
     <Link href={`/unit/${host.slug}#upgrade-${e.key.toLowerCase()}`} className={styles.row}>
       <div className={styles.rowTop}>
@@ -107,6 +114,7 @@ function UpgradeRow({ host, enhancement: e }: { host: Unit; enhancement: Enhance
           <span className={styles.cost}><TimeMark size={10} /><span className="m">{fmtNum(e.buildTime)}</span></span>
         </span>
       </div>
+      {blurb && <p className={styles.blurb}>{blurb}</p>}
       {e.effects.length > 0 && (
         <div className={styles.effects}>
           {e.effects.map((fx) => (

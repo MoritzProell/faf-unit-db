@@ -16,9 +16,17 @@ export interface UnitData {
   units: Unit[];
   bySlug: Map<string, Unit>;
   byId: Map<string, Unit>;
+  /**
+   * Every description the game ships, keyed as it keys them: `uel0001` for the
+   * unit, `uel0001-tm` for one of its enhancements.
+   */
+  descriptions: Record<string, string>;
 }
 
-const data = raw as unknown as UnitDefaults & { units: Blueprint[] };
+const data = raw as unknown as UnitDefaults & {
+  units: Blueprint[];
+  descriptions?: Record<string, string>;
+};
 
 /** `cache` dedupes this across every component in a single render pass. */
 export const getUnitData = cache(async (): Promise<UnitData> => {
@@ -35,6 +43,7 @@ export const getUnitData = cache(async (): Promise<UnitData> => {
     units,
     bySlug: new Map(units.map((u) => [u.slug, u])),
     byId: new Map(units.map((u) => [u.Id, u])),
+    descriptions: data.descriptions ?? {},
   };
 });
 

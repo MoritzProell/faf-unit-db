@@ -195,6 +195,41 @@ async function readConstants() {
 
 type Bp = Record<string, unknown> & { Id?: string; Categories?: string[] };
 
+/**
+ * The game ships a written description for nearly every unit and commander
+ * upgrade in lua/ui/help/unitdescription.lua — the text the in-game rollover
+ * shows. Nomads keeps its own copy in the same path under nomadhook/. Between
+ * them they cover 507 of 510 units, so the site does not have to invent prose
+ * it cannot stand behind.
+ *
+ * Entries look like:
+ *   ['uel0001'] = "<LOC Unit_Description_0303> Armored Commander is a ...",
+ *   ['uel0001-tm'] = "<LOC Unit_Description_0004> Mounts a tactical ...",
+ * where the suffixed keys are enhancements. The <LOC ...> tag is the
+ * localisation id and is stripped.
+ */
+async function readDescriptions(): Promise<Record<string, string>> {
+  const sources: Array<[typeof FA, string]> = [
+    [FA, 'lua/ui/help/unitdescription.lua'],
+    [REPOS[1], 'nomadhook/lua/ui/help/unitdescription.lua'],
+  ];
+  const out: Record<string, string> = {};
+  for (const [repo, path] of sources) {
+    const src = await text(raw(repo, path));
+    const re = /\['([a-z0-9-]+)'\]\s*=\s*"(?:<LOC [^>]*>)?\s*([\s\S]*?)"\s*,/g;
+    let m: RegExpExecArray | null;
+    let n = 0;
+    while ((m = re.exec(src)) !== null) {
+      const body = m[2].replace(/\s+/g, ' ').trim();
+      if (body) { out[m[1]] = body; n++; }
+    }
+    console.log(`  ${n} descriptions from ${repo.name}`);
+    // A silent zero here would ship a site with every blurb missing.
+    if (n === 0) throw new Error(`no descriptions parsed from ${path}`);
+  }
+  return out;
+}
+
 async function main() {
   console.log('=== FAF unit data generator ===\n');
   console.log('Reading constants from FAForever/fa...');
@@ -259,9 +294,20 @@ async function main() {
     }
   }
 
+  const descriptions = await readDescriptions();
+  let described = 0;
+  for (const u of units) {
+    const key = String(u.Id ?? '').toLowerCase();
+    const blurb = descriptions[key];
+    if (blurb) { u.blurb = blurb; described++; }
+  }
+  console.log(`  ${described}/${units.length} units carry a description`);
+
   units.sort((a, b) => (a.Id ?? '').localeCompare(b.Id ?? ''));
   await mkdir(dirname(OUT), { recursive: true });
-  await writeFile(OUT, JSON.stringify({ ...constants, units }));
+  // Enhancement blurbs stay keyed as the game writes them (<unit>-<enh>), so
+  // the upgrade UI can look one up without a second pass over the units.
+  await writeFile(OUT, JSON.stringify({ ...constants, descriptions, units }));
   console.log(`\n✓ ${units.length} units, patch ${constants.version} -> ${OUT}`);
 }
 

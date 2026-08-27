@@ -36,6 +36,7 @@
 .rowName { font-size: 13px; font-weight: 600; }
 .costs { display: flex; align-items: center; gap: 11px; margin-left: auto; }
 .cost { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-2); }
+.blurb { font-size: 11.5px; line-height: 1.45; color: var(--text-2); margin-top: 5px; }
 .effects { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
 .pill {
   display: inline-flex; align-items: center; gap: 5px; padding: 2px 7px;

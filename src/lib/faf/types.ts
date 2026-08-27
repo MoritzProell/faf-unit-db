@@ -4,6 +4,8 @@ import type { Weapon } from './dps';
 export interface Blueprint {
   Id: string;
   Description?: string;
+  /** The in-game rollover text, from the game's own unitdescription.lua. */
+  blurb?: string;
   Categories?: string[];
   StrategicIconName?: string;
   VeteranMassMult?: number;

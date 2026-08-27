@@ -35,9 +35,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const dps = unit.directDps ? `, ${fmtRatio(unit.directDps, 1)} DPS` : '';
   // Lead with the unit name and the words people type: "percival stats faf".
   const title = `${unit.name} stats · ${unit.techLabel} ${unit.faction} ${unit.role}`;
+  // The game's own rollover text describes what the unit is for far better than
+  // a stat recital, so it leads when there is one.
   const description =
-    `${unit.name} is a ${unit.techLabel} ${unit.faction} ${unit.role} in Supreme Commander: ` +
-    `Forged Alliance Forever. ${fmtNum(unit.mass)} mass, ${fmtNum(unit.energy)} energy, ` +
+    (unit.blurb
+      ? `${unit.blurb} `
+      : `${unit.name} is a ${unit.techLabel} ${unit.faction} ${unit.role} in Supreme Commander: Forged Alliance Forever. `) +
+    `${fmtNum(unit.mass)} mass, ${fmtNum(unit.energy)} energy, ` +
     `${fmtNum(unit.health)} health${dps}. Full weapon, veterancy and wreckage stats for patch ${version}.`;
   const url = `${SITE_URL}/unit/${unit.slug}`;
 
@@ -60,7 +64,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function UnitPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const { bySlug, units, version } = await getUnitData();
+  const { bySlug, units, version, descriptions } = await getUnitData();
   const unit = bySlug.get(slug);
   if (!unit) notFound();
 
@@ -101,7 +105,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
             '@type': 'Thing',
             name: unit.name,
             alternateName: unit.Id,
-            description: `${unit.techLabel} ${unit.faction} ${unit.role} in Supreme Commander: Forged Alliance Forever.`,
+            description: unit.blurb ?? `${unit.techLabel} ${unit.faction} ${unit.role} in Supreme Commander: Forged Alliance Forever.`,
             image: `${SITE_URL}/units/${unit.Id}.png`,
             additionalProperty: [
               stat('Faction', unit.faction),
@@ -158,6 +162,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
             )}
           </div>
           {unit.name !== unit.role && <div className={styles.heroRole}>{unit.role}</div>}
+          {unit.blurb && <p className={styles.blurb}>{unit.blurb}</p>}
           <AbilityChips abilities={unit.abilities} cap={4} avail={420} />
         </div>
 
@@ -240,7 +245,11 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                       <span className="rule" />
                     </div>
                     {list.map((e) => (
-                      <EnhancementRow key={`${slot}-${e.key}`} enhancement={e} />
+                      <EnhancementRow
+                        key={`${slot}-${e.key}`}
+                        enhancement={e}
+                        blurb={descriptions[`${unit.Id.toLowerCase()}-${(e.icon ?? e.key).toLowerCase()}`]}
+                      />
                     ))}
                   </div>
                 ))}
@@ -442,7 +451,7 @@ function Field({
   );
 }
 
-function EnhancementRow({ enhancement: e }: { enhancement: Enhancement }) {
+function EnhancementRow({ enhancement: e, blurb }: { enhancement: Enhancement; blurb?: string }) {
   return (
     // Anchored so a single upgrade can be linked to on its own.
     <div className={styles.enhRow} id={`upgrade-${e.key.toLowerCase()}`}>
@@ -454,6 +463,7 @@ function EnhancementRow({ enhancement: e }: { enhancement: Enhancement }) {
           <span className={styles.enhCost}><TimeMark size={11} /><span className="m">{fmtNum(e.buildTime)}</span></span>
         </span>
       </div>
+      {blurb && <p className={styles.enhBlurb}>{blurb}</p>}
       {(e.effects.length > 0 || e.unlocks) && (
         <div className={styles.enhEffects}>
           {e.effects.map((f) => (

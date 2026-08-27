@@ -55,6 +55,11 @@ export interface Enhancement {
   mass: number;
   energy: number;
   buildTime: number;
+  /**
+   * The blueprint's `Icon` abbreviation (`aes`, `hamc`, `pqt`). This is the key
+   * the game writes its own upgrade descriptions under, as `<unitId>-<icon>`.
+   */
+  icon?: string;
   /** Internal key of the upgrade this one replaces or requires. */
   prerequisite?: string;
   /** Unlocks building higher-tier structures. */
@@ -85,6 +90,7 @@ export function enhancementsOf(unit: Unit): Enhancement[] {
 
     out.push({
       key,
+      icon: typeof value.Icon === 'string' ? value.Icon : undefined,
       name: (value.Name as string) || key,
       slot,
       mass: (value.BuildCostMass as number) ?? 0,

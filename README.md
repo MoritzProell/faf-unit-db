@@ -34,7 +34,16 @@ npm run fetch-images             # only when FAF adds units
 | Nomads | `FAForever/nomads @ master` |
 | Projectiles | same repos, `projectiles/**/*_proj.bp` (identifies torpedoes) |
 | Constants | FAF Lua: `version.lua`, `blueprints-units.lua`, `defaultcomponents.lua`, `shared/overcharge.lua`, `shield.lua`, `sim/Unit.lua` |
+| Descriptions | `lua/ui/help/unitdescription.lua` in both repos — the game's own rollover text, for units and commander upgrades |
 | Unit renders | `FAForever/spooky-db @ master` → `app/img/units/<Id>.png` |
+
+Unit descriptions are the game's own. `lua/ui/help/unitdescription.lua` is the
+text the in-game rollover shows, and Nomads ships its own copy of the same file;
+between them they describe 507 of 510 units and all 97 commander upgrades. The
+site does not write prose about units, because prose about units is the part it
+could not stand behind. Upgrade entries are keyed `<unitId>-<icon>`, where
+`icon` is the abbreviation in the enhancement's own blueprint (`aes`, `hamc`),
+which is how the game resolves them too.
 
 ### How the generator works
 
