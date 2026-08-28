@@ -24,7 +24,14 @@ export default async function BrowsePage() {
           '@context': 'https://schema.org',
           '@type': 'WebSite',
           name: SITE_NAME,
-          alternateName: 'Supreme Commander Forged Alliance Forever Unit Database',
+          // Every name this site is known by, so a search for any of them
+          // resolves to it. "fafunits" is the one people actually type.
+          alternateName: [
+            'fafunits',
+            'fafunits.com',
+            'FAF Unit Database',
+            'Supreme Commander Forged Alliance Forever Unit Database',
+          ],
           url: SITE_URL,
           description: `Stats for all ${units.length} Forged Alliance Forever units, generated from the game files at patch ${version}.`,
           potentialAction: {

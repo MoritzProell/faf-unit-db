@@ -31,7 +31,11 @@ export const metadata: Metadata = {
   title: {
     // The default carries the words people actually search for; per-page titles
     // put the unit name first, where it counts.
-    default: 'FAF Unit Database · Supreme Commander: Forged Alliance Forever unit stats',
+    // Leads with the brand people type. Searching "fafunits" returned nothing
+    // because the site never wrote its own name down: the string appeared a
+    // dozen times in the page, every one of them inside a URL, and a brand
+    // query has nothing to match against a URL.
+    default: 'fafunits · FAF Unit Database · Supreme Commander: Forged Alliance Forever unit stats',
     template: `%s · ${SITE_NAME}`,
   },
   description: DESCRIPTION,
@@ -39,16 +43,17 @@ export const metadata: Metadata = {
   keywords: [
     'Supreme Commander', 'Forged Alliance Forever', 'FAF', 'supcom',
     'unit database', 'unit stats', 'DPS', 'balance', 'FAF units',
+    'fafunits', 'fafunits.com', 'faf unit db', 'faf unit database',
   ],
   alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     siteName: SITE_NAME,
     url: SITE_URL,
-    title: 'FAF Unit Database',
+    title: 'fafunits · FAF Unit Database',
     description: DESCRIPTION,
   },
-  twitter: { card: 'summary_large_image', title: 'FAF Unit Database', description: DESCRIPTION },
+  twitter: { card: 'summary_large_image', title: 'fafunits · FAF Unit Database', description: DESCRIPTION },
   robots: { index: true, follow: true },
   // Set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION in Vercel to the token Search
   // Console gives you; the HTML-tag method then needs no code change.

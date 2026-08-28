@@ -50,6 +50,11 @@ const FORUM_MERCY = {
   url: 'https://forum.faforever.com/topic/6866/trying-to-find-a-use-for-mercy-janus-does-it-better/24',
 };
 
+const REDDIT_QUIRKS = {
+  label: 'r/supremecommander: faction quirks',
+  url: 'https://www.reddit.com/r/supremecommander/comments/faf_faction_quirks/',
+};
+
 const FORUM_BEST_NAVY = {
   label: 'FAF forums: what is the best navy?',
   url: 'https://forums.faforever.com/viewtopic.php?f=2&t=6323',
@@ -121,6 +126,64 @@ export const UNIT_NOTES: Record<string, UnitNote> = {
     patch: '3838',
   },
 
+
+  // ---------------------------------------------------------------------
+  // Faction quirks. Raised by the community, then checked against the
+  // blueprints before being written down: the categories, abilities, motion
+  // types and weapon flags below are all in this patch's data. One claim from
+  // the same list did not survive that check and is not here: the Fire Beetle
+  // does not cloak, whatever it may once have done.
+  // ---------------------------------------------------------------------
+
+  XSL0101: {
+    text:
+      'The only scout in the game that fights. It carries a gun, and an ability that cloaks and stealths it at the cost of moving and shooting, so it can sit on a hill and watch an approach that a normal scout would have to fly over and die to.',
+    source: REDDIT_QUIRKS,
+    patch: '3838',
+  },
+  URL0101: {
+    text:
+      'Cloaked, which no other faction\u2019s land scout is. That makes it a picket you leave behind rather than one you drive past: it can sit on a chokepoint and keep reporting.',
+    source: REDDIT_QUIRKS,
+    patch: '3838',
+  },
+  URL0402: {
+    text:
+      'Carries a stealth field of radius 28, not just personal stealth, so it hides what walks with it from radar and sonar both. An experimental that does not show up on the map until it is seen is a different problem from one that does.',
+    source: REDDIT_QUIRKS,
+    patch: '3838',
+  },
+  URL0203: {
+    text:
+      'Not a hover tank. Where the Blaze and the Riptide skim the surface, this one is amphibious and drives along the seabed, so torpedoes reach it and surface fire does not while it is crossing.',
+    source: REDDIT_QUIRKS,
+    patch: '3838',
+  },
+  XSS0302: {
+    text:
+      'A battleship that builds and launches strategic missiles. It carries NUKE and a silo where the other factions put that on a T3 submarine, so Seraphim can open a nuclear threat from a surface fleet that is also winning the naval fight.',
+    source: REDDIT_QUIRKS,
+    patch: '3838',
+  },
+  UAL0303: {
+    text:
+      'Reclaims and repairs, which no other T3 assault unit does. A push of these does not need engineers following it to clear wrecks or patch the front line, and it carries a personal shield on top of its 3600 health.',
+    source: REDDIT_QUIRKS,
+    patch: '3838',
+  },
+  UAL0105: {
+    text:
+      'Aeon engineers can sacrifice themselves into something under construction, turning the engineer into progress on the build. Nobody else can do it, and it turns a stranded engineer into a finished building rather than a loss.',
+    source: REDDIT_QUIRKS,
+    patch: '3838',
+  },
+  UEL0103: {
+    text:
+      'Spots for itself: the shell reveals what it hits, so a Lobo firing blind into fog reports back what it found. The other factions\u2019 T1 artillery has to be told where to shoot.',
+    source: REDDIT_QUIRKS,
+    patch: '3838',
+  },
+
   // ---------------------------------------------------------------------
   // Derived notes. Every figure below is arithmetic on this patch's own
   // blueprints, checked against them before it was written, and says
@@ -187,7 +250,7 @@ export const UNIT_NOTES: Record<string, UnitNote> = {
   // Structures.
   XEB2306: {
     text:
-      'The only T3 point defence in the game; the other three factions stop at T2. For 3.7 times the mass of a UEF Triad it brings 2.9 times the health, 2.1 times the damage and 20 more range: 6500 and 261 DPS at range 70, against 2250 and 124 at 50.',
+      'The only T3 point defence in the game; the other three factions stop at T2. For 3.7 times the mass of a UEF Triad it brings 2.9 times the health, 2.1 times the damage and 20 more range: 6500 and 261 DPS at range 70, against 2250 and 124 at 50. It is also the one point defence that costs energy to shoot, 50 a shot and 50 a second, so a power stall slows its rate of fire.',
     derived: true,
     patch: '3838',
   },
