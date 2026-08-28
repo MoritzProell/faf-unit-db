@@ -35,12 +35,15 @@ export interface RoleInput {
 }
 
 /**
- * Where T3 land direct-fire splits. This patch's field is 480 (Titan,
- * Loyalist), 840 (Harbinger, Othuum) and 1280 (Percival, Brick), so the gap
- * between 480 and 840 is the natural line. Revisit it if a patch adds a T3
- * assault unit between the two.
+ * Where T3 land direct-fire splits. The light end is 480 (Titan, Loyalist) and
+ * the heavy end 840 (Harbinger, Othuum) and 1280 (Percival, Brick), so the line
+ * belongs in the gap between them. It sits at 600 rather than mid-gap because
+ * the Nomads Nova costs 660: the game calls it a "Heavy Hover Tank" and it
+ * carries 4 000 hp, more than the Harbinger, so grouping it with the 2 400 hp
+ * Titan would compare it against the wrong units. Revisit if a patch puts a
+ * genuinely light T3 assault unit above 600.
  */
-const T3_HEAVY_MASS = 700;
+const T3_HEAVY_MASS = 600;
 
 /** T1 light bots are 30-42 mass, T1 tanks 54-56. */
 const T1_TANK_MASS = 50;
@@ -89,6 +92,11 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
     'Long range',
     (c, u) =>
       c.has('EXPERIMENTAL') &&
+      // Never an aircraft. The Nomads Deadline is an orbital gun carrying
+      // ARTILLERY, which put a satellite in a column of siege artillery while
+      // the UEF Defense Satellite — the same thing — sat under experimental
+      // air. A satellite is an air unit first.
+      !c.has('AIR') &&
       // Artillery anywhere, plus land units whose primary outranges a brawler.
       // Scoped to land on purpose: a bomber and a carrier both have long reach
       // and neither is what anyone means by a long-range experimental.
@@ -99,7 +107,11 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
   ['Experimental navy', (c) => c.has('EXPERIMENTAL') && c.has('NAVAL')],
   ['Experimental assault', (c) => c.has('EXPERIMENTAL')],
 
-  ['Scout', (c) => c.has('SCOUT')],
+  // The Nomads Beholder is the game's fifth spy plane and the only one whose
+  // blueprint omits SCOUT, so it fell through to Intel and sat in a column of
+  // radar buildings as the only aircraft there. The other four carry the same
+  // "Spy Plane" description, so the name is the reliable handle.
+  ['Scout', (c, u) => c.has('SCOUT') || (c.has('AIR') && /spy plane/i.test(u.Description ?? ''))],
   // Before Transport and Direct fire, both of which were claiming gunships
   // first: the UEF Stinger carries a one-unit transport clamp, and the Nomads
   // Hornet and Vangard carry DIRECTFIRE. All three are gunships and were
@@ -138,14 +150,24 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
   // Ship classes, before the generic weapon rules, so a cruiser is a cruiser
   // rather than "anti-air" and a destroyer is not filed under "direct fire".
   ['Frigate', (c) => c.has('FRIGATE')],
-  ['Destroyer', (c) => c.has('DESTROYER')],
-  ['Cruiser', (c) => c.has('CRUISER')],
   // The Battlecruiser carries the BATTLESHIP category, so only the name
   // separates it. Same for the Aeon Missile Ship.
   ['Battlecruiser', (c, u) => c.has('BATTLESHIP') && /battlecruiser/i.test(u.Description ?? '')],
   ['Missile ship', (c, u) => c.has('BATTLESHIP') && /missile/i.test(u.Description ?? '')],
+  // Battleship before Destroyer: the Nomads Juggernaut carries both, and it is
+  // a battleship — 44 000 hp and 9 000 mass, squarely in the T3 battleship band
+  // with the Summit and the Hauthuum. It is the only unit carrying the pair.
   ['Battleship', (c) => c.has('BATTLESHIP')],
-  ['Carrier', (c) => has(c, 'CARRIER', 'NAVALCARRIER')],
+  // Likewise the Whaler, which carries DESTROYER but is an "Anti-Submersible
+  // Boat" — a torpedo boat, not a destroyer. Real destroyers carry ANTISUB too
+  // (the Exodus, the Nightstorm), so the category cannot separate them and the
+  // name has to, exactly as it does for the Battlecruiser above.
+  ['Anti-navy', (c, u) => c.has('ANTISUB') && /anti-sub/i.test(u.Description ?? '')],
+  ['Destroyer', (c) => c.has('DESTROYER')],
+  ['Cruiser', (c) => c.has('CRUISER')],
+  // NAVAL required: the Nomads air staging platform carries a stray CARRIER
+  // category and was the only structure in the game filed as a carrier.
+  ['Carrier', (c) => c.has('NAVAL') && has(c, 'CARRIER', 'NAVALCARRIER')],
   ['Missile submarine', (c) => c.has('NUKESUB')],
   ['Submarine', (c) => c.has('NAVAL') && c.has('SUBMERSIBLE')],
 
@@ -199,6 +221,13 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
   ['Torpedo bomber', (c) => c.has('AIR') && c.has('BOMBER') && c.has('ANTINAVY')],
   ['Bomber', (c) => c.has('BOMBER')],
   ['Artillery', (c) => c.has('ARTILLERY')],
+  // Before Missile, not after. An SMD carries SILO because it stockpiles
+  // interceptors, so the silo rule was claiming all five of them and filing
+  // strategic missile DEFENCE in the same bucket as the nuke it exists to
+  // stop. SILO describes what a building holds; ANTIMISSILE describes what it
+  // does, and what it does is the role. Naval units carrying ANTIMISSILE stay
+  // ships via MOBILE.
+  ['Missile defence', (c) => c.has('ANTIMISSILE') && !c.has('MOBILE')],
   ['Missile', (c) => has(c, 'SILO', 'TACTICALMISSILEPLATFORM')],
   ['Anti-air', (c) => c.has('ANTIAIR')],
   ['Anti-navy', (c) => c.has('ANTINAVY')],
