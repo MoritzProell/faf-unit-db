@@ -119,6 +119,11 @@ export function FilterRail({
       {/* Upgrades hang off commanders rather than being units, so they are
           invisible to every filter above. This is their way in. */}
       <Group label="Browse">
+        <Link href="/learn" className={styles.railLink}>
+          <Icon name="target" size={13} />
+          <span>Learn</span>
+          <Icon name="chevronRight" size={12} />
+        </Link>
         <Link href="/factions" className={styles.railLink}>
           <Icon name="rows" size={13} />
           <span>Faction comparison</span>

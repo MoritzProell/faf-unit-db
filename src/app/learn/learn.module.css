@@ -1,0 +1,48 @@
+.shell { display: flex; flex-direction: column; min-height: 100vh; }
+.head { padding: 22px 22px 4px; max-width: 1400px; width: 100%; margin: 0 auto; }
+.back { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+.back:hover { color: var(--text); }
+.title { font-size: 30px; font-weight: 700; letter-spacing: -0.015em; margin-top: 10px; }
+.lede { font-size: 13.5px; color: var(--text-2); margin-top: 8px; max-width: 82ch; line-height: 1.6; }
+
+.wrap { flex: 1; padding: 18px 22px 40px; max-width: 1400px; width: 100%; margin: 0 auto; }
+
+.jump { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 26px; }
+.jumpLink {
+  display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 11px;
+  border-radius: var(--radius); border: 1px solid var(--line-2); background: var(--panel-2);
+  font-size: 12.5px; font-weight: 600; color: var(--text-2);
+}
+.jumpLink:hover { color: var(--text); border-color: var(--primary); }
+.jumpCount { font-size: 10.5px; color: var(--text-3); }
+
+.section { margin-bottom: 30px; scroll-margin-top: 16px; }
+.sectionTitle { font-size: 18px; font-weight: 700; }
+.sectionIntro { font-size: 13px; color: var(--text-2); margin: 6px 0 14px; max-width: 80ch; line-height: 1.55; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; align-items: start; }
+.card {
+  display: flex; flex-direction: column; gap: 7px; padding: 13px 14px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); color: inherit;
+}
+.card:hover { border-color: var(--primary); color: inherit; }
+.cardTop { display: flex; align-items: baseline; gap: 10px; color: var(--text-3); }
+.cardTitle { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.35; }
+.cardBlurb { font-size: 12.5px; line-height: 1.5; color: var(--text-2); }
+.cardCaveat {
+  font-size: 11.5px; line-height: 1.45; color: var(--worse);
+  border-left: 2px solid var(--worse); padding-left: 9px;
+}
+.cardMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; font-size: 10.5px; color: var(--text-3); margin-top: 2px; }
+.cardSource {
+  padding: 2px 6px; border-radius: 3px; font-weight: 600;
+  background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line-2); color: var(--text-2);
+}
+.cardSource[data-source='FAF wiki'] { color: var(--primary); border-color: color-mix(in srgb, var(--primary) 40%, transparent); }
+.cardSignal { color: var(--best); }
+
+@media (max-width: 700px) {
+  .head, .wrap { padding-left: 16px; padding-right: 16px; }
+  .grid { grid-template-columns: minmax(0, 1fr); }
+}
