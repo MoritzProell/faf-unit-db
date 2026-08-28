@@ -51,6 +51,8 @@ export interface BrowseUnit {
   hasRender: boolean;
   directDps: number | null;
   dpsPerMass: number | null;
+  /** Every weapon, not just direct fire — naval and AA units have no directDps. */
+  totalDps: number | null;
   speed: number | null;
 }
 
@@ -87,6 +89,8 @@ export function toBrowseUnit(u: Unit): BrowseUnit {
     hasRender: u.hasRender,
     directDps: u.directDps,
     dpsPerMass: u.directDps && u.mass ? u.directDps / u.mass : null,
+    totalDps:
+      u.weapons.reduce((n, w) => (w.WeaponCategory === 'Death' ? n : n + (w.dps ?? 0)), 0) || null,
     speed: u.Physics?.MaxSpeed ?? null,
   };
 }

@@ -323,6 +323,38 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                     <Field label="Shield health" value={fmtNum(unit.Defense.Shield.ShieldMaxHealth)} icon="shield" />
                     <Field label="Regen" value={`+${fmtNum(unit.Defense.Shield.ShieldRegenRate ?? 0)}`} sub="hp/s" icon="regen" />
                     <Field label="Recharge" value={fmtNum(unit.Defense.Shield.ShieldRechargeTime ?? 0)} sub="s" icon="clock" />
+                    {unit.Defense.Shield.ShieldSize ? (
+                      <Field label="Radius" value={fmtNum(unit.Defense.Shield.ShieldSize)} icon="radius" />
+                    ) : null}
+                    {/* What the protection costs, which is the comparison that
+                        decides which shield you build. Raw shield health picks
+                        a different winner from either of these. */}
+                    {unit.mass > 0 && (
+                      <Field
+                        label="Shield per mass"
+                        value={fmtRatio((unit.Defense.Shield.ShieldMaxHealth / unit.mass), 2)}
+                        icon="shield"
+                      />
+                    )}
+                    {unit.energy > 0 && (
+                      <Field
+                        label="Shield per 1k energy"
+                        value={fmtNum(Math.round((unit.Defense.Shield.ShieldMaxHealth / unit.energy) * 1000))}
+                        icon="bolt"
+                      />
+                    )}
+                    {(unit.Economy as { MaintenanceConsumptionPerSecondEnergy?: number })
+                      ?.MaintenanceConsumptionPerSecondEnergy ? (
+                      <Field
+                        label="Upkeep"
+                        value={fmtNum(
+                          (unit.Economy as { MaintenanceConsumptionPerSecondEnergy?: number })
+                            ?.MaintenanceConsumptionPerSecondEnergy ?? 0
+                        )}
+                        sub="e/s"
+                        icon="bolt"
+                      />
+                    ) : null}
                   </div>
                 </>
               ) : null}

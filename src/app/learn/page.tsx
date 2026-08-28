@@ -37,6 +37,18 @@ export default async function LearnPage() {
       </div>
 
       <main className={styles.wrap}>
+        <Link href="/build-orders" className={styles.bigLink}>
+          <Icon name="rows" size={16} />
+          <span className={styles.bigLinkBody}>
+            <span className={`t ${styles.bigLinkTitle}`}>Build orders</span>
+            <span className={styles.bigLinkSub}>
+              22 guides, generic and map-specific, gathered from YouTube, both wikis, both forums
+              and a Google Doc. Filterable by map, focus and level.
+            </span>
+          </span>
+          <Icon name="chevronRight" size={14} />
+        </Link>
+
         <nav className={styles.jump} aria-label="Sections">
           {LEARN.map((s) => (
             <a key={s.id} href={`#${s.id}`} className={styles.jumpLink}>

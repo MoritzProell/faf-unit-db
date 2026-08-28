@@ -85,7 +85,17 @@ export function UnitChip({
           <div className={styles.stats}>
             <Stat label="Mass" value={fmt(unit.mass)} />
             <Stat label="Health" value={fmt(unit.health)} />
-            <Stat label={sort.tileLabel} value={sort.format(unit)} accent />
+            {/* Damage is worth more here than whatever the list happens to be
+                sorted by, so it is fixed. The sort stat still shows when it is
+                something else. */}
+            <Stat
+              label="DPS"
+              value={unit.totalDps === null ? '–' : unit.totalDps.toFixed(1)}
+              accent
+            />
+            {sort.key !== 'directDps' && sort.key !== 'dpsPerMass' && (
+              <Stat label={sort.tileLabel} value={sort.format(unit)} />
+            )}
           </div>
           <button
             type="button"

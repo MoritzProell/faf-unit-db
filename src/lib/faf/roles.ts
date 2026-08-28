@@ -28,6 +28,7 @@ export interface RoleInput {
     WeaponCategory?: string;
     dps?: number | null;
     fullDamage?: number;
+    DamageToShields?: number;
   }>;
 }
 
@@ -91,10 +92,21 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
   ['Transport', (c) => c.has('TRANSPORTATION')],
   // A shield disruptor belongs with shields: it is the unit you build because
   // of them, and nobody looking for it looks under "tank".
+  // A shield generator, or a unit whose ONLY gun is a shield-stripper. The
+  // second half matters: the Absolver and the Nomads Dominator each carry a
+  // single 5-damage weapon that does 1295 and 500 to shields, so they do the
+  // same job whatever the Dominator is named. Requiring it to be the only
+  // weapon keeps the Nomads battleships, which carry an anti-shield gun
+  // alongside their main armament, with the other battleships.
   [
     'Shield',
-    (c, u) =>
-      c.has('SHIELD') || (u.Weapon ?? []).some((w) => (w.DamageToShields ?? 0) > 0),
+    (c, u) => {
+      if (c.has('SHIELD')) return true;
+      const live = (u.weapons ?? []).filter(
+        (w) => (w.fullDamage ?? 0) > 0 && w.WeaponCategory !== 'Death'
+      );
+      return live.length === 1 && ((live[0] as { DamageToShields?: number }).DamageToShields ?? 0) > 0;
+    },
   ],
   ['Special', (c) => has(c, 'BOMB', 'SNIPER')],
 

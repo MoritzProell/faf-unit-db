@@ -201,6 +201,10 @@ export function BrowseClient({
                 {activeFilterCount > 0 && <span className={`m ${styles.filtersCount}`}>{activeFilterCount}</span>}
               </button>
 
+              {/* Groups arranges by section, tier, faction and role, so it has
+                  no free axis left for a sort to act on. Showing the control
+                  there implies it does something. */}
+              {view !== 'groups' && (
               <label className={styles.control}>
                 <span className="lbl" style={{ fontSize: 9 }}>Sort</span>
                 <span className={styles.selectWrap}>
@@ -220,6 +224,7 @@ export function BrowseClient({
                 </span>
                 <span style={{ color: 'var(--text-3)' }}><Icon name="chevronDown" size={12} strokeWidth={1.9} /></span>
               </label>
+              )}
 
               <div className={styles.seg} role="group" aria-label="Layout">
                 {VIEWS.map((v) => (
