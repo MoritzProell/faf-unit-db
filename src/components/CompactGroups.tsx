@@ -15,18 +15,19 @@ const TECH_LABEL: Record<string, string> = { T1: 'T1', T2: 'T2', T3: 'T3', EXP: 
 /**
  * Chip size drives the whole view, so it is one number.
  *
- * The ceiling is set by the widest row of sections standing side by side:
- * Land is 10 role columns at its widest tier, Air and Naval 6 each, which at
- * this size comes to roughly 1300px for the three together. That leaves the
- * three-across layout intact down to a 1440px screen, which is the narrowest
- * width worth optimising for — below it the boxes wrap on their own and
- * nothing clips.
+ * Measured, not guessed. Land's widest tier is 20 chips across 11 columns, so
+ * its box needs 20·CHIP + 194 px; Air and Naval are 12 chips across 7 columns
+ * and need 12·CHIP + 138 each. Three of them side by side therefore want
+ * 44·CHIP + 494. A 1440px screen gives the grid 1152, which does not fit three
+ * at any chip size worth looking at — two across is the honest outcome there,
+ * and the boxes wrap on their own to get it.
  *
- * Splitting T2 land into heavy tank, skirmisher and hover, and moving the
- * strays out of Naval, freed the room for this. Raise it further only after
- * re-measuring Land: it is the section that decides.
+ * 42 was too big: it pushed Land's own columns past its box, and because a
+ * wrapping flex container reports a small min-content, the box squeezed to
+ * 668px and wrapped its columns mid-row instead of claiming the width. That
+ * is fixed below by not wrapping; this number is back where it reads well.
  */
-const CHIP = 42;
+const CHIP = 32;
 const CHIP_GAP = 3;
 
 /**

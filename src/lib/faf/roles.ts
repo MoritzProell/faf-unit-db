@@ -206,15 +206,18 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
       (c.has('TECH1') || c.has('TECH2')) &&
       primaryRange(u) >= SKIRMISHER_RANGE,
   ],
-  // Crossing water is the unit's purpose at T1 and T2 — the Blaze, Yenzyne,
-  // Riptide and Wagner are bought for it. At T3 it is incidental: the
-  // Percival, Brick and Othuum are amphibious and are still heavy tanks.
+  // Crossing water is the unit's purpose at T2 — the Blaze, Yenzyne, Riptide
+  // and Wagner are bought for it, alongside a tank rather than instead of one.
+  //
+  // T2 only. At T1 the hover unit IS the mainline tank: the Aurora is what
+  // Aeon build to fight with, and it happens to float. At T3 it is incidental
+  // the other way — the Percival, Brick and Othuum are amphibious and are
+  // still heavy tanks. Locomotion only names the unit in the middle tier.
   [
     'Hover',
     (c) =>
-      c.has('DIRECTFIRE') && c.has('LAND') &&
-      (c.has('HOVER') || c.has('AMPHIBIOUS')) &&
-      (c.has('TECH1') || c.has('TECH2')),
+      c.has('DIRECTFIRE') && c.has('LAND') && c.has('TECH2') &&
+      (c.has('HOVER') || c.has('AMPHIBIOUS')),
   ],
   [
     'Light tank',

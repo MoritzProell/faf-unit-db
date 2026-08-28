@@ -7,12 +7,26 @@
   border-radius: var(--radius-lg);
 }
 .boxHead {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  height: 34px; padding: 0 14px;
+  display: flex; align-items: stretch; justify-content: center;
   background: rgba(255, 255, 255, 0.03);
   border-bottom: 1px solid var(--line);
   border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
 }
+/* The whole header is the hit target, not a small chevron: a section header is
+   a big obvious thing to click and nobody should have to aim. */
+.boxToggle {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px;
+  height: 34px; padding: 0 14px;
+  background: none; border: 0; color: inherit; font: inherit; cursor: pointer;
+  border-radius: inherit;
+}
+.boxToggle:hover { background: rgba(255, 255, 255, 0.035); }
+.boxToggle:focus-visible { outline: 2px solid var(--fac, #6aa9e0); outline-offset: -2px; }
+.boxCaret {
+  display: inline-flex; color: var(--text-3);
+  transition: transform 120ms ease;
+}
+.boxCaret[data-open='false'] { transform: rotate(-90deg); }
 .boxTitle { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .boxCount { font-size: 11px; color: var(--text-3); }
 

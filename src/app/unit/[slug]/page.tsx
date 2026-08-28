@@ -19,6 +19,7 @@ import { fmtNum, fmtRatio, round } from '@/lib/faf/decorate';
 import { buildCohort, ordinal } from '@/lib/faf/cohort';
 import { shieldEconomy, massEconomy, powerEconomy, fmtDuration } from '@/lib/faf/economy';
 import { roleOf } from '@/lib/faf/roles';
+import { describe, hasThinDescription } from '@/lib/faf/describe';
 import { enhancementsOf, groupBySlot, SLOT_LABEL, type Enhancement } from '@/lib/faf/enhancements';
 import { getUnitHistory } from '@/lib/faf/changelog';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
@@ -107,6 +108,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
   // roleOf, not unit.role: the latter is the game's own label for the unit
   // ("Heavy Shield Generator"), not the taxonomy slot.
   const roleKey = roleOf(unit);
+  const thinDescription = hasThinDescription(unit);
   // Any shield at all, including the personal ones. A Titan, a Fatboy and an
   // Obsidian are balanced around a smaller health pool than their peers plus a
   // shield that comes back, so reading their health alone reads them as
@@ -224,7 +226,17 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
             )}
           </div>
           {unit.name !== unit.role && <div className={styles.heroRole}>{unit.role}</div>}
-          {unit.blurb && <p className={styles.blurb}>{unit.blurb}</p>}
+          {unit.blurb && !thinDescription && <p className={styles.blurb}>{unit.blurb}</p>}
+          {/* Forty units have no usable text of their own — thirty of them
+              Nomads, which never wrote unitdescription.lua entries. Rather
+              than leave those pages blank or put words in the game's mouth,
+              the line is derived from the unit's own blueprint and says so. */}
+          {thinDescription && (
+            <p className={styles.blurb}>
+              {describe(unit)}{' '}
+              <span className={styles.derivedTag}>derived: the game ships no description</span>
+            </p>
+          )}
           <AbilityChips abilities={unit.abilities} cap={4} avail={420} linked />
         </div>
 
@@ -883,19 +895,14 @@ function WeaponCard({ weapon: w }: { weapon: DecoratedWeapon }) {
     ? [...new Set(Object.values(w.FireTargetLayerCapsTable).flatMap((v) => v.split('|')))].join(' / ')
     : null;
   /**
-   * Projectiles the blueprint releases per trigger pull, against the number
-   * the game's own DPS code counted.
+   * How far a fragmenting shell splits, when it does.
    *
-   * The game counts muzzles. For 78 of the 102 multi-projectile weapons in the
-   * game the two agree and there is nothing to say. Where they disagree the
-   * weapon fires more than the readout prices in — the Salvation is the
-   * extreme, one muzzle throwing 25 shells — and the DPS figure above, which
-   * is the game's own, understates it. The site does not silently correct the
-   * game's arithmetic; it says where the arithmetic stops short.
+   * The damage figure already includes it — the game multiplies by the
+   * projectile's Fragments and follows the chain to the end, and so does
+   * dps.ts — but a Lobo showing 500 damage from a 100-damage shell reads like
+   * an error unless the page says where the other 400 came from.
    */
-  const perShot = w.ProjectilesPerOnFire ?? 1;
-  const counted = w.firingCycle?.cycleProjs ?? 1;
-  const uncounted = perShot > counted && (w.fullDamage ?? 0) > 0;
+  const fragments = w.__fragmentCount ?? 1;
   return (
     <div className={styles.panel}>
       <div className={styles.weaponHead}>
@@ -921,16 +928,15 @@ function WeaponCard({ weapon: w }: { weapon: DecoratedWeapon }) {
         ) : null}
         {w.TurretYawRange !== undefined ? <Field label="Turret yaw" value={`±${w.TurretYawRange}°`} icon="yaw" /> : null}
         {w.DoTPulses && w.DoTPulses > 1 ? <Field label="Damage over time" value={`${w.DoTPulses} pulses`} sub={`${w.DoTTime}s`} icon="pulses" /> : null}
-        {uncounted ? (
-          <Field label="Projectiles per shot" value={String(perShot)} icon="pulses" />
+        {fragments > 1 ? (
+          <Field label="Fragments into" value={`${fragments} pieces`} icon="pulses" />
         ) : null}
         {layers ? <Field label="Fires at" value={layers} icon="target" /> : null}
       </div>
-      {uncounted ? (
+      {fragments > 1 ? (
         <div className={styles.uncounted}>
-          Releases {perShot} projectiles per shot at {fmtNum(round(w.fullDamage, 1))} damage each.
-          The DPS above is the game&rsquo;s own figure, and the game counts{' '}
-          {counted === 1 ? 'one' : counted}.
+          A fragmentation shell: it splits into {fragments} on the way down, and the damage above
+          is the whole shell. One round leaves the barrel.
         </div>
       ) : null}
       {w.firingCycle?.cycleTime && w.cycleText ? (

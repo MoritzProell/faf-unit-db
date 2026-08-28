@@ -282,6 +282,44 @@ async function main() {
       }
     }
     console.log(`  marked ${marked} torpedo weapons`);
+
+    // Fragmentation. The game multiplies a weapon's damage by its projectile's
+    // Fragments, then follows FragmentId and multiplies again, to the end of
+    // the chain (unitviewDetail.lua:613-617). A UEF Lobo fires a shell that
+    // splits into 5, so a Lobo that reads 12 DPS is really doing 60, and the
+    // T1 mobile artillery looked like it had an 8x spread across factions when
+    // the real spread is under 3x. Resolved here, once, rather than in the app.
+    const fragments = new Map<string, number>();
+    const fragmentChain = new Map<string, string>();
+    for (const p of projectiles) {
+      const id = String(p.Id).toLowerCase();
+      if (typeof p.Fragments === 'number' && p.Fragments > 1) fragments.set(id, p.Fragments);
+      if (p.FragmentId) fragmentChain.set(id, String(p.FragmentId).toLowerCase());
+    }
+    const chainCount = (start: string): number => {
+      let total = 1;
+      let id: string | undefined = start;
+      // The chain is short and the map is finite, but a malformed blueprint
+      // that points at itself would spin forever, so bound it.
+      for (let hop = 0; id && hop < 8; hop++) {
+        total *= fragments.get(id) ?? 1;
+        id = fragmentChain.get(id);
+      }
+      return total;
+    };
+    let fragmented = 0;
+    for (const u of units) {
+      for (const w of (u.Weapon as Array<Record<string, unknown>> | undefined) ?? []) {
+        const pid = String(w.ProjectileId ?? '').toLowerCase();
+        if (!pid) continue;
+        const n = chainCount(pid);
+        if (n > 1) {
+          w.__fragmentCount = n;
+          fragmented++;
+        }
+      }
+    }
+    console.log(`  ${fragmented} weapons fire a fragmenting projectile`);
   } finally {
     await rm(work, { recursive: true, force: true });
   }

@@ -136,7 +136,19 @@ for line in io.lines(manifest) do
         elseif projectileMode then
           if type(bp) == 'table' then
             kept = kept + 1
-            results[#results + 1] = encode({ Id = id, Categories = bp.Categories })
+            -- Fragments and FragmentId as well as Categories. A fragmentation
+            -- shell splits on impact and the game multiplies the weapon's
+            -- damage by the count, walking the chain to the last link
+            -- (unitviewDetail.lua:613-617). Without these two fields that
+            -- multiplication cannot happen and every fragmenting weapon reads
+            -- at a fraction of its damage.
+            local phys = type(bp.Physics) == 'table' and bp.Physics or {}
+            results[#results + 1] = encode({
+              Id = id,
+              Categories = bp.Categories,
+              Fragments = phys.Fragments,
+              FragmentId = phys.FragmentId,
+            })
           end
         elseif keep(bp) then
           local out = { Id = id }

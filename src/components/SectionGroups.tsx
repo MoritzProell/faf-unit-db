@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import { Icon } from './Icon';
 import { FactionMark } from './FactionMark';
 import { UnitChip } from './UnitChip';
 import { SECTION_ORDER } from '@/lib/faf/sections';
@@ -32,6 +34,17 @@ export function SectionGroups({
   onToggle: (id: string) => void;
   sort: SortDef;
 }) {
+  // Collapsed sections, by name. Everything starts open: the roster is what
+  // the page is for, and a view that opens folded makes you work to see it.
+  // Folding is for getting Structures out of the way while you read Land.
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const toggle = (section: string) =>
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(section)) next.add(section);
+      return next;
+    });
+
   const bySection = new Map<string, BrowseUnit[]>();
   for (const u of units) {
     const list = bySection.get(u.section);
@@ -53,13 +66,27 @@ export function SectionGroups({
         const tiers = TECH_ORDER.map((tech) => [tech, list.filter((u) => u.tech === tech)] as const)
           .filter(([, us]) => us.length > 0);
 
+        const isOpen = !collapsed.has(section);
+
         return (
           <section key={section} className={styles.box}>
             <header className={styles.boxHead}>
-              <h2 className={`t ${styles.boxTitle}`}>{section}</h2>
-              <span className={`m ${styles.boxCount}`}>{list.length}</span>
+              <button
+                type="button"
+                className={styles.boxToggle}
+                onClick={() => toggle(section)}
+                aria-expanded={isOpen}
+                title={isOpen ? `Collapse ${section}` : `Expand ${section}`}
+              >
+                <span className={styles.boxCaret} data-open={isOpen}>
+                  <Icon name="chevronDown" size={13} strokeWidth={2} />
+                </span>
+                <h2 className={`t ${styles.boxTitle}`}>{section}</h2>
+                <span className={`m ${styles.boxCount}`}>{list.length}</span>
+              </button>
             </header>
 
+            {isOpen && (
             <div className={styles.body}>
               {tiers.map(([tech, tierUnits]) => {
                 const factions = FACTIONS.filter((f) => tierUnits.some((u) => u.faction === f));
@@ -138,6 +165,7 @@ export function SectionGroups({
                 );
               })}
             </div>
+            )}
           </section>
         );
       })}

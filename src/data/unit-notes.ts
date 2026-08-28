@@ -187,7 +187,7 @@ export const UNIT_NOTES: Record<string, UnitNote> = {
   // Structures.
   XEB2306: {
     text:
-      'The only T3 point defence in the game; the other three factions stop at T2. For 3.7 times the mass of a UEF Triad it brings 2.9 times the health, 2.1 times the damage and 20 more range — 6500 and 261 DPS at range 70, against 2250 and 124 at 50.',
+      'The only T3 point defence in the game; the other three factions stop at T2. For 3.7 times the mass of a UEF Triad it brings 2.9 times the health, 2.1 times the damage and 20 more range: 6500 and 261 DPS at range 70, against 2250 and 124 at 50.',
     derived: true,
     patch: '3838',
   },
@@ -207,7 +207,7 @@ export const UNIT_NOTES: Record<string, UnitNote> = {
   },
   UAL0304: {
     text:
-      'Range 90 for 800 mass, like every faction’s T3 mobile artillery, which outranges every point defence in the game — T2 stops at 50 and the one T3 at 70. Its blast radius of 3 is the smallest of the four, against 6 for the Trebuchet.',
+      'Range 90 for 800 mass, like every faction’s T3 mobile artillery, which outranges every point defence in the game (T2 stops at 50 and the one T3 at 70). Its blast radius of 3 is the smallest of the four, against 6 for the Trebuchet.',
     derived: true,
     patch: '3838',
   },
@@ -219,7 +219,7 @@ export const UNIT_NOTES: Record<string, UnitNote> = {
   },
   XSL0304: {
     text:
-      'Range 90 for 800 mass, like every faction’s T3 mobile artillery, which outranges every point defence in the game — T2 stops at 50 and the one T3 at 70. Its blast radius of 5 is second largest, behind the Trebuchet’s 6.',
+      'Range 90 for 800 mass, like every faction’s T3 mobile artillery, which outranges every point defence in the game (T2 stops at 50 and the one T3 at 70). Its blast radius of 5 is second largest, behind the Trebuchet’s 6.',
     derived: true,
     patch: '3838',
   },
@@ -252,7 +252,7 @@ export const UNIT_NOTES: Record<string, UnitNote> = {
   },
   XAA0306: {
     text:
-      'The only T3 torpedo bomber in the game, and Aeon-only. It does 500 DPS where all four T2 torpedo bombers do exactly 75, and costs 1650 against their 270 — a little over six of them for seven times the damage.',
+      'The only T3 torpedo bomber in the game, and Aeon-only. It does 500 DPS where all four T2 torpedo bombers do exactly 75, and costs 1650 against their 270, a little over six of them for seven times the damage.',
     derived: true,
     patch: '3838',
   },
