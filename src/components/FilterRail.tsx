@@ -43,6 +43,33 @@ export function FilterRail({
 }) {
   return (
     <aside className={styles.rail} aria-label="Filters">
+      {/* Above the filters, not below them. These are the other places to go,
+          and a reader looking for them should not have to scroll past every
+          facet to find out they exist. Kept out of the FILTERS heading because
+          they are not filters. */}
+      <nav className={styles.browse} aria-label="Sections">
+        <Link href="/learn" className={styles.railLink}>
+          <Icon name="target" size={13} />
+          <span>Learn</span>
+          <Icon name="chevronRight" size={12} />
+        </Link>
+        <Link href="/build-orders" className={styles.railLink}>
+          <Icon name="rows" size={13} />
+          <span>Build orders</span>
+          <Icon name="chevronRight" size={12} />
+        </Link>
+        <Link href="/factions" className={styles.railLink}>
+          <Icon name="layers" size={13} />
+          <span>Faction comparison</span>
+          <Icon name="chevronRight" size={12} />
+        </Link>
+        <Link href="/upgrades" className={styles.railLink}>
+          <Icon name="gear" size={13} />
+          <span>Commander upgrades</span>
+          <Icon name="chevronRight" size={12} />
+        </Link>
+      </nav>
+
       <div className={styles.head}>
         <Icon name="sliders" size={15} />
         <span className={`t ${styles.headTitle}`}>FILTERS</span>
@@ -115,25 +142,6 @@ export function FilterRail({
             );
           })}
         </div>
-      </Group>
-      {/* Upgrades hang off commanders rather than being units, so they are
-          invisible to every filter above. This is their way in. */}
-      <Group label="Browse">
-        <Link href="/learn" className={styles.railLink}>
-          <Icon name="target" size={13} />
-          <span>Learn</span>
-          <Icon name="chevronRight" size={12} />
-        </Link>
-        <Link href="/factions" className={styles.railLink}>
-          <Icon name="rows" size={13} />
-          <span>Faction comparison</span>
-          <Icon name="chevronRight" size={12} />
-        </Link>
-        <Link href="/upgrades" className={styles.railLink}>
-          <Icon name="layers" size={13} />
-          <span>Commander upgrades</span>
-          <Icon name="chevronRight" size={12} />
-        </Link>
       </Group>
     </aside>
   );
