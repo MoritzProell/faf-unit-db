@@ -1,3 +1,4 @@
+import { isAirCrash } from './dps';
 import type { Unit } from './types';
 
 /**
@@ -141,6 +142,24 @@ export function notablesOf(unit: Unit): Notable[] {
             detail: 'Shoots back rather than relying on an escort, and can support what it drops.',
           }
     );
+  }
+
+  // Three units are filed as bombers but attack the ground with a forward-firing
+  // missile rather than a dropped bomb: the Cybran Corsair and the Nomads
+  // Phoenix and Spitfire. The game itself puts that weapon under Direct Fire,
+  // which is why their pages show a Direct Fire block and an empty Bomb one —
+  // it reads as an error and is not.
+  if (c.has('BOMBER') && c.has('AIR')) {
+    const ground = weapons(unit).find(
+      (w) => w.WeaponCategory === 'Direct Fire' && !isAirCrash(w)
+    );
+    const bomb = (unit.Weapon ?? []).some((w) => w.WeaponCategory === 'Bomb');
+    if (ground && !bomb) {
+      out.push({
+        label: 'Fires rockets, does not drop bombs',
+        detail: `Its ground attack is a missile at range ${ground.MaxRadius ?? 0}, which the game files under direct fire rather than as a bomb.`,
+      });
+    }
   }
 
   if (c.has('CAPTURE')) {
