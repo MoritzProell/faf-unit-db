@@ -700,9 +700,9 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                   {note.source?.url ? (
                     <a href={note.source.url} target="_blank" rel="noopener noreferrer">{note.source.label}</a>
                   ) : (
-                    note.source?.label ?? note.by
+                    note.source?.label ?? note.by ?? (note.derived ? 'Derived from the blueprints' : null)
                   )}
-                  {(note.source || note.by) && ' · '}
+                  {(note.source || note.by || note.derived) && ' · '}
                   Written for patch {note.patch}
                 </div>
               </div>
