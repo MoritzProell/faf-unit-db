@@ -1,6 +1,6 @@
 import { roleOf } from './roles';
 import { primaryWeapon } from './dps';
-import type { Unit } from './types';
+import type { Tech, Unit } from './types';
 
 export interface Superlative {
   /** Short claim, e.g. "Toughest T3 tank". */
@@ -26,6 +26,8 @@ export interface Cohort {
   unique: boolean;
   /** How the slot is named, e.g. "T3 point defence". */
   slotLabel: string;
+  /** Set when the peers come from a neighbouring tier because this slot is unique. */
+  peerTech: Tech | null;
   superlatives: Superlative[];
 }
 
@@ -105,15 +107,46 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
   // resource generator because both landed in it is worse than saying nothing.
   const isSlot = role !== 'Other';
 
-  const peers = (isSlot ? ['UEF', 'Cybran', 'Aeon', 'Seraphim', 'Nomads'] : [])
-    .filter((f) => f !== unit.faction)
-    .map((f) => {
-      const inFaction = slot.filter((u) => u.faction === f && u.Id !== unit.Id);
-      // More than one candidate happens (two T3 gunships, say); take the nearest
-      // in cost, which is the closest thing to "the equivalent".
-      return inFaction.sort((a, b) => Math.abs(a.mass - unit.mass) - Math.abs(b.mass - unit.mass))[0];
-    })
-    .filter((u): u is Unit => Boolean(u));
+  const FACTION_ORDER = ['UEF', 'Cybran', 'Aeon', 'Seraphim', 'Nomads'];
+  const pickPeers = (pool: Unit[]) =>
+    FACTION_ORDER.filter((f) => f !== unit.faction)
+      .map((f) => {
+        const inFaction = pool.filter((u) => u.faction === f && u.Id !== unit.Id);
+        // More than one candidate happens (two T3 gunships, say); take the
+        // nearest in cost, which is the closest thing to "the equivalent".
+        return inFaction.sort(
+          (a, b) => Math.abs(a.mass - unit.mass) - Math.abs(b.mass - unit.mass)
+        )[0];
+      })
+      .filter((u): u is Unit => Boolean(u));
+
+  let peers = isSlot ? pickPeers(slot) : [];
+
+  /**
+   * When a unit is the only one of its kind at its tier, the cross-faction
+   * comparison is empty and the panel says nothing. The nearest tier that
+   * fields the same job is the honest substitute: the Seraphim Athanah is the
+   * only T3 mobile shield in the game, and what a player wants to know is how
+   * it measures against the T2 mobile shields they would otherwise build.
+   */
+  const TIERS: Tech[] = ['T1', 'T2', 'T3', 'EXP'];
+  let peerTech: Tech | null = null;
+  if (isSlot && peers.length === 0) {
+    const here = TIERS.indexOf(unit.tech);
+    for (const step of [-1, 1, -2, 2]) {
+      const t = TIERS[here + step];
+      if (!t) continue;
+      const pool = all.filter(
+        (u) => roleOf(u) === role && u.kind === unit.kind && u.tech === t
+      );
+      const found = pickPeers(pool);
+      if (found.length > 0) {
+        peers = found;
+        peerTech = t;
+        break;
+      }
+    }
+  }
 
   // Structures are named for what players call them, not for the category the
   // engine files them under: a Ravager is a point defence, not a "direct fire".
@@ -174,6 +207,13 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
       (v) => `${v.toFixed(0)} hp per 1000 energy`
     );
     best((u) => u.Physics?.MaxSpeed ?? 0, `Fastest ${slotLabel}`, (v) => String(v));
+    // Splash is what separates two units with the same damage: a gunship that
+    // hits an area is a different unit from one that hits a target.
+    best(
+      (u) => primaryWeapon(u.weapons)?.DamageRadius ?? 0,
+      `Widest splash of any ${slotLabel}`,
+      (v) => `${v} radius`
+    );
   }
 
   return {
@@ -188,6 +228,7 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
     dpsCohortSize: armed.length,
     peers,
     unique: isSlot && slot.length === 1,
+    peerTech,
     slotLabel,
     superlatives,
   };

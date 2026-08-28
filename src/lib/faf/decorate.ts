@@ -27,6 +27,11 @@ export const getTech = (bp: Blueprint, fallback: Tech = 'T1'): Tech =>
 
 export const deriveKind = (categories: string[] = []): Kind => {
   const has = (c: string) => categories.includes(c);
+  // Sonar platforms carry MOBILE and NAVAL, but they are buoys an engineer
+  // builds and leaves: they hold a position, they do not fight, and grouping
+  // them with the fleet put a building in among the destroyers. Two of the
+  // five even have structure ids (XNB, XSB).
+  if (has('MOBILESONAR')) return 'Base';
   if (has('MOBILE')) {
     if (has('AIR')) return 'Air';
     if (has('NAVAL')) return 'Naval';

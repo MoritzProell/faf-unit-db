@@ -10,7 +10,7 @@ import { Icon, type IconName } from '@/components/Icon';
 import { AbilityChips } from '@/components/AbilityChips';
 import { AddToCompareButton, DensityToggle } from '@/components/UnitActions';
 import { MassMark, EnergyMark, TimeMark } from '@/components/Marks';
-import { combatDps } from '@/lib/faf/dps';
+import { combatDps, isAirCrash } from '@/lib/faf/dps';
 import { getUnitData } from '@/lib/faf/data';
 import { engagementOf } from '@/lib/faf/engagement';
 import { notablesOf } from '@/lib/faf/notable';
@@ -90,9 +90,11 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
   const payload = primary
     ? null
     : unit.weapons
-        .filter((w) => (w.fullDamage ?? 0) > 0)
+        .filter((w) => !isAirCrash(w) && (w.fullDamage ?? 0) > 0)
         .sort((a, b) => (b.fullDamage ?? 0) - (a.fullDamage ?? 0))[0] ?? null;
-  const shownWeapons = unit.weapons.filter((w) => (w.dps !== null && w.dps > 0) || w.fullDamage > 0);
+  const shownWeapons = unit.weapons.filter(
+    (w) => !isAirCrash(w) && ((w.dps !== null && w.dps > 0) || w.fullDamage > 0)
+  );
   const kindLabel = unit.kind === 'Base' ? 'Structures' : unit.kind;
 
   const stat = (name: string, value: number | string | null | undefined, unitCode?: string) =>
@@ -179,7 +181,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
           </div>
           {unit.name !== unit.role && <div className={styles.heroRole}>{unit.role}</div>}
           {unit.blurb && <p className={styles.blurb}>{unit.blurb}</p>}
-          <AbilityChips abilities={unit.abilities} cap={4} avail={420} />
+          <AbilityChips abilities={unit.abilities} cap={4} avail={420} linked />
         </div>
 
         <div className={styles.costs}>
@@ -498,7 +500,11 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
             <div className={styles.panel}>
               <div className={styles.panelHead}>
                 <span className={`lbl ${styles.panelTitle}`}>Other factions</span>
-                <span className={`m ${styles.sectionNote}`}>same {cohort.slotLabel}</span>
+                <span className={`m ${styles.sectionNote}`}>
+                  {cohort.peerTech
+                    ? `nearest: ${cohort.peerTech === 'EXP' ? 'T4' : cohort.peerTech} ${cohort.slotLabel.replace(/^T\d\s/, '')}`
+                    : `same ${cohort.slotLabel}`}
+                </span>
               </div>
               {cohort.peers.map((p) => (
                 <PeerRow key={p.Id} peer={p} base={unit} />

@@ -313,6 +313,17 @@ export const calculateDps = (weapon: Weapon, toShields = false): number | null =
  * So: no death explosions, no upgrade-gated weapons, and no Overcharge, which
  * is an ability paid for in stored energy rather than sustained damage.
  */
+/**
+ * The damage an aircraft does by falling on something. Seventy-one air units
+ * carry it, it is not aimed, not fired, and not a reason to build anything —
+ * so it is not a weapon and does not belong in a weapons list.
+ *
+ * Other death explosions stay: a commander's death nuke is a real
+ * consideration when you decide where to fight.
+ */
+export const isAirCrash = (w: Weapon): boolean =>
+  w.WeaponCategory === 'Death' && (w.DisplayName ?? w.Label) === 'Air Crash';
+
 export function isBaseCombatWeapon(w: Weapon & { dps?: number | null; fullDamage?: number }): boolean {
   if (w.WeaponCategory === 'Death') return false;
   if (w.EnabledByEnhancement) return false;

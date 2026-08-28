@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import styles from './AbilityChips.module.css';
 
 /**
@@ -32,20 +33,38 @@ export function AbilityChips({
   abilities,
   cap = 2,
   avail = 131,
+  linked = false,
 }: {
   abilities: string[];
   cap?: number;
   avail?: number;
+  /**
+   * On a unit page the chips are a way in: an ability is searchable, so
+   * clicking one asks "what else does this?". On a tile in the roster the whole
+   * card is already a link to the unit, so nesting another would break it.
+   */
+  linked?: boolean;
 }) {
   const { shown, rest } = fitAbilities(abilities, cap, avail);
   if (!shown.length) return null;
   return (
     <div className={styles.row}>
-      {shown.map((a) => (
-        <span key={a} className={styles.chip} title={a}>
-          {a}
-        </span>
-      ))}
+      {shown.map((a) =>
+        linked ? (
+          <Link
+            key={a}
+            href={`/?q=${encodeURIComponent(a)}`}
+            className={`${styles.chip} ${styles.linkChip}`}
+            title={`Find every unit with ${a}`}
+          >
+            {a}
+          </Link>
+        ) : (
+          <span key={a} className={styles.chip} title={a}>
+            {a}
+          </span>
+        )
+      )}
       {rest > 0 && (
         <span
           className={`${styles.chip} ${styles.more}`}

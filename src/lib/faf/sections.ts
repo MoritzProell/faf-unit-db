@@ -54,6 +54,11 @@ export function getSection(categories: string[] = [], tech?: string): string {
     return 'Structures - Other';
   }
 
+  // Sonar buoys sit with the other sensors, not with the fleet. They carry
+  // MOBILE and NAVAL but no STRUCTURE category, so they would otherwise fall
+  // through to Naval and put a building among the destroyers.
+  if (has('MOBILESONAR')) return 'Structures - Intelligence';
+
   if (has('AIR')) return 'Air';
   if (has('NAVAL')) return 'Naval';
   if (has('LAND')) return 'Land';

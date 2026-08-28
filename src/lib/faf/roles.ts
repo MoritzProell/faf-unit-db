@@ -100,23 +100,32 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
   ['Transport', (c) => c.has('TRANSPORTATION')],
   // A shield disruptor belongs with shields: it is the unit you build because
   // of them, and nobody looking for it looks under "tank".
-  // A shield generator, or a unit whose ONLY gun is a shield-stripper. The
-  // second half matters: the Absolver and the Nomads Dominator each carry a
-  // single 5-damage weapon that does 1295 and 500 to shields, so they do the
-  // same job whatever the Dominator is named. Requiring it to be the only
-  // weapon keeps the Nomads battleships, which carry an anti-shield gun
-  // alongside their main armament, with the other battleships.
+  // A shield stripper is not a shield. Filing both under one role put the
+  // Athanah — the only T3 mobile shield in the game — next to the Absolver,
+  // which exists to delete shields, and called it a comparison. They share a
+  // subject and nothing else.
+  //
+  // A stripper is a unit whose ONLY gun does more to shields than to units:
+  // the Absolver and the Nomads Dominator each carry a single 5-damage weapon
+  // doing 1295 and 500 to shields. Requiring it to be the only weapon keeps
+  // the Nomads battleships, which carry one alongside their main armament,
+  // with the other battleships.
   [
-    'Shield',
+    'Shield disruptor',
     (c, u) => {
-      if (c.has('SHIELD')) return true;
+      if (c.has('SHIELD')) return false;
       const live = (u.weapons ?? []).filter(
         (w) => (w.fullDamage ?? 0) > 0 && w.WeaponCategory !== 'Death'
       );
       return live.length === 1 && ((live[0] as { DamageToShields?: number }).DamageToShields ?? 0) > 0;
     },
   ],
+  ['Shield', (c) => c.has('SHIELD')],
   ['Special', (c) => has(c, 'BOMB', 'SNIPER')],
+
+  // Before the ship classes: a sonar buoy carries NAVAL and SUBMERSIBLE, so
+  // the Seraphim one was being filed as a submarine.
+  ['Intel', (c) => c.has('MOBILESONAR')],
 
   // Ship classes, before the generic weapon rules, so a cruiser is a cruiser
   // rather than "anti-air" and a destroyer is not filed under "direct fire".
@@ -193,7 +202,15 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
   ],
 ];
 
-export const ROLE_ORDER: string[] = [...ROLE_RULES.map(([name]) => name), 'Other'];
+/**
+ * Display order for the role columns. Deduplicated: a role can be reached by
+ * more than one rule — Intel matches both the sonar buoys and the radar
+ * structures — and without this the roster drew two identical columns for it,
+ * one of them always empty.
+ */
+export const ROLE_ORDER: string[] = [
+  ...new Set([...ROLE_RULES.map(([name]) => name), 'Other']),
+];
 
 /** Column headings. A 44px column fits about seven characters. */
 export const ROLE_SHORT: Record<string, string> = {
@@ -229,6 +246,7 @@ export const ROLE_SHORT: Record<string, string> = {
   'Anti-air': 'AA',
   'Anti-navy': 'A-NAVY',
   Shield: 'SHIELD',
+  'Shield disruptor': 'DISRUPT',
   Factory: 'FACTORY',
   'Mass extraction': 'MEX',
   'Mass fabrication': 'MASSFAB',

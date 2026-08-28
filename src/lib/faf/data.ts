@@ -31,6 +31,12 @@ const UNBUILDABLE = new Set([
   'XRL0005', // Crab Egg (Artillery)
   'DRLK005', // Crab Egg (Bouncer)
   'URB3103', // Scout-Deployed Land Sensor
+  'UEA0001', // Engineering Drone (ACU pod)
+  'UEA0003', // Engineering Drone (ACU pod)
+  'XEA3204', // Engineering Drone (SACU pod)
+  'XNA0107', // Transport Drone (Nomads pod)
+  'SRL0310', // Mobile EMP Missile Launcher — no faction builds it, and no
+             // player reports seeing it in game
 ]);
 
 const data = raw as unknown as UnitDefaults & {

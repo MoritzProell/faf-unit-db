@@ -16,3 +16,11 @@
   color: var(--fac);
 }
 .more { background: rgba(255, 255, 255, 0.05); color: var(--text-3); }
+
+/* Only the linked variant gets affordance; the tile version is decoration. */
+.linkChip { color: inherit; }
+.linkChip:hover {
+  color: var(--text);
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}

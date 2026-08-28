@@ -58,16 +58,6 @@ export function notablesOf(unit: Unit): Notable[] {
     });
   }
 
-  // Several shots per trigger pull matters against point defence and against
-  // tactical missile defence, which intercepts one projectile at a time.
-  const salvo = weapons(unit).find((w) => (w.ProjectilesPerOnFire ?? 1) > 1);
-  if (salvo) {
-    out.push({
-      label: `Fires ${salvo.ProjectilesPerOnFire} projectiles per shot`,
-      detail: 'Interceptors and point defence handle one projectile at a time, so a split shot gets more through.',
-    });
-  }
-
   const antiShield = weapons(unit).find((w) => w.DamageToShields);
   if (antiShield) {
     out.push({
