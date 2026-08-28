@@ -5,10 +5,12 @@ import { TopBar } from '@/components/TopBar';
 import { SiteFooter } from '@/components/SiteFooter';
 import { UnitWell } from '@/components/UnitWell';
 import { FactionMark } from '@/components/FactionMark';
+import { EnhancementIcon } from '@/components/EnhancementIcon';
 import { Icon, type IconName } from '@/components/Icon';
 import { AbilityChips } from '@/components/AbilityChips';
 import { AddToCompareButton, DensityToggle } from '@/components/UnitActions';
 import { MassMark, EnergyMark, TimeMark } from '@/components/Marks';
+import { combatDps } from '@/lib/faf/dps';
 import { getUnitData } from '@/lib/faf/data';
 import { engagementOf } from '@/lib/faf/engagement';
 import { notablesOf } from '@/lib/faf/notable';
@@ -20,7 +22,7 @@ import { getUnitHistory } from '@/lib/faf/changelog';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { JsonLd } from '@/components/JsonLd';
 import { FieldPill } from '@/app/changelog/page';
-import type { DecoratedWeapon, Unit } from '@/lib/faf/types';
+import type { DecoratedWeapon, Faction, Unit } from '@/lib/faf/types';
 import styles from './detail.module.css';
 
 export const revalidate = 21600;
@@ -292,6 +294,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                       <EnhancementRow
                         key={`${slot}-${e.key}`}
                         enhancement={e}
+                        faction={unit.faction}
                         blurb={descriptions[`${unit.Id.toLowerCase()}-${(e.icon ?? e.key).toLowerCase()}`]}
                       />
                     ))}
@@ -588,11 +591,14 @@ function Field({
   );
 }
 
-function EnhancementRow({ enhancement: e, blurb }: { enhancement: Enhancement; blurb?: string }) {
+function EnhancementRow({
+  enhancement: e, blurb, faction,
+}: { enhancement: Enhancement; blurb?: string; faction: Faction }) {
   return (
     // Anchored so a single upgrade can be linked to on its own.
     <div className={styles.enhRow} id={`upgrade-${e.key.toLowerCase()}`}>
       <div className={styles.enhTop}>
+        <EnhancementIcon faction={faction} icon={e.icon} size={26} />
         <span className={`t ${styles.enhName}`}>{e.name}</span>
         <span className={styles.enhCosts}>
           <span className={styles.enhCost}><MassMark size={11} /><span className="m">{fmtNum(e.mass)}</span></span>
@@ -677,12 +683,7 @@ function WeaponCard({ weapon: w }: { weapon: DecoratedWeapon }) {
  * `directDps` is null for anything whose damage is torpedoes or AA, which is
  * most of the navy — comparing two destroyers on it showed no damage at all.
  */
-function totalDps(u: Unit): number {
-  return u.weapons.reduce(
-    (n, w) => (w.WeaponCategory === 'Death' ? n : n + (w.dps ?? 0)),
-    0
-  );
-}
+const totalDps = (u: Unit): number => combatDps(u.weapons);
 
 function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
   const hpDelta = peer.health - base.health;

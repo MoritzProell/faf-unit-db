@@ -51,6 +51,7 @@ async function main() {
   console.log(`${usable.length} usable upstream images, ${existing.size} already local, ${todo.length} to fetch`);
   if (!todo.length) {
     await writeUpscaled();
+    await writeEnhancementIcons();
     await writeManifest();
     return;
   }
@@ -73,7 +74,51 @@ async function main() {
   await Promise.all(workers);
   console.log(`fetched ${done} images, ${(bytes / 1048576).toFixed(1)} MB -> public/units/`);
   await writeUpscaled();
+  await writeEnhancementIcons();
   await writeManifest();
+}
+
+/**
+ * Commander upgrade icons, from FAForever/UnitDB.
+ *
+ * The game does not ship these anywhere reachable, but UnitDB vendored them
+ * and names each file after the same abbreviation the blueprint uses in its
+ * enhancement `Icon` field (aes, hamc, pqt), so the mapping is exact rather
+ * than guessed. Stored as public/enhancements/<Faction>/<icon>.png.
+ */
+async function writeEnhancementIcons() {
+  const headers: Record<string, string> = { 'User-Agent': 'faf-unit-db-build' };
+  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+
+  const FACTIONS = ['UEF', 'Cybran', 'Aeon', 'Seraphim', 'Nomads'];
+  const base = join(process.cwd(), 'public', 'enhancements');
+  let made = 0;
+  let skipped = 0;
+
+  for (const faction of FACTIONS) {
+    const listUrl =
+      `https://api.github.com/repos/FAForever/UnitDB/contents/www/res/img/enhancements/${faction}?ref=master`;
+    const res = await fetch(listUrl, { headers });
+    if (!res.ok) throw new Error(`enhancement icons ${faction} -> ${res.status}`);
+    const entries = (await res.json()) as Array<{ name: string; download_url: string }>;
+
+    const dir = join(base, faction);
+    await mkdir(dir, { recursive: true });
+    const have = new Set(await readdir(dir).catch(() => [] as string[]));
+
+    for (const e of entries) {
+      // "<icon>_btn_up.png" -> "<icon>.png"
+      const m = e.name.match(/^(.+?)_btn_up\.png$/i);
+      if (!m) continue;
+      const out = `${m[1].toLowerCase()}.png`;
+      if (have.has(out)) { skipped++; continue; }
+      const img = await fetch(e.download_url, { headers });
+      if (!img.ok) throw new Error(`${e.name} -> ${img.status}`);
+      await writeFile(join(dir, out), Buffer.from(await img.arrayBuffer()));
+      made++;
+    }
+  }
+  console.log(`enhancement icons: ${made} fetched, ${skipped} already local`);
 }
 
 /**

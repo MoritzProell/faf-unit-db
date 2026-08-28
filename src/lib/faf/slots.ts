@@ -1,4 +1,5 @@
 import { roleOf } from './roles';
+import { combatDps } from './dps';
 import type { Faction, Kind, Tech, Unit } from './types';
 
 /**
@@ -39,11 +40,7 @@ const DPS: SlotMetric = {
   key: 'dps',
   label: 'DPS',
   value: (u) => {
-    const total = u.weapons.reduce(
-      (n, w) => (w.WeaponCategory === 'Death' ? n : n + (w.dps ?? 0)),
-      0
-    );
-    return total > 0 ? total : null;
+    return combatDps(u.weapons) || null;
   },
   format: one,
   higherIsBetter: true,

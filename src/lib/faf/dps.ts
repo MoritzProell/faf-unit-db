@@ -33,6 +33,8 @@ export interface Weapon {
   TractorDamageInterval?: number;
   InitialDamage?: number;
   DamageToShields?: number;
+  /** Present when the weapon only exists once an enhancement is bought. */
+  EnabledByEnhancement?: string;
   /** Projectiles released per trigger pull; >1 splits the shot. */
   ProjectilesPerOnFire?: number;
   DamageRadius?: number;
@@ -296,3 +298,40 @@ export const calculateDps = (weapon: Weapon, toShields = false): number | null =
   const damage = calculateProjectileDamage(weapon, toShields);
   return (damage * cycle.cycleProjs) / cycle.cycleTime;
 };
+
+
+/**
+ * What a unit actually shoots with, as built.
+ *
+ * A commander's blueprint carries every weapon it could ever have: the base
+ * gun at 100 dps, Overcharge, AutoOvercharge at 3000, and the Microwave Laser
+ * at another 3000 that only exists once you buy the upgrade. Summing those
+ * gives a commander several thousand dps it does not have, which made one ACU
+ * look 3225 dps worse than another purely on which upgrades their blueprints
+ * happened to list.
+ *
+ * So: no death explosions, no upgrade-gated weapons, and no Overcharge, which
+ * is an ability paid for in stored energy rather than sustained damage.
+ */
+export function isBaseCombatWeapon(w: Weapon & { dps?: number | null; fullDamage?: number }): boolean {
+  if (w.WeaponCategory === 'Death') return false;
+  if (w.EnabledByEnhancement) return false;
+  if (w.DamageType === 'Overcharge') return false;
+  return true;
+}
+
+/** Sustained damage from everything the unit brings as built. */
+export function combatDps(
+  weapons: Array<Weapon & { dps?: number | null; fullDamage?: number }> = []
+): number {
+  return weapons.reduce((n, w) => (isBaseCombatWeapon(w) ? n + (w.dps ?? 0) : n), 0);
+}
+
+/** The weapon a unit is built around: most damage per second, as built. */
+export function primaryWeapon<T extends Weapon & { dps?: number | null }>(
+  weapons: T[] = []
+): T | null {
+  const live = weapons.filter((w) => isBaseCombatWeapon(w) && (w.dps ?? 0) > 0);
+  if (live.length === 0) return null;
+  return live.reduce((a, b) => ((b.dps ?? 0) > (a.dps ?? 0) ? b : a));
+}

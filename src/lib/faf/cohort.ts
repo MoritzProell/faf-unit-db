@@ -1,4 +1,5 @@
 import { roleOf } from './roles';
+import { primaryWeapon } from './dps';
 import type { Unit } from './types';
 
 export interface Superlative {
@@ -80,11 +81,7 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
   // against sonar platforms and shield boats, which is not a ranking of
   // anything. The measure is the unit's primary weapon, the same figure the
   // card above it shows.
-  const primaryDps = (u: Unit): number =>
-    Math.max(
-      0,
-      ...u.weapons.filter((w) => w.WeaponCategory !== 'Death').map((w) => w.dps ?? 0)
-    );
+  const primaryDps = (u: Unit): number => primaryWeapon(u.weapons)?.dps ?? 0;
   const armed = cohort.filter((u) => primaryDps(u) > 0);
   const armedSorted = [...armed].sort((a, b) => primaryDps(b) - primaryDps(a));
   const dpsRank = armedSorted.findIndex((u) => u.Id === unit.Id) + 1;

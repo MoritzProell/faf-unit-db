@@ -5,12 +5,11 @@ import { useCallback, useMemo, useState } from 'react';
 import { TopBar } from './TopBar';
 import { FilterRail, FACTIONS, TECHS, KINDS, type Facets, type FilterState } from './FilterRail';
 import { UnitTile } from './UnitTile';
-import { UnitChip } from './UnitChip';
 import { SectionGroups } from './SectionGroups';
+import { CompactGroups } from './CompactGroups';
 import { SECTION_ORDER } from '@/lib/faf/sections';
 import { CompareTray } from './CompareTray';
 import { SiteFooter } from './SiteFooter';
-import { FactionMark } from './FactionMark';
 import { Icon, type IconName } from './Icon';
 import { useCompareSelection, MAX_COMPARE } from '@/lib/useCompareSelection';
 import { useViewPreference } from '@/lib/useViewPreference';
@@ -23,7 +22,7 @@ import {
   SORTS, SORT_ORDER, ROLE_KEYS, ROLE_LABEL,
   type BrowseUnit, type SortKey,
 } from '@/lib/faf/browse';
-import type { Faction } from '@/lib/faf/types';
+
 import styles from './Browse.module.css';
 
 const KIND_LABEL: Record<string, string> = { Land: 'Land', Air: 'Air', Naval: 'Naval', Base: 'Structures' };
@@ -274,7 +273,7 @@ export function BrowseClient({
           ) : view === 'groups' ? (
             <SectionGroups units={results} selected={compare.ids} onToggle={compare.toggle} sort={sort} />
           ) : view === 'compact' ? (
-            <CompactBands units={results} selected={compare.ids} onToggle={compare.toggle} sort={sort} />
+            <CompactGroups units={results} selected={compare.ids} onToggle={compare.toggle} sort={sort} />
           ) : (
             <>
               {cardSections.map(([section, list], si) => (
@@ -371,45 +370,3 @@ function ActiveChips({
   return <div className={styles.filterChips}>{chips}</div>;
 }
 
-function CompactBands({
-  units,
-  selected,
-  onToggle,
-  sort,
-}: {
-  units: BrowseUnit[];
-  selected: string[];
-  onToggle: (id: string) => void;
-  sort: (typeof SORTS)[SortKey];
-}) {
-  const bands = FACTIONS.map((f) => [f, units.filter((u) => u.faction === f)] as const).filter(
-    ([, list]) => list.length > 0
-  );
-
-  return (
-    <div className={styles.bands}>
-      {bands.map(([faction, list], bi) => (
-        <div key={faction} className={styles.band} data-faction={faction}>
-          <div className={styles.bandHead}>
-            <FactionMark faction={faction as Faction} size={15} />
-            <span className={`t ${styles.bandName}`}>{faction}</span>
-            <span className={`m ${styles.bandCount}`}>{list.length}</span>
-          </div>
-          <div className={styles.bandUnits}>
-            {list.map((u, i) => (
-              <UnitChip
-                key={u.id}
-                unit={u}
-                size={44}
-                selected={selected.includes(u.id)}
-                onToggle={onToggle}
-                sort={sort}
-                eager={bi === 0 && i < 24}
-              />
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}

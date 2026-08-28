@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { UnitWell } from '@/components/UnitWell';
 import { Icon } from '@/components/Icon';
 import { FactionMark } from '@/components/FactionMark';
+import { EnhancementIcon } from '@/components/EnhancementIcon';
 import { MassMark, EnergyMark, TimeMark } from '@/components/Marks';
 import { fmtNum } from '@/lib/faf/decorate';
 import { SLOT_ORDER, SLOT_LABEL, type Slot } from '@/lib/faf/enhancements';
@@ -13,6 +14,7 @@ import styles from './upgrades.module.css';
 
 export interface UpgradeRow {
   key: string;
+  icon?: string;
   name: string;
   slot: Slot;
   mass: number;
@@ -223,6 +225,7 @@ function HostCard({ host }: { host: HostRow }) {
               className={styles.row}
             >
               <div className={styles.rowTop}>
+                <EnhancementIcon faction={host.faction} icon={u.icon} size={24} />
                 <span className={`t ${styles.rowName}`}>{u.name}</span>
                 <span className={styles.costs}>
                   <span className={styles.cost}><MassMark size={10} /><span className="m">{fmtNum(u.mass)}</span></span>

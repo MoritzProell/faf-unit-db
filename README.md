@@ -3,7 +3,7 @@
 A frontend for the Supreme Commander: Forged Alliance Forever unit database.
 
 **Live:** https://faf-unit-db.vercel.app
-**Built by:** Moritz/RhyZ1ne · **Game data and weapon maths:** [FAForever/fa](https://github.com/FAForever/fa) · **Unit renders:** [FAForever/spooky-db](https://github.com/FAForever/spooky-db)
+**Built by:** Moritz/RhyZ1ne · **Game data and weapon maths:** [FAForever/fa](https://github.com/FAForever/fa) · **Unit renders:** [FAForever/spooky-db](https://github.com/FAForever/spooky-db) · **Upgrade icons:** [FAForever/UnitDB](https://github.com/FAForever/UnitDB)
 
 The dataset is **generated here from FAForever's own game repository**, so the
 site has no runtime dependency on anyone else's server.
@@ -36,6 +36,7 @@ npm run fetch-images             # only when FAF adds units
 | Constants | FAF Lua: `version.lua`, `blueprints-units.lua`, `defaultcomponents.lua`, `shared/overcharge.lua`, `shield.lua`, `sim/Unit.lua` |
 | Descriptions | `lua/ui/help/unitdescription.lua` in both repos — the game's own rollover text, for units and commander upgrades |
 | Unit renders | `FAForever/spooky-db @ master` → `app/img/units/<Id>.png` |
+| Upgrade icons | `FAForever/UnitDB @ master` → `www/res/img/enhancements/<Faction>/<icon>_btn_up.png`, named after the same abbreviation the blueprint puts in the enhancement's `Icon` field |
 
 Unit descriptions are the game's own. `lua/ui/help/unitdescription.lua` is the
 text the in-game rollover shows, and Nomads ships its own copy of the same file;

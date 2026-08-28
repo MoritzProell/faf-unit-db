@@ -29,6 +29,8 @@ export interface RoleInput {
     dps?: number | null;
     fullDamage?: number;
     DamageToShields?: number;
+    DamageType?: string;
+    EnabledByEnhancement?: string;
   }>;
 }
 
@@ -56,8 +58,14 @@ const LONG_RANGE_PRIMARY = 60;
 
 /** The weapon a unit is built around: the one doing the most damage per second. */
 function primaryRange(u: RoleInput): number {
+  // Same definition of "primary" as everywhere else: excludes death
+  // explosions, Overcharge and upgrade-gated weapons.
   const live = (u.weapons ?? []).filter(
-    (w) => (w.dps ?? 0) > 0 && w.WeaponCategory !== 'Death'
+    (w) =>
+      (w.dps ?? 0) > 0 &&
+      w.WeaponCategory !== 'Death' &&
+      w.DamageType !== 'Overcharge' &&
+      !w.EnabledByEnhancement
   );
   if (live.length === 0) return 0;
   const best = live.reduce((a, b) => ((b.dps ?? 0) > (a.dps ?? 0) ? b : a));

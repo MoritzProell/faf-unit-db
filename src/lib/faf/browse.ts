@@ -1,4 +1,5 @@
 import { roleOf } from './roles';
+import { combatDps } from './dps';
 import { enhancementsOf } from './enhancements';
 import type { Faction, Kind, Tech, Unit } from './types';
 
@@ -89,8 +90,7 @@ export function toBrowseUnit(u: Unit): BrowseUnit {
     hasRender: u.hasRender,
     directDps: u.directDps,
     dpsPerMass: u.directDps && u.mass ? u.directDps / u.mass : null,
-    totalDps:
-      u.weapons.reduce((n, w) => (w.WeaponCategory === 'Death' ? n : n + (w.dps ?? 0)), 0) || null,
+    totalDps: combatDps(u.weapons) || null,
     speed: u.Physics?.MaxSpeed ?? null,
   };
 }

@@ -35,6 +35,7 @@ export default async function UpgradesPage() {
         support: u.Categories?.includes('SUBCOMMANDER') ?? false,
         upgrades: upgrades.map((e) => ({
           key: e.key,
+          icon: e.icon,
           name: e.name,
           slot: e.slot,
           mass: e.mass,

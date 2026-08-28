@@ -23,6 +23,9 @@ export function SiteFooter({ version }: { version: string }) {
           game blueprints; weapon maths from the game&rsquo;s own unit view. Unit renders from{' '}
           <a href="https://github.com/FAForever/spooky-db" target="_blank" rel="noopener noreferrer">
             spooky-db
+          </a>, upgrade icons from{' '}
+          <a href="https://github.com/FAForever/UnitDB" target="_blank" rel="noopener noreferrer">
+            UnitDB
           </a>
           .
         </span>
