@@ -122,10 +122,10 @@ To tell the two apart, look at what triggered the last deployments: a
 `source` of `git` means the connection is live, `cli` means someone deployed by
 hand.
 
-The project lives on the personal Vercel account (`moritzfromsweden-9316`).
-Check `vercel whoami` before any manual deploy: the CLI signs in through
-whichever Vercel session the browser has open, which is how an earlier deploy
-landed on a work team by mistake.
+The project lives on a personal Vercel account. Check `vercel whoami` before
+any manual deploy: the CLI signs in through whichever Vercel session the
+browser has open, which is how an earlier deploy landed on a work team by
+mistake.
 
 Traffic is negligible: a few thousand visits a month sits far inside the free
 tier, and the site fetches nothing at runtime because the dataset is committed.
