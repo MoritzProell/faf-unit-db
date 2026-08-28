@@ -59,7 +59,12 @@
 .facMark { display: flex; align-items: center; width: 16px; flex-shrink: 0; color: var(--fac); }
 
 .roleCols { display: flex; align-items: center; gap: 0; min-width: 0; }
+/* content-box on purpose. The width set inline is the width of the units
+   standing in the column, and the global box-sizing:border-box would take the
+   padding out of that instead of adding it around — which squeezed the chips
+   narrower than their own images. */
 .roleCol {
+  box-sizing: content-box;
   display: flex; align-items: center; gap: 3px; flex-shrink: 0;
   padding: 0 6px;
   border-right: 1px dashed color-mix(in srgb, var(--fac) 32%, transparent);

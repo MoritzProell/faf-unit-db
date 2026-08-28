@@ -1,4 +1,6 @@
-.wrap { position: relative; display: block; border-radius: 5px; }
+/* flex-shrink:0 so a chip is never squeezed narrower than its render when a
+   row runs tight. The image is a fixed-size sprite; squashing it is visible. */
+.wrap { position: relative; display: block; border-radius: 5px; flex-shrink: 0; }
 .wrap[data-selected='true'] { box-shadow: 0 0 0 2px var(--primary); }
 .btn { display: block; border-radius: 5px; }
 
