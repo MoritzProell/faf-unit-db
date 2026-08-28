@@ -53,6 +53,36 @@ const SHIELD_RADIUS: SlotMetric = {
 const SHIELD_REGEN: SlotMetric = {
   key: 'shieldRegen', label: 'Regen', value: (u) => u.Defense?.Shield?.ShieldRegenRate ?? null, format: num, higherIsBetter: true,
 };
+/**
+ * What a shield actually costs you. Raw shield HP says the Atha is the best T2
+ * shield, but you do not buy one shield — you buy shield coverage, and the
+ * question is what a thousand points of it costs in mass and in energy. On
+ * that measure the answer is a different unit entirely.
+ */
+const shieldHp = (u: Unit): number => u.Defense?.Shield?.ShieldMaxHealth ?? 0;
+
+const SHIELD_MASS_EFF: SlotMetric = {
+  key: 'shieldMassEff',
+  label: 'Mass / 1k',
+  value: (u) => {
+    const hp = shieldHp(u);
+    return hp > 0 && u.mass > 0 ? (u.mass / hp) * 1000 : null;
+  },
+  format: (v) => v.toFixed(0),
+  higherIsBetter: false,
+};
+
+const SHIELD_ENERGY_EFF: SlotMetric = {
+  key: 'shieldEnergyEff',
+  label: 'Energy / 1k',
+  value: (u) => {
+    const hp = shieldHp(u);
+    return hp > 0 && u.energy > 0 ? (u.energy / hp) * 1000 : null;
+  },
+  format: num,
+  higherIsBetter: false,
+};
+
 const UPKEEP: SlotMetric = {
   key: 'upkeep',
   label: 'Upkeep',
@@ -65,7 +95,9 @@ const HP_PER_MASS: SlotMetric = {
 };
 
 function metricsFor(role: string): SlotMetric[] {
-  if (role === 'Shield') return [MASS, SHIELD_HP, SHIELD_RADIUS, SHIELD_REGEN, UPKEEP];
+  if (role === 'Shield') {
+    return [SHIELD_HP, SHIELD_RADIUS, SHIELD_REGEN, SHIELD_MASS_EFF, SHIELD_ENERGY_EFF, UPKEEP];
+  }
   if (role === 'Intel') return [MASS, HEALTH, RANGE, UPKEEP];
   if (role === 'Engineer' || role === 'Transport') return [MASS, HEALTH, SPEED];
   if (role === 'Artillery' || role === 'Missile') return [MASS, HEALTH, DPS, RANGE];

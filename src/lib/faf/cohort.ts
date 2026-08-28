@@ -15,6 +15,10 @@ export interface Cohort {
   healthPercent: number;
   hpPerMassRank: number;
   hpPerMassPercent: number;
+  /** Damage rank, counted only among units in the cohort that are armed. */
+  dpsRank: number;
+  dpsPercent: number;
+  dpsCohortSize: number;
   /** The same job, done by the other factions. */
   peers: Unit[];
   /** True when no other faction fields anything in this slot at all. */
@@ -64,6 +68,27 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
 
   const health = rankOf((u) => u.health);
   const hpm = rankOf((u) => u.hpPerMass);
+
+  // Damage is ranked among the armed only. "12th of 41 in T2 Naval" counted
+  // against sonar platforms and shield boats, which is not a ranking of
+  // anything. The measure is the unit's primary weapon, the same figure the
+  // card above it shows.
+  const primaryDps = (u: Unit): number =>
+    Math.max(
+      0,
+      ...u.weapons.filter((w) => w.WeaponCategory !== 'Death').map((w) => w.dps ?? 0)
+    );
+  const armed = cohort.filter((u) => primaryDps(u) > 0);
+  const armedSorted = [...armed].sort((a, b) => primaryDps(b) - primaryDps(a));
+  const dpsRank = armedSorted.findIndex((u) => u.Id === unit.Id) + 1;
+  const dpsValues = armedSorted.map(primaryDps);
+  const dpsMin = dpsValues[dpsValues.length - 1] ?? 0;
+  const dpsMax = dpsValues[0] ?? 0;
+  const dpsSpan = dpsMax - dpsMin;
+  const dpsPercent =
+    dpsSpan > 0
+      ? Math.max(2, Math.min(100, ((primaryDps(unit) - dpsMin) / dpsSpan) * 100))
+      : 100;
 
   // Slot cohort: the same job at the same tier, across every faction. This is
   // what "the only T3 point defence" and "the best T2 shield" are claims about,
@@ -128,6 +153,18 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
     best((u) => u.directDps ?? 0, `Most damage of any ${slotLabel}`, (v) => `${v.toFixed(0)} dps`);
     best((u) => maxRange(u), `Longest reach of any ${slotLabel}`, (v) => `${num(v)} range`);
     best((u) => shieldHealth(u), `Strongest shield of any ${slotLabel}`, (v) => `${num(v)} hp`);
+    // What a shield costs per point of protection, which is the comparison that
+    // decides which one you actually build.
+    best(
+      (u) => (shieldHealth(u) > 0 && u.mass > 0 ? (shieldHealth(u) / u.mass) * 100 : 0),
+      `Most shield per mass of any ${slotLabel}`,
+      (v) => `${v.toFixed(0)} hp per 100 mass`
+    );
+    best(
+      (u) => (shieldHealth(u) > 0 && u.energy > 0 ? (shieldHealth(u) / u.energy) * 1000 : 0),
+      `Most shield per energy of any ${slotLabel}`,
+      (v) => `${v.toFixed(0)} hp per 1000 energy`
+    );
     best((u) => u.Physics?.MaxSpeed ?? 0, `Fastest ${slotLabel}`, (v) => String(v));
   }
 
@@ -138,6 +175,9 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
     healthPercent: health.percent,
     hpPerMassRank: hpm.rank,
     hpPerMassPercent: hpm.percent,
+    dpsRank,
+    dpsPercent,
+    dpsCohortSize: armed.length,
     peers,
     unique: slot.length === 1,
     slotLabel,

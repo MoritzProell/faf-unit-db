@@ -228,12 +228,19 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                       : 'None'
                 }
                 foot={
-                  <span className={styles.glanceFoot}>
-                    {primary?.cycleText ??
-                      (payload
-                        ? 'Delivered once, on detonation. It has no rate of fire, so no DPS.'
-                        : 'This unit is unarmed.')}
-                  </span>
+                  primary && cohort.dpsRank > 0 ? (
+                    <Rank
+                      percent={cohort.dpsPercent}
+                      text={`${ordinal(cohort.dpsRank)} of ${cohort.dpsCohortSize} armed in ${cohort.label}`}
+                    />
+                  ) : (
+                    <span className={styles.glanceFoot}>
+                      {primary?.cycleText ??
+                        (payload
+                          ? 'Delivered once, on detonation. It has no rate of fire, so no DPS.'
+                          : 'This unit is unarmed.')}
+                    </span>
+                  )
                 }
               />
               <Glance

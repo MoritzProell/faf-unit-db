@@ -19,6 +19,16 @@ export interface RoleInput {
   Description?: string;
   Economy?: { BuildCostMass?: number };
   Weapon?: Array<{ DamageToShields?: number }>;
+  /**
+   * The decorated weapons, which carry computed dps. The raw `Weapon` array
+   * does not, so picking a primary from it silently found nothing.
+   */
+  weapons?: Array<{
+    MaxRadius?: number;
+    WeaponCategory?: string;
+    dps?: number | null;
+    fullDamage?: number;
+  }>;
 }
 
 /**
@@ -33,12 +43,25 @@ const T3_HEAVY_MASS = 700;
 const T1_TANK_MASS = 50;
 
 /**
- * Experimentals that play as long-range units despite being direct-fire, and
- * so are not separable by any rule. The Megalith and the Monkeylord both reach
- * 64, so range cannot tell them apart; this is a judgement about how the unit
- * is used, listed explicitly rather than dressed up as derivation.
+ * Where an experimental counts as long range, measured on its PRIMARY weapon.
+ *
+ * Max range across all weapons is the wrong measure and says the opposite of
+ * the truth: the Monkeylord's 64-range weapons are 214 dps secondary laser
+ * turrets, while the microwave laser it is actually built around does 4000 dps
+ * at range 30. On primary range the field is Megalith 64, Ythotha 47, Colossus
+ * 40, Monkeylord 30, and the Megalith is plainly the outlier.
  */
-const LONG_RANGE_EXPERIMENTALS = new Set(['XRL0403']);
+const LONG_RANGE_PRIMARY = 60;
+
+/** The weapon a unit is built around: the one doing the most damage per second. */
+function primaryRange(u: RoleInput): number {
+  const live = (u.weapons ?? []).filter(
+    (w) => (w.dps ?? 0) > 0 && w.WeaponCategory !== 'Death'
+  );
+  if (live.length === 0) return 0;
+  const best = live.reduce((a, b) => ((b.dps ?? 0) > (a.dps ?? 0) ? b : a));
+  return best.MaxRadius ?? 0;
+}
 
 const has = (c: Set<string>, ...names: string[]) => names.some((n) => c.has(n));
 
@@ -54,7 +77,10 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
     'Long range',
     (c, u) =>
       c.has('EXPERIMENTAL') &&
-      (c.has('ARTILLERY') || LONG_RANGE_EXPERIMENTALS.has(u.Id ?? '')),
+      // Artillery anywhere, plus land units whose primary outranges a brawler.
+      // Scoped to land on purpose: a bomber and a carrier both have long reach
+      // and neither is what anyone means by a long-range experimental.
+      (c.has('ARTILLERY') || (c.has('LAND') && primaryRange(u) >= LONG_RANGE_PRIMARY)),
   ],
   ['Experimental special', (c) => c.has('EXPERIMENTAL') && c.has('STRUCTURE')],
   ['Experimental air', (c) => c.has('EXPERIMENTAL') && c.has('AIR')],
