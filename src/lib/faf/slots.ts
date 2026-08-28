@@ -30,8 +30,23 @@ const MASS: SlotMetric = {
 const HEALTH: SlotMetric = {
   key: 'health', label: 'Health', value: (u) => u.health || null, format: num, higherIsBetter: true,
 };
+/**
+ * Every weapon, not just the direct-fire gun. `directDps` is null for anything
+ * whose damage is AA or torpedoes, so a table of anti-air units compared their
+ * damage as a column of dashes.
+ */
 const DPS: SlotMetric = {
-  key: 'dps', label: 'DPS', value: (u) => u.directDps, format: one, higherIsBetter: true,
+  key: 'dps',
+  label: 'DPS',
+  value: (u) => {
+    const total = u.weapons.reduce(
+      (n, w) => (w.WeaponCategory === 'Death' ? n : n + (w.dps ?? 0)),
+      0
+    );
+    return total > 0 ? total : null;
+  },
+  format: one,
+  higherIsBetter: true,
 };
 const RANGE: SlotMetric = {
   key: 'range',

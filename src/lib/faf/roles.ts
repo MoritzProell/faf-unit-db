@@ -144,6 +144,10 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
   ['Missile', (c) => has(c, 'SILO', 'TACTICALMISSILEPLATFORM')],
   ['Anti-air', (c) => c.has('ANTIAIR')],
   ['Anti-navy', (c) => c.has('ANTINAVY')],
+  // Quantum optics is its own thing: two factions have one, nobody else does,
+  // and lumping it in with radar hides that. Without this it fell through to
+  // "Other" and was compared against quantum gateways.
+  ['Optics', (c) => c.has('OPTICS')],
   [
     'Intel',
     (c) => has(c, 'RADAR', 'SONAR', 'OMNI', 'MOBILESONAR', 'COUNTERINTELLIGENCE', 'STEALTHFIELD'),
@@ -186,6 +190,7 @@ export const ROLE_SHORT: Record<string, string> = {
   'Anti-air': 'AA',
   'Anti-navy': 'A-NAVY',
   Shield: 'SHIELD',
+  Optics: 'OPTICS',
   Intel: 'INTEL',
   Other: 'OTHER',
 };

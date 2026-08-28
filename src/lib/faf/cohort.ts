@@ -51,8 +51,15 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
 
   // Ranking cohort: same domain and tier. Broad on purpose — "7th of 27 in T1
   // Land" is a more useful sense of scale than a rank out of four.
+  // Nomads is a mod faction, so it stays out of the core factions' rankings —
+  // but a Nomads unit still needs a cohort of its own, and excluding it
+  // unconditionally left every Nomads page reading "0th of 27".
   const cohort = all.filter(
-    (u) => u.kind === unit.kind && u.tech === unit.tech && u.faction !== 'Nomads' && u.health > 0
+    (u) =>
+      u.kind === unit.kind &&
+      u.tech === unit.tech &&
+      u.health > 0 &&
+      (u.faction !== 'Nomads' || unit.faction === 'Nomads')
   );
 
   const rankOf = (value: (u: Unit) => number) => {
@@ -97,7 +104,11 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
     (u) => roleOf(u) === role && u.tech === unit.tech && u.kind === unit.kind
   );
 
-  const peers = ['UEF', 'Cybran', 'Aeon', 'Seraphim', 'Nomads']
+  // "Other" is a bucket, not a job. Comparing a quantum gateway against a
+  // resource generator because both landed in it is worse than saying nothing.
+  const isSlot = role !== 'Other';
+
+  const peers = (isSlot ? ['UEF', 'Cybran', 'Aeon', 'Seraphim', 'Nomads'] : [])
     .filter((f) => f !== unit.faction)
     .map((f) => {
       const inFaction = slot.filter((u) => u.faction === f && u.Id !== unit.Id);
@@ -136,7 +147,7 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
   // Only claim a superlative when there is a field to lead. Two units make a
   // pair, not a ranking.
   const superlatives: Superlative[] = [];
-  if (slot.length >= 3) {
+  if (isSlot && slot.length >= 3) {
     const best = (
       value: (u: Unit) => number,
       label: string,
@@ -179,7 +190,7 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
     dpsPercent,
     dpsCohortSize: armed.length,
     peers,
-    unique: slot.length === 1,
+    unique: isSlot && slot.length === 1,
     slotLabel,
     superlatives,
   };

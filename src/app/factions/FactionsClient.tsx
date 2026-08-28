@@ -31,6 +31,7 @@ export interface SlotLite {
   missing: Faction[];
 }
 
+const ALL_FACTIONS: Faction[] = ['UEF', 'Cybran', 'Aeon', 'Seraphim', 'Nomads'];
 const KINDS = ['Land', 'Air', 'Naval', 'Base'];
 const KIND_LABEL: Record<string, string> = { Land: 'Land', Air: 'Air', Naval: 'Naval', Base: 'Structures' };
 const TECHS = ['T1', 'T2', 'T3', 'EXP'];
@@ -41,6 +42,7 @@ export function FactionsClient({ slots }: { slots: SlotLite[] }) {
   const [kinds, setKinds] = useState<Set<string>>(new Set(KINDS));
   const [techs, setTechs] = useState<Set<string>>(new Set(TECHS));
   const [onlyUnique, setOnlyUnique] = useState(false);
+  const [factions, setFactions] = useState<Set<string>>(new Set(ALL_FACTIONS));
 
   const roles = useMemo(
     () => [...new Set(slots.map((s) => s.role))].sort(),
@@ -60,20 +62,51 @@ export function FactionsClient({ slots }: { slots: SlotLite[] }) {
       .filter((s) => kinds.has(s.kind) && techs.has(s.tech))
       .filter((s) => (role === 'all' ? true : s.role === role))
       .filter((s) => (onlyUnique ? s.unique : true))
+      .map((s) => ({ ...s, rows: s.rows.filter((r) => factions.has(r.faction)) }))
+      .filter((s) => s.rows.length > 0)
       .filter((s) => !q || s.label.toLowerCase().includes(q) ||
         s.rows.some((r) => r.name.toLowerCase().includes(q)));
-  }, [slots, query, kinds, techs, role, onlyUnique]);
+  }, [slots, query, kinds, techs, role, onlyUnique, factions]);
 
   const dirty =
     query.trim() !== '' || role !== 'all' || onlyUnique ||
-    kinds.size !== KINDS.length || techs.size !== TECHS.length;
+    kinds.size !== KINDS.length || techs.size !== TECHS.length ||
+    factions.size !== ALL_FACTIONS.length;
 
   const reset = () => {
     setQuery(''); setRole('all'); setOnlyUnique(false);
     setKinds(new Set(KINDS)); setTechs(new Set(TECHS));
+    setFactions(new Set(ALL_FACTIONS));
   };
 
   return (
+    <>
+      {/* The five factions, large. Doubles as the legend for the row colours
+          and as the faction filter, so the banner is not just decoration. */}
+      <div className={styles.factionBar}>
+        {ALL_FACTIONS.map((f) => {
+          const on = factions.has(f);
+          const count = slots.reduce(
+            (n, s) => n + s.rows.filter((r) => r.faction === f).length,
+            0
+          );
+          return (
+            <button
+              key={f}
+              className={styles.factionTile}
+              data-faction={f}
+              data-on={on}
+              onClick={() => toggle(factions, setFactions, f)}
+              aria-pressed={on}
+            >
+              <FactionMark faction={f} size={44} />
+              <span className={`t ${styles.factionName}`}>{f}</span>
+              <span className={`m ${styles.factionCount}`}>{count} entries</span>
+            </button>
+          );
+        })}
+      </div>
+
     <div className={styles.layout}>
       <aside className={styles.rail} aria-label="Slot filters">
         <div className={styles.railHead}>
@@ -148,6 +181,7 @@ export function FactionsClient({ slots }: { slots: SlotLite[] }) {
         )}
       </div>
     </div>
+    </>
   );
 }
 
