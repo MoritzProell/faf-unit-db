@@ -17,6 +17,7 @@ import { notablesOf } from '@/lib/faf/notable';
 import { UNIT_NOTES } from '@/data/unit-notes';
 import { fmtNum, fmtRatio, round } from '@/lib/faf/decorate';
 import { buildCohort, ordinal } from '@/lib/faf/cohort';
+import { shieldEconomy, massEconomy, powerEconomy, fmtDuration } from '@/lib/faf/economy';
 import { enhancementsOf, groupBySlot, SLOT_LABEL, type Enhancement } from '@/lib/faf/enhancements';
 import { getUnitHistory } from '@/lib/faf/changelog';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
@@ -95,6 +96,19 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
   const shownWeapons = unit.weapons.filter(
     (w) => !isAirCrash(w) && ((w.dps !== null && w.dps > 0) || w.fullDamage > 0)
   );
+  // What the building is FOR decides what belongs at a glance. A shield
+  // generator's own 500 hit points and its "Weapons: None" say nothing; what
+  // its protection costs is the whole comparison. Same for an extractor: the
+  // interesting number is how long it takes to earn its own mass back.
+  // Gated on the role, not just on the presence of the field. A Titan carries
+  // a personal shield and an ACU produces mass, and neither is bought for it:
+  // their glance should still lead with health and damage.
+  const shield = unit.role === 'Shield' ? shieldEconomy(unit) : null;
+  const massEcon =
+    unit.role === 'Mass extraction' || unit.role === 'Mass fabrication'
+      ? massEconomy(unit)
+      : null;
+  const powerEcon = unit.role === 'Power' ? powerEconomy(unit) : null;
   const kindLabel = unit.kind === 'Base' ? 'Structures' : unit.kind;
 
   const stat = (name: string, value: number | string | null | undefined, unitCode?: string) =>
@@ -212,6 +226,161 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
           <section className={styles.secGlance}>
             <SectionHead label="At a glance" />
             <div className={styles.glanceGrid}>
+              {shield ? (
+                <>
+                  <Glance
+                    label="Shield health"
+                    icon="shield"
+                    tone="shield"
+                    figure={fmtNum(shield.hp)}
+                    unit="hp"
+                    foot={
+                      <span className={styles.glanceFoot}>
+                        Regenerates {fmtNum(shield.regen)} hp/s, {fmtNum(shield.recharge)}s to
+                        restart once broken
+                      </span>
+                    }
+                  />
+                  <Glance
+                    label="Shield per 1k energy"
+                    icon="bolt"
+                    tone="shield"
+                    figure={shield.per1kEnergy ? fmtNum(Math.round(shield.per1kEnergy)) : '–'}
+                    foot={
+                      <span className={styles.glanceFoot}>
+                        {shield.upkeep > 0
+                          ? `Then ${fmtNum(shield.upkeep)} e/s to hold it up`
+                          : 'No upkeep'}
+                      </span>
+                    }
+                  />
+                  <Glance
+                    label="Shield per mass"
+                    icon="shield"
+                    tone="shield"
+                    figure={shield.perMass ? fmtRatio(shield.perMass, 2) : '–'}
+                    foot={
+                      <span className={styles.glanceFoot}>
+                        {fmtNum(unit.health)} hp of structure underneath it
+                      </span>
+                    }
+                  />
+                  <Glance
+                    label="Radius"
+                    icon="radius"
+                    tone="shield"
+                    figure={shield.radius ? fmtNum(shield.radius) : '–'}
+                    foot={
+                      <span className={styles.glanceFoot}>
+                        {shield.upkeepPaybackSeconds
+                          ? `Holding it for ${fmtDuration(shield.upkeepPaybackSeconds)} costs what building it did`
+                          : 'What it covers'}
+                      </span>
+                    }
+                  />
+                </>
+              ) : massEcon ? (
+                <>
+                  <Glance
+                    label="Pays for itself in"
+                    icon="mass"
+                    figure={massEcon.paybackSeconds ? fmtDuration(massEcon.paybackSeconds) : '–'}
+                    foot={
+                      <span className={styles.glanceFoot}>
+                        {fmtNum(unit.mass)} mass to build, back at {fmtRatio(massEcon.perSecond, 2)}{' '}
+                        mass/s
+                      </span>
+                    }
+                  />
+                  <Glance
+                    label="Mass per second"
+                    icon="mass"
+                    figure={fmtRatio(massEcon.perSecond, 2)}
+                    foot={
+                      <span className={styles.glanceFoot}>
+                        {massEcon.fabricator
+                          ? 'Made out of energy, not out of a deposit'
+                          : 'Needs a mass deposit to stand on'}
+                      </span>
+                    }
+                  />
+                  <Glance
+                    label={massEcon.energyPerMass ? 'Energy per mass' : 'Upkeep'}
+                    icon="bolt"
+                    figure={
+                      massEcon.energyPerMass ? fmtNum(Math.round(massEcon.energyPerMass)) : 'None'
+                    }
+                    foot={
+                      <span className={styles.glanceFoot}>
+                        {massEcon.upkeep > 0
+                          ? `Draws ${fmtNum(massEcon.upkeep)} e/s while it runs`
+                          : 'Runs for free'}
+                      </span>
+                    }
+                  />
+                  <Glance
+                    label="Health"
+                    icon="health"
+                    figure={fmtNum(unit.health)}
+                    unit="hp"
+                    foot={
+                      <Rank
+                        percent={cohort.healthPercent}
+                        text={`${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label}`}
+                      />
+                    }
+                  />
+                </>
+              ) : powerEcon ? (
+                <>
+                  <Glance
+                    label="Energy per second"
+                    icon="bolt"
+                    figure={fmtNum(powerEcon.perSecond)}
+                    foot={
+                      <span className={styles.glanceFoot}>
+                        {powerEcon.paybackSeconds
+                          ? `Makes back its own energy cost in ${fmtDuration(powerEcon.paybackSeconds)}`
+                          : 'Continuous output'}
+                      </span>
+                    }
+                  />
+                  <Glance
+                    label="Energy per mass"
+                    icon="mass"
+                    figure={powerEcon.perMass ? fmtRatio(powerEcon.perMass, 2) : '–'}
+                    foot={
+                      <span className={styles.glanceFoot}>
+                        e/s bought per point of mass. The efficiency comparison.
+                      </span>
+                    }
+                  />
+                  <Glance
+                    label="Health"
+                    icon="health"
+                    figure={fmtNum(unit.health)}
+                    unit="hp"
+                    foot={
+                      <Rank
+                        percent={cohort.healthPercent}
+                        text={`${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label}`}
+                      />
+                    }
+                  />
+                  <Glance
+                    label="HP per mass"
+                    icon="shield"
+                    figure={fmtRatio(unit.hpPerMass)}
+                    foot={
+                      <Rank
+                        percent={cohort.hpPerMassPercent}
+                        text={`${ordinal(cohort.hpPerMassRank)} of ${cohort.size} in ${cohort.label}`}
+                      />
+                    }
+                  />
+                </>
+              ) : (
+                <>
               <Glance
                 label="Health"
                 icon="health"
@@ -281,6 +450,8 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                   </span>
                 }
               />
+                </>
+              )}
             </div>
           </section>
 
@@ -323,8 +494,33 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
           <section className={styles.secSurvive}>
             <SectionHead label="Survivability" />
             <div className={styles.panel}>
+              {/* A shield generator's real health bar is the shield. Drawn
+                  first, in blue, and scaled against it so the structure
+                  underneath reads at its true size — on an ED4 that is 500 hp
+                  of building under 13 000 hp of shield. */}
+              {shield && (
+                <div className={styles.hpBarRow}>
+                  <div className={styles.hpBar}>
+                    <div className={styles.shieldFill} />
+                    <span className={`t ${styles.hpLabel}`}>{fmtNum(shield.hp)} SHIELD</span>
+                  </div>
+                  <span className={styles.hpRatio}>
+                    <span className="m" style={{ color: 'var(--text)' }}>
+                      {shield.perMass ? fmtRatio(shield.perMass, 2) : '–'}
+                    </span>{' '}
+                    / mass
+                  </span>
+                </div>
+              )}
               <div className={styles.hpBarRow}>
-                <div className={styles.hpBar}>
+                <div
+                  className={shield ? `${styles.hpBar} ${styles.hpBarScaled}` : styles.hpBar}
+                  style={
+                    shield
+                      ? { width: `${Math.max(9, (unit.health / shield.hp) * 100)}%` }
+                      : undefined
+                  }
+                >
                   <div className={styles.hpFill} />
                   <span className={`t ${styles.hpLabel}`}>{fmtNum(unit.health)} HP</span>
                 </div>
@@ -568,10 +764,13 @@ function SectionHead({ label, note }: { label: string; note?: string }) {
 }
 
 function Glance({
-  label, figure, unit, foot, icon,
-}: { label: string; figure: string; unit?: string; foot: React.ReactNode; icon?: IconName }) {
+  label, figure, unit, foot, icon, tone,
+}: {
+  label: string; figure: string; unit?: string; foot: React.ReactNode;
+  icon?: IconName; tone?: 'shield';
+}) {
   return (
-    <div className={styles.glance}>
+    <div className={styles.glance} data-tone={tone}>
       <span className={`lbl ${styles.fieldLabel}`}>
         {icon && <Icon name={icon} size={11} strokeWidth={1.7} />}
         {label}
@@ -705,12 +904,50 @@ function WeaponCard({ weapon: w }: { weapon: DecoratedWeapon }) {
  */
 const totalDps = (u: Unit): number => combatDps(u.weapons);
 
+function Delta({ n, format, unit }: { n: number; format: (v: number) => string; unit: string }) {
+  const sign = n > 0 ? '+' : n < 0 ? '−' : '';
+  return (
+    <span className={`m ${styles.delta} ${n >= 0 ? styles.deltaUp : styles.deltaDown}`}>
+      {sign}{format(Math.abs(n))} {unit}
+    </span>
+  );
+}
+
 function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
+  // Comparing shield generators on the hit points of the box the projector
+  // sits in is comparing the wrong number: an ED4 is 500 hp of building
+  // holding up 13 000 hp of shield, and it is the shield and how much ground
+  // it covers that decide which one you build.
+  const bothShields = base.role === 'Shield' && peer.role === 'Shield';
+  const baseShield = bothShields ? shieldEconomy(base) : null;
+  const peerShield = bothShields ? shieldEconomy(peer) : null;
+  if (baseShield && peerShield) {
+    return (
+      <Link href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
+        <UnitWell id={peer.Id} faction={peer.faction} techLabel={peer.techLabel} size={38} imageSize={34} pip={false} hasRender={peer.hasRender} />
+        <div className={styles.peerBody}>
+          <div className={`t ${styles.peerName}`}>{peer.name}</div>
+          <div className={styles.peerRole}>{peer.role}</div>
+        </div>
+        <div className={styles.deltas}>
+          <Delta n={peerShield.hp - baseShield.hp} format={fmtNum} unit="shield" />
+          <Delta n={peerShield.radius - baseShield.radius} format={(v) => fmtRatio(v, 1)} unit="radius" />
+        </div>
+      </Link>
+    );
+  }
+
+  // Same argument for the economy buildings: a mass extractor is not bought
+  // for its hit points.
+  const bothMass =
+    base.role === peer.role &&
+    (base.role === 'Mass extraction' || base.role === 'Mass fabrication');
+  const baseMass = bothMass ? massEconomy(base) : null;
+  const peerMass = bothMass ? massEconomy(peer) : null;
   const hpDelta = peer.health - base.health;
   const peerDps = totalDps(peer);
   const baseDps = totalDps(base);
   const dpsDelta = peerDps > 0 || baseDps > 0 ? peerDps - baseDps : null;
-  const sign = (n: number) => (n > 0 ? '+' : n < 0 ? '−' : '');
   return (
     <Link href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
       <UnitWell id={peer.Id} faction={peer.faction} techLabel={peer.techLabel} size={38} imageSize={34} pip={false} hasRender={peer.hasRender} />
@@ -719,13 +956,22 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
         <div className={styles.peerRole}>{peer.role}</div>
       </div>
       <div className={styles.deltas}>
-        <span className={`m ${styles.delta} ${hpDelta >= 0 ? styles.deltaUp : styles.deltaDown}`}>
-          {sign(hpDelta)}{fmtNum(Math.abs(hpDelta))} hp
-        </span>
-        {dpsDelta !== null && (
-          <span className={`m ${styles.delta} ${dpsDelta >= 0 ? styles.deltaUp : styles.deltaDown}`}>
-            {sign(dpsDelta)}{fmtRatio(Math.abs(dpsDelta), 1)} dps
-          </span>
+        {baseMass && peerMass ? (
+          <>
+            <Delta
+              n={peerMass.perSecond - baseMass.perSecond}
+              format={(v) => fmtRatio(v, 2)}
+              unit="mass/s"
+            />
+            <Delta n={hpDelta} format={fmtNum} unit="hp" />
+          </>
+        ) : (
+          <>
+            <Delta n={hpDelta} format={fmtNum} unit="hp" />
+            {dpsDelta !== null && (
+              <Delta n={dpsDelta} format={(v) => fmtRatio(v, 1)} unit="dps" />
+            )}
+          </>
         )}
       </div>
     </Link>

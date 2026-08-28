@@ -64,6 +64,14 @@
   background: var(--panel); border: 1px solid var(--line); border-radius: 7px;
   padding: 10px 12px; display: flex; flex-direction: column; gap: 7px;
 }
+/* Shields are blue in the game and blue here, so a shield card reads as a
+   shield card before the label is read. */
+.glance[data-tone='shield'] {
+  border-color: rgba(61, 155, 233, 0.34);
+  background: linear-gradient(180deg, rgba(61, 155, 233, 0.07), transparent 70%), var(--panel);
+}
+.glance[data-tone='shield'] .glanceFigure { color: #7cc2f5; }
+.glance[data-tone='shield'] .fieldLabel svg { opacity: 0.85; color: #7cc2f5; }
 .fieldLabel { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
 .fieldLabel svg { opacity: 0.62; }
 .glanceValue { display: flex; align-items: baseline; gap: 7px; }
@@ -111,6 +119,10 @@
   background: #1b1f22; border: 1px solid rgba(255, 255, 255, 0.07); overflow: hidden;
 }
 .hpFill { position: absolute; inset: 0; background: linear-gradient(180deg, #63bd28, #3f8c17); }
+.shieldFill { position: absolute; inset: 0; background: linear-gradient(180deg, #3d9be9, #1f5f9e); }
+/* The structure bar under a shield is drawn to scale, so it has to be allowed
+   to get short. Without this the 200px floor makes 500 hp look like 13 000. */
+.hpBarScaled { flex: 0 0 auto; min-width: 0; }
 .hpLabel {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);

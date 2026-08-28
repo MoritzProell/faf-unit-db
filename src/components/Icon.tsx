@@ -51,6 +51,9 @@ const PATHS = {
   transport: <><path d="M2.6 5.4h7.6v5.2H2.6z" /><path d="M10.2 7.4h1.9l1.3 1.6v1.6h-3.2z" /></>,
   pulses: <><circle cx="3.4" cy="8" r="1.3" /><circle cx="8" cy="8" r="1.3" /><circle cx="12.6" cy="8" r="1.3" /></>,
   check: <path d="M3.4 8.4 L6.4 11.3 L12.6 4.8" />,
+  // The game's mass glyph: a ring around a filled dot. MassMark draws the
+  // coloured version for the cost strip; this is the line version for labels.
+  mass: <><circle cx="8" cy="8" r="5.6" /><circle cx="8" cy="8" r="2.1" fill="currentColor" stroke="none" /></>,
 } as const;
 
 export type IconName = keyof typeof PATHS;
