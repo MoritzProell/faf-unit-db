@@ -99,9 +99,15 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
   // Slot cohort: the same job at the same tier, across every faction. This is
   // what "the only T3 point defence" and "the best T2 shield" are claims about,
   // so Nomads counts — leaving it out would let the site state a false only.
-  const slot = all.filter(
-    (u) => roleOf(u) === role && u.tech === unit.tech && u.kind === unit.kind
-  );
+  // At T4 the domain is already in the role name wherever it matters —
+  // experimental air, navy, assault — so matching on kind as well adds nothing
+  // and splits the strategic artillery in two: the Mavor and the Salvation are
+  // buildings, the Scathis walks, and choosing between them is one decision.
+  const kindMatters = unit.tech !== 'EXP';
+  const sameSlot = (u: Unit, tech: Tech) =>
+    roleOf(u) === role && u.tech === tech && (!kindMatters || u.kind === unit.kind);
+
+  const slot = all.filter((u) => sameSlot(u, unit.tech));
 
   // "Other" is a bucket, not a job. Comparing a quantum gateway against a
   // resource generator because both landed in it is worse than saying nothing.
@@ -136,9 +142,7 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
     for (const step of [-1, 1, -2, 2]) {
       const t = TIERS[here + step];
       if (!t) continue;
-      const pool = all.filter(
-        (u) => roleOf(u) === role && u.kind === unit.kind && u.tech === t
-      );
+      const pool = all.filter((u) => sameSlot(u, t));
       const found = pickPeers(pool);
       if (found.length > 0) {
         peers = found;
@@ -166,9 +170,9 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
   // Name the domain when the same job exists in more than one of them,
   // otherwise a land one-shot unit and an air one-shot unit each announce
   // themselves as "the only T2 one-shot unit in the game".
-  const sameJobElsewhere = all.some(
-    (u) => roleOf(u) === role && u.tech === unit.tech && u.kind !== unit.kind
-  );
+  const sameJobElsewhere =
+    kindMatters &&
+    all.some((u) => roleOf(u) === role && u.tech === unit.tech && u.kind !== unit.kind);
   const domain = sameJobElsewhere && unit.kind !== 'Base' ? `${unit.kind.toLowerCase()} ` : '';
   const slotLabel = `${unit.techLabel} ${domain}${roleLabel}`;
 

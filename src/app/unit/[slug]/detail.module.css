@@ -120,6 +120,12 @@
 .cycleTick { display: block; width: 3px; height: 15px; border-radius: 1.5px; background: var(--fac); flex-shrink: 0; }
 .cycleLine { flex: 1; height: 1px; background: var(--line-2); }
 .cycleText { font-size: 11px; color: var(--text-2); }
+/* Where the game's own DPS arithmetic stops short of the blueprint. */
+.uncounted {
+  font-size: 11px; line-height: 1.5; color: var(--text-2);
+  padding: 8px 12px; border-top: 1px solid var(--line);
+  background: rgba(237, 195, 25, 0.05);
+}
 
 .hpBarRow { display: flex; align-items: center; gap: 14px; padding: 11px 12px; flex-wrap: wrap; }
 .hpBar {

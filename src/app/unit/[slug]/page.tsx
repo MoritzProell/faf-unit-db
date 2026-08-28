@@ -882,6 +882,20 @@ function WeaponCard({ weapon: w }: { weapon: DecoratedWeapon }) {
   const layers = w.FireTargetLayerCapsTable
     ? [...new Set(Object.values(w.FireTargetLayerCapsTable).flatMap((v) => v.split('|')))].join(' / ')
     : null;
+  /**
+   * Projectiles the blueprint releases per trigger pull, against the number
+   * the game's own DPS code counted.
+   *
+   * The game counts muzzles. For 78 of the 102 multi-projectile weapons in the
+   * game the two agree and there is nothing to say. Where they disagree the
+   * weapon fires more than the readout prices in — the Salvation is the
+   * extreme, one muzzle throwing 25 shells — and the DPS figure above, which
+   * is the game's own, understates it. The site does not silently correct the
+   * game's arithmetic; it says where the arithmetic stops short.
+   */
+  const perShot = w.ProjectilesPerOnFire ?? 1;
+  const counted = w.firingCycle?.cycleProjs ?? 1;
+  const uncounted = perShot > counted && (w.fullDamage ?? 0) > 0;
   return (
     <div className={styles.panel}>
       <div className={styles.weaponHead}>
@@ -907,8 +921,18 @@ function WeaponCard({ weapon: w }: { weapon: DecoratedWeapon }) {
         ) : null}
         {w.TurretYawRange !== undefined ? <Field label="Turret yaw" value={`±${w.TurretYawRange}°`} icon="yaw" /> : null}
         {w.DoTPulses && w.DoTPulses > 1 ? <Field label="Damage over time" value={`${w.DoTPulses} pulses`} sub={`${w.DoTTime}s`} icon="pulses" /> : null}
+        {uncounted ? (
+          <Field label="Projectiles per shot" value={String(perShot)} icon="pulses" />
+        ) : null}
         {layers ? <Field label="Fires at" value={layers} icon="target" /> : null}
       </div>
+      {uncounted ? (
+        <div className={styles.uncounted}>
+          Releases {perShot} projectiles per shot at {fmtNum(round(w.fullDamage, 1))} damage each.
+          The DPS above is the game&rsquo;s own figure, and the game counts{' '}
+          {counted === 1 ? 'one' : counted}.
+        </div>
+      ) : null}
       {w.firingCycle?.cycleTime && w.cycleText ? (
         <div className={styles.cycle}>
           <span className="lbl" style={{ fontSize: 9 }}>Cycle</span>
