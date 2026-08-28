@@ -2,15 +2,20 @@
    column left most of the width empty and ran the page to six screens. Boxes
    are grid items, not CSS columns, so a section is never split down the middle. */
 .groups {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  /* Flex, not a uniform grid.
+     Sections need very different widths — Land's T2 is about 420px once every
+     role has a column, Naval about 330 — and equal-width grid tracks force
+     every section to the widest one, which cost a whole column. Sized to their
+     own content they pack three across where the grid fit two. */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: 12px;
-  align-items: start;
 }
 
 /* No overflow:hidden — it clips the unit hover cards against the section edge.
    The head carries its own rounded corners so the box still reads as one shape. */
-.box { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+.box { flex: 1 1 auto; min-width: min-content; max-width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); }
 .boxHead {
   border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
   display: flex; align-items: baseline; gap: 9px; padding: 8px 11px;
@@ -58,7 +63,11 @@
 .row:last-child { border-bottom: none; }
 .facMark { display: flex; align-items: center; width: 16px; flex-shrink: 0; color: var(--fac); }
 
-.roleCols { display: flex; align-items: center; gap: 0; min-width: 0; }
+/* If a future patch adds a role and a tier outgrows even the wide track, it
+   wraps inside its own box rather than spilling over the next section. Every
+   faction row has identical column widths, so they all wrap at the same point
+   and the alignment survives. */
+.roleCols { display: flex; align-items: center; gap: 0; min-width: 0; flex-wrap: wrap; row-gap: 4px; }
 /* content-box on purpose. The width set inline is the width of the units
    standing in the column, and the global box-sizing:border-box would take the
    padding out of that instead of adding it around — which squeezed the chips
@@ -66,7 +75,7 @@
 .roleCol {
   box-sizing: content-box;
   display: flex; align-items: center; gap: 3px; flex-shrink: 0;
-  padding: 0 6px;
+  padding: 0 3px;
   border-right: 1px dashed color-mix(in srgb, var(--fac) 32%, transparent);
 }
 .roleHead .roleCol { border-right-color: transparent; }
@@ -76,12 +85,12 @@
 /* A faction with no unit for a role keeps the column aligned rather than
    shifting everything left, which is the whole point of the layout. */
 .slot {
-  width: 34px; height: 34px; flex-shrink: 0; border-radius: 5px;
+  width: 30px; height: 30px; flex-shrink: 0; border-radius: 5px;
   border: 1px dashed color-mix(in srgb, var(--fac) 26%, transparent);
 }
 
 @media (max-width: 900px) {
-  .groups { grid-template-columns: minmax(0, 1fr); }
+  .box { flex-basis: 100%; }
 }
 @media (max-width: 700px) {
   .tierTab { width: 22px; }

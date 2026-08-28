@@ -12,7 +12,7 @@ const FACTIONS: Faction[] = ['UEF', 'Cybran', 'Aeon', 'Seraphim', 'Nomads'];
 const TECH_ORDER: Tech[] = ['T1', 'T2', 'T3', 'EXP'];
 const TECH_LABEL: Record<string, string> = { T1: 'T1', T2: 'T2', T3: 'T3', EXP: 'T4' };
 
-const CHIP = 34;
+const CHIP = 30;
 const CHIP_GAP = 3;
 
 /**

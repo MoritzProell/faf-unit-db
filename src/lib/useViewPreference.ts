@@ -9,7 +9,13 @@ const EVENT = 'faf:view-change';
 
 /** The grouped roster is the default: a unit database's front page should show
  *  the whole game at once, the way the in-game roster does. */
-const DEFAULT: ViewMode = 'groups';
+/**
+ * Compact is the landing view. It carries the same role alignment and labels as
+ * the grouped roster but fits three sections across instead of one, so a first
+ * visit sees most of the game rather than the top of Land. Anyone who has
+ * chosen a view keeps it — this is only the fallback.
+ */
+const DEFAULT: ViewMode = 'compact';
 
 const isView = (v: unknown): v is ViewMode => v === 'cards' || v === 'groups' || v === 'compact';
 

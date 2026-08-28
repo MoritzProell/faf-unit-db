@@ -21,7 +21,7 @@ export interface BrowseState {
  * Landing defaults: the whole base-game roster in the grouped layout. Nomads is
  * mod content, off by default and one click away with its count on screen.
  */
-export const defaults = (view: ViewMode = 'groups'): BrowseState => ({
+export const defaults = (view: ViewMode = 'compact'): BrowseState => ({
   query: '',
   factions: new Set(FACTIONS.filter((f) => f !== 'Nomads')),
   techs: new Set(TECHS),
