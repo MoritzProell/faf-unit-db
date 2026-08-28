@@ -2,13 +2,11 @@
 
 import { useCallback, useSyncExternalStore } from 'react';
 
-export type ViewMode = 'cards' | 'groups' | 'compact';
+export type ViewMode = 'cards' | 'onepage' | 'compact';
 
 const KEY = 'faf.view';
 const EVENT = 'faf:view-change';
 
-/** The grouped roster is the default: a unit database's front page should show
- *  the whole game at once, the way the in-game roster does. */
 /**
  * Compact is the landing view. It carries the same role alignment and labels as
  * the grouped roster but fits three sections across instead of one, so a first
@@ -17,7 +15,9 @@ const EVENT = 'faf:view-change';
  */
 const DEFAULT: ViewMode = 'compact';
 
-const isView = (v: unknown): v is ViewMode => v === 'cards' || v === 'groups' || v === 'compact';
+// 'groups' was the old third view, replaced by 'onepage'. Anyone carrying it
+// in localStorage falls back to the default rather than rendering nothing.
+const isView = (v: unknown): v is ViewMode => v === 'cards' || v === 'onepage' || v === 'compact';
 
 function getSnapshot(): ViewMode {
   try {

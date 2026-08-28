@@ -4,7 +4,7 @@ import type { Faction, Kind, Tech } from './types';
 export const FACTIONS: Faction[] = ['UEF', 'Cybran', 'Aeon', 'Seraphim', 'Nomads'];
 export const TECHS: Tech[] = ['T1', 'T2', 'T3', 'EXP'];
 export const KINDS: Kind[] = ['Land', 'Air', 'Naval', 'Base'];
-export const VIEWS = ['cards', 'groups', 'compact'] as const;
+export const VIEWS = ['cards', 'onepage', 'compact'] as const;
 export type ViewMode = (typeof VIEWS)[number];
 
 export interface BrowseState {

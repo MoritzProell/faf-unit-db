@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { TopBar } from './TopBar';
 import { FilterRail, FACTIONS, TECHS, KINDS, type Facets, type FilterState } from './FilterRail';
 import { UnitTile } from './UnitTile';
-import { SectionGroups } from './SectionGroups';
+import { OnePage } from './OnePage';
 import { CompactGroups } from './CompactGroups';
 import { SECTION_ORDER } from '@/lib/faf/sections';
 import { CompareTray } from './CompareTray';
@@ -31,7 +31,7 @@ const MOBILE_KINDS = ['Land', 'Air', 'Naval'];
 
 const VIEWS: Array<{ id: ViewMode; label: string; icon: IconName }> = [
   { id: 'cards', label: 'Cards', icon: 'grid' },
-  { id: 'groups', label: 'Groups', icon: 'layers' },
+  { id: 'onepage', label: 'One page', icon: 'layers' },
   { id: 'compact', label: 'Compact', icon: 'rows' },
 ];
 
@@ -166,7 +166,7 @@ export function BrowseClient({
   const trayVisible = compare.ids.length > 0;
 
   return (
-    <div className={styles.shell} data-tray={trayVisible}>
+    <div className={styles.shell} data-tray={trayVisible} data-view={view}>
       <TopBar
         version={version}
         totalUnits={units.length}
@@ -176,13 +176,13 @@ export function BrowseClient({
         onTogglePickMode={() => setPickMode((v) => !v)}
       />
 
-      <div className={styles.middle}>
+      <div className={styles.middle} data-view={view}>
         {railOpen && <div className={styles.backdrop} onClick={() => setRailOpen(false)} aria-hidden="true" />}
         <div className={styles.railWrap} data-open={railOpen}>
           <FilterRail facets={facets} state={filters} onToggle={toggle} onReset={reset} dirty={dirty} />
         </div>
 
-        <main className={styles.main}>
+        <main className={styles.main} data-view={view}>
           <div className={styles.resultsBar}>
             <div className={styles.resultsTop}>
               <h1 className={`t ${styles.title}`}>{title}</h1>
@@ -200,10 +200,10 @@ export function BrowseClient({
                 {activeFilterCount > 0 && <span className={`m ${styles.filtersCount}`}>{activeFilterCount}</span>}
               </button>
 
-              {/* Groups arranges by section, tier, faction and role, so it has
-                  no free axis left for a sort to act on. Showing the control
-                  there implies it does something. */}
-              {view !== 'groups' && (
+              {/* One page arranges by section, tier, faction and role, so it
+                  has no free axis left for a sort to act on. Showing the
+                  control there implies it does something. */}
+              {view !== 'onepage' && (
               <label className={styles.control}>
                 <span className="lbl" style={{ fontSize: 9 }}>Sort</span>
                 <span className={styles.selectWrap}>
@@ -270,8 +270,8 @@ export function BrowseClient({
               </p>
               <button className={styles.emptyAction} onClick={reset}>Reset filters</button>
             </div>
-          ) : view === 'groups' ? (
-            <SectionGroups units={results} selected={compare.ids} onToggle={compare.toggle} sort={sort} pickMode={pickMode} />
+          ) : view === 'onepage' ? (
+            <OnePage units={results} selected={compare.ids} onToggle={compare.toggle} sort={sort} pickMode={pickMode} />
           ) : view === 'compact' ? (
             <CompactGroups units={results} selected={compare.ids} onToggle={compare.toggle} sort={sort} pickMode={pickMode} />
           ) : (

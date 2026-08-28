@@ -1,0 +1,102 @@
+/* The whole army on one screen.
+   Chip size is min() of a height fit and a width fit, so whichever runs out
+   first decides and neither dimension ever scrolls. The subtracted constants
+   are the chrome around the sheet: top bar, filter chips, section heads, tier
+   strips and the per-row padding. Measured on the live page, not estimated. */
+.sheet {
+  --chip-gap: 2px;
+  --row-pad: 3px;
+  --head-h: 15px;
+  /* Measured against the sheet itself, not the viewport.
+     100cqw and 100cqh are the space this element was actually given, so the
+     fit does not need to know the height of the top bar or the width of the
+     filter rail, and stops being wrong when either changes. */
+  container-type: size;
+  /* Height left for unit rows: the sheet, less one column header and each
+     tier's icon strip and border, divided by the rows in the tallest column. */
+  --fit-h: calc(
+    (100cqh - 34px - (var(--heads) * (var(--head-h) + 1px)) - var(--rows) * 1px)
+    / var(--rows) - (var(--row-pad) * 2)
+  );
+  /* Width left for chips: the sheet, less the counted furniture. */
+  --fit-w: calc((100cqw - var(--furniture)) / var(--wide));
+  --chip: max(14px, min(var(--fit-h), var(--fit-w)));
+
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  /* No scrollbars: this view either fits or it is not doing its job. The floor
+     on --chip above keeps it legible rather than letting it vanish. */
+  overflow: hidden;
+  height: 100%;
+  min-height: 0;
+}
+
+.col {
+  display: flex; flex-direction: column;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  min-width: min-content;
+}
+.colHead {
+  display: flex; align-items: baseline; gap: 7px; padding: 4px 8px;
+  border-bottom: 1px solid var(--line); background: rgba(255, 255, 255, 0.015);
+  border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
+}
+.colTitle { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.colCount { font-size: 9.5px; color: var(--text-3); }
+
+.tier { display: flex; align-items: stretch; border-bottom: 1px solid var(--line); }
+.tier:last-child { border-bottom: none; }
+.tierTab {
+  width: 17px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  border-right: 1px solid var(--line); background: rgba(255, 255, 255, 0.02);
+}
+.tierLabel { font-size: 8.5px; font-weight: 700; color: var(--text-2); }
+.tierBody { flex: 1; min-width: min-content; display: flex; flex-direction: column; }
+
+/* Icons instead of rotated words. A diagonal label costs about 20px of height
+   per tier, which across three tiers is a whole unit row: the exact thing this
+   view cannot spare. The role name lives on the column's title attribute. */
+.roleHead {
+  display: flex; align-items: center; gap: 5px;
+  height: var(--head-h); padding: 0 5px;
+  border-bottom: 1px solid var(--line);
+}
+.roleIcon { max-height: var(--head-h); width: auto; image-rendering: pixelated; opacity: 0.75; }
+.roleGlyph { display: flex; color: var(--text-3); opacity: 0.85; }
+.roleText { font-size: 7px; color: var(--text-3); white-space: nowrap; overflow: hidden; }
+
+.row {
+  display: flex; align-items: center; gap: 5px;
+  padding: var(--row-pad) 5px;
+  border-bottom: 1px dashed var(--line);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--fac) 7%, transparent), transparent 46%);
+}
+.row:last-child { border-bottom: none; }
+.facMark { display: flex; align-items: center; width: 11px; flex-shrink: 0; color: var(--fac); }
+
+.roleCols { display: flex; align-items: center; flex-wrap: nowrap; }
+.roleCol {
+  box-sizing: content-box;
+  display: flex; align-items: center; gap: var(--chip-gap); flex-shrink: 0;
+  padding: 0 2px;
+  border-right: 1px dashed color-mix(in srgb, var(--fac) 30%, transparent);
+}
+.roleHead .roleCol {
+  border-right: 1px dashed transparent;
+  justify-content: center;
+}
+.roleCol:first-child { padding-left: 0; }
+.roleCol:last-child { border-right: none; padding-right: 0; }
+
+.slot {
+  width: var(--chip); height: var(--chip); flex-shrink: 0; border-radius: 3px;
+  border: 1px dashed color-mix(in srgb, var(--fac) 26%, transparent);
+}
+
+/* Below this there is no honest one-screen layout for four columns of army, so
+   the view stops pretending and scrolls like the others. */
+@media (max-width: 1100px), (max-height: 620px) {
+  .sheet { overflow: auto; flex-wrap: wrap; height: auto; }
+  .sheet { --chip: 26px; }
+}

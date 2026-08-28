@@ -138,3 +138,39 @@
   .resultsTop { gap: 8px; }
   .main { padding: 12px 12px 0; }
 }
+
+/* One page fits the viewport rather than growing past it.
+
+   The roster was never the thing that overflowed: the filter rail is taller
+   than a laptop screen on its own, so the page scrolled even with the sheet
+   fitting perfectly. Here the middle is pinned to the viewport and the rail
+   scrolls inside itself, which is what a fixed side rail should do anyway. */
+/* The shell is what has to stop growing. Setting a height on the middle alone
+   did nothing: it is a flex child with flex:1, so the shell grew to fit the
+   rail and then stretched the middle to match. Pin the shell to the viewport
+   and the flex children divide what is actually there. */
+.shell[data-view='onepage'] { height: 100dvh; min-height: 0; overflow: hidden; }
+.middle[data-view='onepage'] { min-height: 0; overflow: hidden; }
+.middle[data-view='onepage'] .railWrap { overflow-y: auto; overflow-x: hidden; }
+.main[data-view='onepage'] {
+  min-height: 0;
+  overflow: hidden;
+  /* Every pixel above the roster is a pixel the chips do not get. In a window
+     778px tall the page furniture was taking 302 of them, so the title row and
+     the chip row are tightened here and nowhere else. */
+  padding: 10px 20px 10px;
+  gap: 8px;
+}
+.main[data-view='onepage'] .title { font-size: 17px; }
+.main[data-view='onepage'] .resultsBar { gap: 6px; }
+/* The footer keeps its attribution, which is not optional, but it says it on
+   one tight line here rather than taking 120px of the roster's height. */
+.shell[data-view='onepage'] footer {
+  padding: 6px 22px 7px;
+  font-size: 10.5px;
+  line-height: 1.35;
+  gap: 2px 14px;
+  flex-shrink: 0;
+}
+.shell[data-view='onepage'] footer > :nth-child(n + 2):nth-child(-n + 4) { display: none; }
+.main[data-view='onepage'] > :last-child { flex: 1; min-height: 0; }
