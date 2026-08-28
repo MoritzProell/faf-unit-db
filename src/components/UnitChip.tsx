@@ -34,10 +34,21 @@ export function UnitChip({
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [flip, setFlip] = useState({ x: false, up: false, down: false });
+  /**
+   * The card is not rendered until the chip is first pointed at.
+   *
+   * The roster puts 400+ chips on one page and every card is eleven elements,
+   * so mounting them all up front cost roughly 4500 nodes that nobody had
+   * asked to see — enough to make the first hover on each chip feel late while
+   * the browser did style and layout work for cards still hidden. Once armed
+   * it stays mounted, so moving back and forth over the same chip is instant.
+   */
+  const [armed, setArmed] = useState(false);
 
   // Measured on hover rather than guessed: which chips sit near an edge depends
   // on layout and scroll position, neither known at render time.
   const measure = useCallback(() => {
+    setArmed(true);
     const el = wrapRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
@@ -74,6 +85,7 @@ export function UnitChip({
         />
       </Link>
 
+      {armed && (
       <div className={styles.card}>
         <div className={styles.panel}>
           <div className={styles.top}>
@@ -109,6 +121,7 @@ export function UnitChip({
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 }
