@@ -44,6 +44,8 @@ export const metadata: Metadata = {
     'Supreme Commander', 'Forged Alliance Forever', 'FAF', 'supcom',
     'unit database', 'unit stats', 'DPS', 'balance', 'FAF units',
     'fafunits', 'fafunits.com', 'faf unit db', 'faf unit database',
+    'supreme commander units', 'forged alliance units',
+    'supreme commander unit database', 'forged alliance unit list',
   ],
   alternates: { canonical: '/' },
   openGraph: {

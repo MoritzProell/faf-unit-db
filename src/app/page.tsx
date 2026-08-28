@@ -29,6 +29,8 @@ export default async function BrowsePage() {
           alternateName: [
             'fafunits',
             'fafunits.com',
+            'Supreme Commander unit database',
+            'Forged Alliance unit database',
             'FAF Unit Database',
             'Supreme Commander Forged Alliance Forever Unit Database',
           ],

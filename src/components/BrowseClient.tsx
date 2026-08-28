@@ -146,7 +146,12 @@ export function BrowseClient({
     const isMobile = kinds.length === 3 && MOBILE_KINDS.every((k) => filters.kinds.has(k));
     if (isMobile) parts.push('Mobile units');
     else if (kinds.length < KINDS.length) parts.push(kinds.map((k) => KIND_LABEL[k]).join(' + '));
-    if (!parts.length) return query ? `Search: ${query}` : 'All units';
+    // The unfiltered heading names the game, not just the page. "All units" is
+    // the only h1 a search engine sees on the front page, and it said nothing
+    // about what the units are from, which is the thing people search for.
+    if (!parts.length) {
+      return query ? `Search: ${query}` : 'All Supreme Commander: Forged Alliance units';
+    }
     return parts.join(' · ');
   }, [filters, query]);
 
