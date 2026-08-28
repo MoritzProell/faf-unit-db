@@ -1,8 +1,17 @@
-.groups { display: flex; flex-direction: column; gap: 14px; }
+/* Sections sit side by side rather than stacked. A faction row here holds five
+   to eight units and needs about 300px, so a single column left roughly 85% of
+   the width empty and pushed the page to six screens. Boxes stay intact rather
+   than being split across columns, so a section is always read as one thing. */
+.groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
 
 .box { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
 .boxHead {
-  display: flex; align-items: baseline; gap: 9px; padding: 8px 13px;
+  display: flex; align-items: baseline; gap: 9px; padding: 6px 11px;
   border-bottom: 1px solid var(--line); background: rgba(255, 255, 255, 0.015);
 }
 .boxTitle { font-size: 12px; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; }
@@ -12,22 +21,25 @@
 .tier { display: flex; align-items: stretch; border-bottom: 1px solid var(--line); }
 .tier:last-child { border-bottom: none; }
 .tierTab {
-  width: 34px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  width: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
   border-right: 1px solid var(--line); background: rgba(255, 255, 255, 0.02);
 }
 .tierLabel { font-size: 11px; font-weight: 700; color: var(--text-2); }
 .tierRows { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
 .row {
-  display: flex; align-items: center; gap: 9px; padding: 5px 10px 5px 8px;
+  display: flex; align-items: center; gap: 7px; padding: 4px 8px 4px 6px;
   border-bottom: 1px dashed var(--line);
   background: linear-gradient(90deg, color-mix(in srgb, var(--fac) 7%, transparent), transparent 46%);
 }
 .row:last-child { border-bottom: none; }
 .rowMark { display: flex; align-items: center; color: var(--fac); flex-shrink: 0; }
-.rowUnits { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 4px; }
+.rowUnits { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 3px; }
 .rowCount { font-size: 10px; color: var(--text-3); flex-shrink: 0; align-self: flex-start; margin-top: 4px; }
 
+@media (max-width: 760px) {
+  .groups { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 700px) {
   .tierTab { width: 26px; }
   .row { padding: 4px 7px; gap: 6px; }

@@ -85,7 +85,7 @@ export function CompactGroups({
                                   <UnitChip
                                     key={u.id}
                                     unit={u}
-                                    size={40}
+                                    size={34}
                                     selected={selected.includes(u.id)}
                                     onToggle={onToggle}
                                     sort={sort}
