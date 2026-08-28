@@ -82,11 +82,14 @@ export function CompactGroups({
   selected,
   onToggle,
   sort,
+  pickMode = false,
 }: {
   units: BrowseUnit[];
   selected: string[];
   onToggle: (id: string) => void;
   sort: SortDef;
+  /** Passed to every chip: while picking, a click adds rather than opens. */
+  pickMode?: boolean;
 }) {
   const bySection = new Map<string, BrowseUnit[]>();
   for (const u of units) {
@@ -223,6 +226,7 @@ export function CompactGroups({
                                         onToggle={onToggle}
                                         sort={sort}
                                         eager={rendered++ < EAGER_UNTIL}
+                                        pickMode={pickMode}
                                       />
                                     );
                                   })}

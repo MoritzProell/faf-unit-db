@@ -104,11 +104,11 @@ export function TopBar({
       </div>
 
       <div className={styles.actions}>
-        {compare.href && !pickMode ? (
-          <Link href={compare.href} className={styles.pill}>
-            Compare<span className={`m ${styles.badge}`}>{compare.ids.length}</span>
-          </Link>
-        ) : onTogglePickMode ? (
+        {/* On the roster the button is always the pick-mode toggle, never a
+            shortcut to /compare. It used to become that link as soon as two
+            units were picked, which left no way back into picking to add a
+            third. Going to the comparison is the banner's job. */}
+        {onTogglePickMode ? (
           <button
             type="button"
             className={styles.pill}
@@ -119,6 +119,10 @@ export function TopBar({
             {pickMode ? 'Done picking' : 'Compare'}
             {compare.ids.length > 0 && <span className={`m ${styles.badge}`}>{compare.ids.length}</span>}
           </button>
+        ) : compare.href ? (
+          <Link href={compare.href} className={styles.pill}>
+            Compare<span className={`m ${styles.badge}`}>{compare.ids.length}</span>
+          </Link>
         ) : (
           <span className={styles.pill} data-disabled="true" title="Open a unit to add it to a comparison">
             Compare

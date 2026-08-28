@@ -271,9 +271,9 @@ export function BrowseClient({
               <button className={styles.emptyAction} onClick={reset}>Reset filters</button>
             </div>
           ) : view === 'groups' ? (
-            <SectionGroups units={results} selected={compare.ids} onToggle={compare.toggle} sort={sort} />
+            <SectionGroups units={results} selected={compare.ids} onToggle={compare.toggle} sort={sort} pickMode={pickMode} />
           ) : view === 'compact' ? (
-            <CompactGroups units={results} selected={compare.ids} onToggle={compare.toggle} sort={sort} />
+            <CompactGroups units={results} selected={compare.ids} onToggle={compare.toggle} sort={sort} pickMode={pickMode} />
           ) : (
             <>
               {cardSections.map(([section, list], si) => (

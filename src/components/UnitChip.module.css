@@ -59,3 +59,18 @@
 .compare[data-on='true'] {
   background: var(--best-bg); border-color: var(--best-line); color: var(--best);
 }
+
+/* Pick mode: the chip itself adds the unit to the comparison rather than
+   opening it, so it needs to look like a target and show whether it is in. */
+.btn { background: none; border: 0; padding: 0; cursor: inherit; }
+.wrap[data-pick='true'] { cursor: pointer; }
+.wrap[data-pick='true'] .btn { position: relative; display: block; }
+.pickMark {
+  position: absolute; top: -3px; right: -3px; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  width: 15px; height: 15px; border-radius: 4px;
+  background: rgba(10, 12, 14, 0.86); border: 1px solid var(--line-2); color: var(--text-2);
+}
+.wrap[data-pick='true'][data-selected='true'] .pickMark {
+  background: var(--best-bg); border-color: var(--best-line); color: var(--best);
+}

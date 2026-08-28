@@ -23,6 +23,7 @@ export function UnitChip({
   onToggle,
   sort,
   eager = false,
+  pickMode = false,
 }: {
   unit: BrowseUnit;
   size?: number | string;
@@ -31,6 +32,13 @@ export function UnitChip({
   sort: SortDef;
   /** Above-the-fold chips must not lazy-load; the roster is 400+ images. */
   eager?: boolean;
+  /**
+   * While picking for a comparison the chip adds the unit instead of opening
+   * it. Without this the roster views ignored pick mode entirely and every
+   * click navigated away, which is not what a button called "Compare" that
+   * says "Done picking" promises.
+   */
+  pickMode?: boolean;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [flip, setFlip] = useState({ x: false, up: false, down: false });
@@ -67,23 +75,47 @@ export function UnitChip({
       ref={wrapRef}
       className={styles.wrap}
       data-selected={selected}
+      data-pick={pickMode}
       data-flip={flip.x}
       data-flip-up={flip.up}
       data-flip-down={flip.down}
       onMouseEnter={measure}
       onFocus={measure}
     >
-      <Link href={`/unit/${unit.slug}`} className={styles.btn} aria-label={`${unit.name}, ${unit.role}`}>
-        <UnitWell
-          id={unit.id}
-          faction={unit.faction}
-          techLabel={unit.techLabel}
-          size={size}
-          imageSize={typeof size === 'number' ? Math.round(size * 0.93) : undefined}
-          hasRender={unit.hasRender}
-          priority={eager}
-        />
-      </Link>
+      {pickMode ? (
+        <button
+          type="button"
+          className={styles.btn}
+          onClick={() => onToggle(unit.id)}
+          aria-pressed={selected}
+          aria-label={`${selected ? 'Remove' : 'Add'} ${unit.name} ${selected ? 'from' : 'to'} comparison`}
+        >
+          <UnitWell
+            id={unit.id}
+            faction={unit.faction}
+            techLabel={unit.techLabel}
+            size={size}
+            imageSize={typeof size === 'number' ? Math.round(size * 0.93) : undefined}
+            hasRender={unit.hasRender}
+            priority={eager}
+          />
+          <span className={styles.pickMark} aria-hidden="true">
+            <Icon name={selected ? 'check' : 'plus'} size={11} strokeWidth={selected ? 2.6 : 2} />
+          </span>
+        </button>
+      ) : (
+        <Link href={`/unit/${unit.slug}`} className={styles.btn} aria-label={`${unit.name}, ${unit.role}`}>
+          <UnitWell
+            id={unit.id}
+            faction={unit.faction}
+            techLabel={unit.techLabel}
+            size={size}
+            imageSize={typeof size === 'number' ? Math.round(size * 0.93) : undefined}
+            hasRender={unit.hasRender}
+            priority={eager}
+          />
+        </Link>
+      )}
 
       {armed && (
       <div className={styles.card}>

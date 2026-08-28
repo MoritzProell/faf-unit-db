@@ -29,11 +29,14 @@ export function SectionGroups({
   selected,
   onToggle,
   sort,
+  pickMode = false,
 }: {
   units: BrowseUnit[];
   selected: string[];
   onToggle: (id: string) => void;
   sort: SortDef;
+  /** Passed to every chip: while picking, a click adds rather than opens. */
+  pickMode?: boolean;
 }) {
   // Collapsed sections, by name. Everything starts open: the roster is what
   // the page is for, and a view that opens folded makes you work to see it.
@@ -156,6 +159,7 @@ export function SectionGroups({
                                         onToggle={onToggle}
                                         sort={sort}
                                         eager={rendered++ < EAGER_UNTIL}
+                                        pickMode={pickMode}
                                       />
                                     );
                                   })}
