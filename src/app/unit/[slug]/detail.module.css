@@ -77,6 +77,14 @@
 .glanceValue { display: flex; align-items: baseline; gap: 7px; }
 .glanceFigure { font-size: 24px; font-weight: 500; line-height: 1; }
 .glanceUnit { font-size: 11px; color: var(--text-3); }
+/* The shield half of a combat unit's effective health pool, on the health
+   card. Blue so it reads as the shield and not as part of the hp figure. */
+.glanceShieldAdd {
+  font-size: 12px; font-weight: 500; color: #7cc2f5;
+  padding: 1px 6px; border-radius: 4px;
+  background: rgba(61, 155, 233, 0.12);
+  border: 1px solid rgba(61, 155, 233, 0.28);
+}
 .glanceFoot { font-size: 10.5px; color: var(--text-3); }
 .track { height: 4px; border-radius: 2px; background: #1b1f22; overflow: hidden; }
 .trackFill { height: 100%; border-radius: 2px; background: var(--best); }

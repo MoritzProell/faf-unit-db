@@ -107,7 +107,19 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
   // roleOf, not unit.role: the latter is the game's own label for the unit
   // ("Heavy Shield Generator"), not the taxonomy slot.
   const roleKey = roleOf(unit);
-  const shield = roleKey === 'Shield' ? shieldEconomy(unit) : null;
+  // Any shield at all, including the personal ones. A Titan, a Fatboy and an
+  // Obsidian are balanced around a smaller health pool than their peers plus a
+  // shield that comes back, so reading their health alone reads them as
+  // fragile. The shield belongs on the health card and in the bar.
+  const anyShield = shieldEconomy(unit);
+  // The four-card shield treatment is only for units bought FOR the shield.
+  const shield = roleKey === 'Shield' ? anyShield : null;
+  const personalShield = roleKey === 'Shield' ? null : anyShield;
+  // Both survivability bars are drawn to one scale — the larger pool fills the
+  // row and the smaller one is as short as it really is. A floor of 9% keeps a
+  // 500 hp structure under a 13 000 hp shield from vanishing entirely.
+  const poolMax = Math.max(unit.health, anyShield?.hp ?? 0);
+  const barPct = (v: number) => (poolMax > 0 ? Math.max(9, (v / poolMax) * 100) : 100);
   const massEcon =
     roleKey === 'Mass extraction' || roleKey === 'Mass fabrication'
       ? massEconomy(unit)
@@ -390,10 +402,21 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                 icon="health"
                 figure={fmtNum(unit.health)}
                 unit="hp"
+                extra={
+                  personalShield && (
+                    <span className={`m ${styles.glanceShieldAdd}`}>
+                      +{fmtNum(personalShield.hp)} shield
+                    </span>
+                  )
+                }
                 foot={
                   <Rank
                     percent={cohort.healthPercent}
-                    text={`${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label}`}
+                    text={
+                      personalShield
+                        ? `${fmtNum(unit.health + personalShield.hp)} with the shield up · ${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label} on health alone`
+                        : `${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label}`
+                    }
                   />
                 }
               />
@@ -498,19 +521,24 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
           <section className={styles.secSurvive}>
             <SectionHead label="Survivability" />
             <div className={styles.panel}>
-              {/* A shield generator's real health bar is the shield. Drawn
-                  first, in blue, and scaled against it so the structure
-                  underneath reads at its true size — on an ED4 that is 500 hp
-                  of building under 13 000 hp of shield. */}
-              {shield && (
+              {/* Anything with a shield gets the blue bar, drawn first and
+                  with the health bar scaled against it, so the split between
+                  the two pools is visible rather than stated. An ED4 is 500 hp
+                  of building under 13 000 hp of shield; a Fatboy is 12 500 hp
+                  under 20 000, which is the whole reason it survives a fight
+                  its raw health says it should lose. */}
+              {anyShield && (
                 <div className={styles.hpBarRow}>
-                  <div className={styles.hpBar}>
+                  <div
+                    className={`${styles.hpBar} ${styles.hpBarScaled}`}
+                    style={{ width: `${barPct(anyShield.hp)}%` }}
+                  >
                     <div className={styles.shieldFill} />
-                    <span className={`t ${styles.hpLabel}`}>{fmtNum(shield.hp)} SHIELD</span>
+                    <span className={`t ${styles.hpLabel}`}>{fmtNum(anyShield.hp)} SHIELD</span>
                   </div>
                   <span className={styles.hpRatio}>
                     <span className="m" style={{ color: 'var(--text)' }}>
-                      {shield.perMass ? fmtRatio(shield.perMass, 2) : '–'}
+                      {anyShield.perMass ? fmtRatio(anyShield.perMass, 2) : '–'}
                     </span>{' '}
                     / mass
                   </span>
@@ -518,12 +546,8 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
               )}
               <div className={styles.hpBarRow}>
                 <div
-                  className={shield ? `${styles.hpBar} ${styles.hpBarScaled}` : styles.hpBar}
-                  style={
-                    shield
-                      ? { width: `${Math.max(9, (unit.health / shield.hp) * 100)}%` }
-                      : undefined
-                  }
+                  className={anyShield ? `${styles.hpBar} ${styles.hpBarScaled}` : styles.hpBar}
+                  style={anyShield ? { width: `${barPct(unit.health)}%` } : undefined}
                 >
                   <div className={styles.hpFill} />
                   <span className={`t ${styles.hpLabel}`}>{fmtNum(unit.health)} HP</span>
@@ -768,10 +792,10 @@ function SectionHead({ label, note }: { label: string; note?: string }) {
 }
 
 function Glance({
-  label, figure, unit, foot, icon, tone,
+  label, figure, unit, foot, icon, tone, extra,
 }: {
   label: string; figure: string; unit?: string; foot: React.ReactNode;
-  icon?: IconName; tone?: 'shield';
+  icon?: IconName; tone?: 'shield'; extra?: React.ReactNode;
 }) {
   return (
     <div className={styles.glance} data-tone={tone}>
@@ -782,6 +806,7 @@ function Glance({
       <div className={styles.glanceValue}>
         <span className={`m ${styles.glanceFigure}`}>{figure}</span>
         {unit && <span className={styles.glanceUnit}>{unit}</span>}
+        {extra}
       </div>
       {foot}
     </div>
