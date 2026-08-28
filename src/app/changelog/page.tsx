@@ -34,16 +34,41 @@ export default async function ChangelogPage() {
     <div className={styles.shell}>
       <TopBar version={version} totalUnits={units.length} />
 
-      <main className={styles.wrap}>
-        <div className={styles.head}>
-          <h1 className={`t ${styles.title}`}>Patch changes</h1>
-        </div>
+      <div className={styles.head}>
+        <h1 className={`t ${styles.title}`}>Patch changes</h1>
         <p className={styles.lede}>
           Every stat change below is computed by diffing the unit blueprints between patches, so it
           reflects what actually shipped rather than what the notes mention. FAF&rsquo;s own release
           notes sit alongside for the reasoning.
         </p>
+      </div>
 
+      <div className={styles.layout}>
+        {patches.length > 0 && (
+          <aside className={styles.rail} aria-label="Patches">
+            <div className={styles.railHead}>
+              <span className={`t ${styles.railTitle}`}>PATCHES</span>
+              <span className={`m ${styles.railCount}`}>{patches.length}</span>
+            </div>
+            <nav className={styles.railList}>
+              {patches.map((p, i) => {
+                const units =
+                  p.changed.length + p.added.length + p.removed.length;
+                return (
+                  <a key={p.version} href={`#patch-${p.version}`} className={styles.railItem}>
+                    <span className={`m ${styles.railVersion}`}>{p.version}</span>
+                    <span className={styles.railMeta}>
+                      {units === 0 ? 'no unit changes' : `${units} unit${units === 1 ? '' : 's'}`}
+                    </span>
+                    {i === 0 && <span className={styles.railLatest}>latest</span>}
+                  </a>
+                );
+              })}
+            </nav>
+          </aside>
+        )}
+
+      <main className={styles.wrap}>
         {patches.length === 0 ? (
           <p className={styles.empty}>No patch history recorded yet.</p>
         ) : (
@@ -151,6 +176,7 @@ export default async function ChangelogPage() {
           ))
         )}
       </main>
+      </div>
 
       <SiteFooter version={version} />
     </div>
