@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Montserrat, Nunito, IBM_Plex_Mono } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import './globals.css';
 
@@ -71,7 +72,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
