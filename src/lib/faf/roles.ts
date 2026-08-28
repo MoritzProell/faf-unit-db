@@ -45,6 +45,9 @@ const T3_HEAVY_MASS = 700;
 /** T1 light bots are 30-42 mass, T1 tanks 54-56. */
 const T1_TANK_MASS = 50;
 
+/** Where a T1/T2 land bot counts as outranging the tanks rather than fighting them. */
+const SKIRMISHER_RANGE = 30;
+
 /**
  * Where an experimental counts as long range, measured on its PRIMARY weapon.
  *
@@ -148,6 +151,27 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
 
   // Land direct-fire. Chassis is ignored: a Mantis and a Striker are the same
   // slot, and so are an Ilshavoh and a Heavy Tank.
+  // A bot that outranges the tanks is a different unit from one that closes
+  // with them: at T2 the tanks sit at 18-24 range and the Mongoose and Hoplite
+  // at 34 and 37. Scoped to T1 and T2 because at T3 the long reach belongs to
+  // the heaviest units — a Percival reaches 34 and is nobody's skirmisher.
+  [
+    'Skirmisher',
+    (c, u) =>
+      c.has('DIRECTFIRE') && c.has('LAND') && c.has('BOT') &&
+      (c.has('TECH1') || c.has('TECH2')) &&
+      primaryRange(u) >= SKIRMISHER_RANGE,
+  ],
+  // Crossing water is the unit's purpose at T1 and T2 — the Blaze, Yenzyne,
+  // Riptide and Wagner are bought for it. At T3 it is incidental: the
+  // Percival, Brick and Othuum are amphibious and are still heavy tanks.
+  [
+    'Hover',
+    (c) =>
+      c.has('DIRECTFIRE') && c.has('LAND') &&
+      (c.has('HOVER') || c.has('AMPHIBIOUS')) &&
+      (c.has('TECH1') || c.has('TECH2')),
+  ],
   [
     'Light tank',
     (c, u) =>
@@ -163,6 +187,7 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
       c.has('DIRECTFIRE') && c.has('LAND') && c.has('TECH1') &&
       (u.Economy?.BuildCostMass ?? 0) < T1_TANK_MASS,
   ],
+  ['Heavy tank', (c) => c.has('DIRECTFIRE') && c.has('LAND') && c.has('TECH2')],
   ['Tank', (c) => c.has('DIRECTFIRE') && c.has('LAND')],
 
   ['Direct fire', (c) => c.has('DIRECTFIRE')],
@@ -237,6 +262,8 @@ export const ROLE_SHORT: Record<string, string> = {
   Carrier: 'CARR',
   'Missile submarine': 'M-SUB',
   Submarine: 'SUB',
+  Skirmisher: 'SKIRM',
+  Hover: 'HOVER',
   'Light bot': 'LT BOT',
   'Light tank': 'LIGHT',
   'Heavy tank': 'HEAVY',

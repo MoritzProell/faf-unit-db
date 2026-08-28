@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { UnitWell } from '@/components/UnitWell';
 import { FactionMark } from '@/components/FactionMark';
-import { Icon } from '@/components/Icon';
+import { Icon, type IconName } from '@/components/Icon';
 import { MassMark, EnergyMark, TimeMark } from '@/components/Marks';
 import { fmtNum } from '@/lib/faf/decorate';
 import type { CompareGroup } from '@/lib/faf/compare';
@@ -22,6 +22,35 @@ export interface CompareUnit {
   buildTime: number;
   abilities: string[];
 }
+
+/**
+ * The same glyphs the unit page puts on these stats. Scrolled down a long
+ * comparison the column headers are gone and a row of bare numbers gives no
+ * clue what it measures; the icon survives where the header does not. Keyed by
+ * label because compare.ts builds rows in a dozen places, and threading an
+ * icon through every one of them would be worse than a lookup.
+ */
+const ROW_ICON: Record<string, IconName> = {
+  Mass: 'wreck',
+  Energy: 'bolt',
+  'Build time': 'clock',
+  Health: 'health',
+  'HP per mass': 'shield',
+  'Wreckage mass': 'wreck',
+  'Health per vet level': 'veterancy',
+  DPS: 'damage',
+  'DPS per mass': 'damage',
+  Range: 'range',
+  'Damage per shot': 'damage',
+  Reload: 'clock',
+  Speed: 'speed',
+  'Vision radius': 'vision',
+  'Radar radius': 'radar',
+  'Sonar radius': 'sonar',
+  'Shield health': 'shield',
+  'Shield radius': 'radius',
+  Regen: 'regen',
+};
 
 export function CompareTable({ units, groups }: { units: CompareUnit[]; groups: CompareGroup[] }) {
   const [onlyDiff, setOnlyDiff] = useState(false);
@@ -102,7 +131,10 @@ export function CompareTable({ units, groups }: { units: CompareUnit[]; groups: 
                   return (
                     <div key={row.label} className={styles.row} data-stripe={ri % 2 === 1}>
                       <div className={styles.rowLabel}>
-                        <span className={styles.rowLabelText}>{row.label}</span>
+                        {ROW_ICON[row.label] && (
+                            <Icon name={ROW_ICON[row.label]} size={11} strokeWidth={1.7} />
+                          )}
+                          <span className={styles.rowLabelText}>{row.label}</span>
                         {row.ranked && row.lowerBetter !== groupLower && (
                           <span className={styles.rowDir} title={row.lowerBetter ? 'lower is better' : 'higher is better'}>
                             <Icon name={row.lowerBetter ? 'down' : 'up'} size={11} strokeWidth={2} />
