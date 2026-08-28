@@ -139,7 +139,6 @@ export interface Slot {
 const FACTIONS: Faction[] = ['UEF', 'Cybran', 'Aeon', 'Seraphim', 'Nomads'];
 
 const STRUCTURE_SLOT: Record<string, string> = {
-  'Direct fire': 'point defence',
   Artillery: 'artillery installation',
   'Anti-air': 'anti-air installation',
   'Anti-navy': 'torpedo launcher',
@@ -193,15 +192,9 @@ export function buildSlots(all: Unit[]): Slot[] {
       }));
 
     const present = new Set(list.map((u) => u.faction));
-    // Match the unit pages: a "Special" slot says which kind it is.
-    const specialLabel =
-      role === 'Special'
-        ? list.every((u) => (u.Categories ?? []).includes('BOMB'))
-          ? 'one-shot unit'
-          : list.every((u) => (u.Categories ?? []).includes('SNIPER'))
-            ? 'sniper'
-            : 'special unit'
-        : undefined;
+    // Match the unit pages. Since the sniper bots moved to their own role,
+    // "Special" holds only the one-shot units.
+    const specialLabel = role === 'Special' ? 'one-shot unit' : undefined;
     const roleLabel =
       specialLabel ?? (kind === 'Base' ? STRUCTURE_SLOT[role] : undefined) ?? role.toLowerCase();
     const techLabel = tech === 'EXP' ? 'T4' : tech;

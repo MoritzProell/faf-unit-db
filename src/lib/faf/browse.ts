@@ -14,7 +14,7 @@ export const ROLE_CATEGORY: Record<string, string> = {
 };
 
 export const ROLE_LABEL: Record<string, string> = {
-  direct: 'Direct fire',
+  direct: 'Point defence',
   artillery: 'Artillery',
   antiair: 'Anti-air',
   antinavy: 'Anti-navy',

@@ -37,6 +37,11 @@ const UNBUILDABLE = new Set([
   'XNA0107', // Transport Drone (Nomads pod)
   'SRL0310', // Mobile EMP Missile Launcher — no faction builds it, and no
              // player reports seeing it in game
+  'XEA0002', // Novax Defense Satellite. You do not build it; you build the
+             // Novax Center, which is already listed, and the satellite is
+             // what the Center puts in orbit. Two entries for one decision,
+             // and the satellite's 100 hp made every stat in the experimental
+             // air slot meaningless next to a 75 000 hp Soul Ripper.
 ]);
 
 const data = raw as unknown as UnitDefaults & {

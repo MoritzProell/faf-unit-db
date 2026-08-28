@@ -18,6 +18,7 @@ import { UNIT_NOTES } from '@/data/unit-notes';
 import { fmtNum, fmtRatio, round } from '@/lib/faf/decorate';
 import { buildCohort, ordinal } from '@/lib/faf/cohort';
 import { shieldEconomy, massEconomy, powerEconomy, fmtDuration } from '@/lib/faf/economy';
+import { roleOf } from '@/lib/faf/roles';
 import { enhancementsOf, groupBySlot, SLOT_LABEL, type Enhancement } from '@/lib/faf/enhancements';
 import { getUnitHistory } from '@/lib/faf/changelog';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
@@ -103,12 +104,15 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
   // Gated on the role, not just on the presence of the field. A Titan carries
   // a personal shield and an ACU produces mass, and neither is bought for it:
   // their glance should still lead with health and damage.
-  const shield = unit.role === 'Shield' ? shieldEconomy(unit) : null;
+  // roleOf, not unit.role: the latter is the game's own label for the unit
+  // ("Heavy Shield Generator"), not the taxonomy slot.
+  const roleKey = roleOf(unit);
+  const shield = roleKey === 'Shield' ? shieldEconomy(unit) : null;
   const massEcon =
-    unit.role === 'Mass extraction' || unit.role === 'Mass fabrication'
+    roleKey === 'Mass extraction' || roleKey === 'Mass fabrication'
       ? massEconomy(unit)
       : null;
-  const powerEcon = unit.role === 'Power' ? powerEconomy(unit) : null;
+  const powerEcon = roleKey === 'Power' ? powerEconomy(unit) : null;
   const kindLabel = unit.kind === 'Base' ? 'Structures' : unit.kind;
 
   const stat = (name: string, value: number | string | null | undefined, unitCode?: string) =>
@@ -918,7 +922,8 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
   // sits in is comparing the wrong number: an ED4 is 500 hp of building
   // holding up 13 000 hp of shield, and it is the shield and how much ground
   // it covers that decide which one you build.
-  const bothShields = base.role === 'Shield' && peer.role === 'Shield';
+  const baseRole = roleOf(base);
+  const bothShields = baseRole === 'Shield' && roleOf(peer) === 'Shield';
   const baseShield = bothShields ? shieldEconomy(base) : null;
   const peerShield = bothShields ? shieldEconomy(peer) : null;
   if (baseShield && peerShield) {
@@ -937,13 +942,9 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
     );
   }
 
-  // Same argument for the economy buildings: a mass extractor is not bought
-  // for its hit points.
-  const bothMass =
-    base.role === peer.role &&
-    (base.role === 'Mass extraction' || base.role === 'Mass fabrication');
-  const baseMass = bothMass ? massEconomy(base) : null;
-  const peerMass = bothMass ? massEconomy(peer) : null;
+  // No economy branch here on purpose: every faction's extractor produces the
+  // same mass per second, so the delta is 0 on every row and says nothing. The
+  // payback figures live on the glance instead.
   const hpDelta = peer.health - base.health;
   const peerDps = totalDps(peer);
   const baseDps = totalDps(base);
@@ -956,23 +957,8 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
         <div className={styles.peerRole}>{peer.role}</div>
       </div>
       <div className={styles.deltas}>
-        {baseMass && peerMass ? (
-          <>
-            <Delta
-              n={peerMass.perSecond - baseMass.perSecond}
-              format={(v) => fmtRatio(v, 2)}
-              unit="mass/s"
-            />
-            <Delta n={hpDelta} format={fmtNum} unit="hp" />
-          </>
-        ) : (
-          <>
-            <Delta n={hpDelta} format={fmtNum} unit="hp" />
-            {dpsDelta !== null && (
-              <Delta n={dpsDelta} format={(v) => fmtRatio(v, 1)} unit="dps" />
-            )}
-          </>
-        )}
+        <Delta n={hpDelta} format={fmtNum} unit="hp" />
+        {dpsDelta !== null && <Delta n={dpsDelta} format={(v) => fmtRatio(v, 1)} unit="dps" />}
       </div>
     </Link>
   );

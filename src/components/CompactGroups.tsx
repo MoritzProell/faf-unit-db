@@ -12,7 +12,21 @@ const FACTIONS: Faction[] = ['UEF', 'Cybran', 'Aeon', 'Seraphim', 'Nomads'];
 const TECH_ORDER: Tech[] = ['T1', 'T2', 'T3', 'EXP'];
 const TECH_LABEL: Record<string, string> = { T1: 'T1', T2: 'T2', T3: 'T3', EXP: 'T4' };
 
-const CHIP = 32;
+/**
+ * Chip size drives the whole view, so it is one number.
+ *
+ * The ceiling is set by the widest row of sections standing side by side:
+ * Land is 10 role columns at its widest tier, Air and Naval 6 each, which at
+ * this size comes to roughly 1300px for the three together. That leaves the
+ * three-across layout intact down to a 1440px screen, which is the narrowest
+ * width worth optimising for — below it the boxes wrap on their own and
+ * nothing clips.
+ *
+ * Splitting T2 land into heavy tank, skirmisher and hover, and moving the
+ * strays out of Naval, freed the room for this. Raise it further only after
+ * re-measuring Land: it is the section that decides.
+ */
+const CHIP = 42;
 const CHIP_GAP = 3;
 
 /**
@@ -52,7 +66,10 @@ export function CompactGroups({
   let rendered = 0;
 
   return (
-    <div className={styles.groups}>
+    // The empty-slot placeholders have to be exactly chip-sized or a faction
+    // missing a unit knocks its whole row out of alignment, so the size is
+    // published to CSS rather than repeated there.
+    <div className={styles.groups} style={{ '--chip': `${CHIP}px` } as React.CSSProperties}>
       {sections.map(([section, list]) => {
         const tiers = TECH_ORDER.map((tech) => [tech, list.filter((u) => u.tech === tech)] as const)
           .filter(([, us]) => us.length > 0);

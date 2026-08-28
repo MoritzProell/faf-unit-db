@@ -151,7 +151,6 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
   // Structures are named for what players call them, not for the category the
   // engine files them under: a Ravager is a point defence, not a "direct fire".
   const STRUCTURE_SLOT: Record<string, string> = {
-    'Direct fire': 'point defence',
     Artillery: 'artillery installation',
     'Anti-air': 'anti-air installation',
     'Anti-navy': 'torpedo launcher',
@@ -159,10 +158,9 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
     Shield: 'shield generator',
     Intel: 'sensor',
   };
-  // "Special" is a bucket, not a description. Say which kind of special.
-  const cats = new Set(unit.Categories ?? []);
-  const specialLabel =
-    role === 'Special' ? (cats.has('BOMB') ? 'one-shot unit' : 'sniper') : undefined;
+  // "Special" is a bucket, not a description. Since the sniper bots moved to
+  // their own role it holds only the one-shot units.
+  const specialLabel = role === 'Special' ? 'one-shot unit' : undefined;
   const roleLabel =
     specialLabel ?? (unit.kind === 'Base' ? STRUCTURE_SLOT[role] : undefined) ?? role.toLowerCase();
   // Name the domain when the same job exists in more than one of them,

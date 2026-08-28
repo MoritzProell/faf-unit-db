@@ -52,6 +52,13 @@ const T1_TANK_MASS = 50;
 const SKIRMISHER_RANGE = 30;
 
 /**
+ * Where an experimental stops being a unit you move and starts being a gun you
+ * site. The Mavor, Salvation and Scathis reach 4000; the next longest-reaching
+ * experimental is the Nomads Jericho at 200, and the Fatboy at 100.
+ */
+const STRATEGIC_RANGE = 1000;
+
+/**
  * Where an experimental counts as long range, measured on its PRIMARY weapon.
  *
  * Max range across all weapons is the wrong measure and says the opposite of
@@ -88,6 +95,16 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
   // run before every general rule: the Fatboy carries a shield and the Megalith
   // carries SNIPER, so either would otherwise be filed as a shield unit or a
   // sniper rather than as the experimental it is.
+  // Strategic artillery is its own thing, and it was the widest slot in the
+  // database: the Mavor, the Salvation and the Scathis reach 4000, and they
+  // sat beside the Fatboy at 100 and the Megalith at 64. A 62x range spread
+  // inside one column is not a comparison. These three shell the other side of
+  // the map from home; the rest are units you walk somewhere.
+  [
+    'Experimental artillery',
+    (c, u) =>
+      c.has('EXPERIMENTAL') && !c.has('AIR') && primaryRange(u) >= STRATEGIC_RANGE,
+  ],
   [
     'Long range',
     (c, u) =>
@@ -141,7 +158,12 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
     },
   ],
   ['Shield', (c) => c.has('SHIELD')],
-  ['Special', (c) => has(c, 'BOMB', 'SNIPER')],
+  // A sniper bot and a mobile bomb shared one role and share nothing else. The
+  // Sprite Striker and the Usha-Ah are a clean Aeon/Seraphim parallel — the
+  // only two units in the game built to kill from outside return fire — and
+  // comparing either against the Mercy told the reader nothing.
+  ['Sniper', (c) => c.has('SNIPER')],
+  ['Special', (c) => c.has('BOMB')],
 
   // Before the ship classes: a sonar buoy carries NAVAL and SUBMERSIBLE, so
   // the Seraphim one was being filed as a submarine.
@@ -212,7 +234,12 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
   ['Heavy tank', (c) => c.has('DIRECTFIRE') && c.has('LAND') && c.has('TECH2')],
   ['Tank', (c) => c.has('DIRECTFIRE') && c.has('LAND')],
 
-  ['Direct fire', (c) => c.has('DIRECTFIRE')],
+  // Named for what it is, not for its damage type. Every member is a point
+  // defence turret and every "Point Defense" unit in the game is a member,
+  // 11 for 11 both ways — but "Direct fire" also happens to be the value 78
+  // other units carry as their primary weapon category, ACUs and experimentals
+  // among them, so the old name named two completely different populations.
+  ['Point defence', (c) => c.has('DIRECTFIRE')],
 
   // Air. Gunships carry no category of their own at all — not DIRECTFIRE, not
   // anything — so the only handle on them is the name the game gives them.
@@ -276,6 +303,8 @@ export const ROLE_SHORT: Record<string, string> = {
   Engineer: 'ENG',
   Scout: 'SCOUT',
   Transport: 'TRANS',
+  'Experimental artillery': 'ARTY',
+  Sniper: 'SNIPER',
   Special: 'SPECIAL',
   'Experimental air': 'T4 AIR',
   'Experimental navy': 'T4 NAVY',
@@ -297,7 +326,7 @@ export const ROLE_SHORT: Record<string, string> = {
   'Light tank': 'LIGHT',
   'Heavy tank': 'HEAVY',
   Tank: 'TANK',
-  'Direct fire': 'DIRECT',
+  'Point defence': 'PD',
   Gunship: 'GUNSHIP',
   'Torpedo bomber': 'TORP',
   Bomber: 'BOMB',

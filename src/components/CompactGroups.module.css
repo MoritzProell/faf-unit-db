@@ -92,7 +92,7 @@
 /* A faction with no unit for a role keeps the column aligned rather than
    shifting everything left, which is the whole point of the layout. */
 .slot {
-  width: 32px; height: 32px; flex-shrink: 0; border-radius: 5px;
+  width: var(--chip, 32px); height: var(--chip, 32px); flex-shrink: 0; border-radius: 5px;
   border: 1px dashed color-mix(in srgb, var(--fac) 26%, transparent);
 }
 
