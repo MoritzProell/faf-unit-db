@@ -32,6 +32,11 @@ jobs:
 
       - run: npm ci
 
+      # build-changelog diffs the previous committed dataset against the new
+      # one, so it has to be kept before the generator overwrites it.
+      - name: Keep the current dataset for the diff
+        run: cp src/data/units.json "$RUNNER_TEMP/units-prev.json"
+
       - name: Generate from FAForever/fa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -50,6 +55,11 @@ jobs:
         id: verify
         run: npm run verify
 
+      # Only after verify, because a failed verify commits nothing and a
+      # changelog entry for a patch that was never shipped would be a lie.
+      - name: Record what this patch changed
+        run: npm run changelog -- --from "$RUNNER_TEMP/units-prev.json" --to src/data/units.json
+
       - name: Type-check and build
         run: |
           npx tsc --noEmit
@@ -58,7 +68,7 @@ jobs:
       - name: Commit if anything changed
         id: commit
         run: |
-          if git diff --quiet -- src/data public/units; then
+          if git diff --quiet -- src/data public/units public/units-lg; then
             echo "No change in unit data."
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
@@ -67,16 +77,15 @@ jobs:
           COUNT=$(node -e "console.log(require('./src/data/units.json').units.length)")
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/data public/units
+          git add src/data public/units public/units-lg
           git commit -m "Update unit data to patch ${VERSION} (${COUNT} units)"
           git push
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
-      # Two ways to ship the commit above:
-      #   1. Install the Vercel GitHub App on this repo (Vercel dashboard ->
-      #      Project -> Settings -> Git). Vercel then deploys on push and this
-      #      step is skipped. Also gives preview deploys on pull requests.
-      #   2. Add a VERCEL_TOKEN repo secret. This step deploys with it.
+      # The repo is connected to Vercel, so the push above deploys on its own
+      # and this step does nothing. It stays as a fallback: if the Git
+      # connection is ever lost, adding a VERCEL_TOKEN secret makes the
+      # workflow deploy by itself again. Check `vercel git connect` first.
       - name: Deploy to Vercel
         if: steps.commit.outputs.changed == 'true' && env.VERCEL_TOKEN != ''
         env:
