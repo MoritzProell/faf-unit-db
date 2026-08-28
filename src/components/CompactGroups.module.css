@@ -78,7 +78,14 @@
   padding: 0 3px;
   border-right: 1px dashed color-mix(in srgb, var(--fac) 32%, transparent);
 }
-.roleHead .roleCol { border-right-color: transparent; }
+/* An explicit border, not just a transparent colour.
+   The header row carries no data-faction, so --fac is undefined there, and
+   `border-right: 1px dashed color-mix(in srgb, var(--fac) …)` is invalid at
+   computed-value time. An invalid shorthand resets its longhands, taking
+   border-style to none and the width to 0 — so every header column came out a
+   pixel narrower than the unit column below it, and the labels drifted a
+   pixel further left with each one, six pixels adrift by the last. */
+.roleHead .roleCol { border-right: 1px dashed transparent; }
 .roleCol:first-child { padding-left: 0; }
 .roleCol:last-child { border-right: none; padding-right: 0; }
 
