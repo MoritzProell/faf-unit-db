@@ -97,6 +97,11 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
   ['Experimental assault', (c) => c.has('EXPERIMENTAL')],
 
   ['Scout', (c) => c.has('SCOUT')],
+  // Before Transport and Direct fire, both of which were claiming gunships
+  // first: the UEF Stinger carries a one-unit transport clamp, and the Nomads
+  // Hornet and Vangard carry DIRECTFIRE. All three are gunships and were
+  // filed as a transport and as direct fire respectively.
+  ['Gunship', (c, u) => c.has('AIR') && /gunship/i.test(u.Description ?? '')],
   ['Transport', (c) => c.has('TRANSPORTATION')],
   // A shield disruptor belongs with shields: it is the unit you build because
   // of them, and nobody looking for it looks under "tank".
@@ -166,7 +171,6 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
   // anything — so the only handle on them is the name the game gives them.
   // Without this they fell through to "Other", which is why a Broadsword used
   // to be listed as an unclassified threat.
-  ['Gunship', (c, u) => c.has('AIR') && /gunship/i.test(u.Description ?? '')],
   ['Torpedo bomber', (c) => c.has('AIR') && c.has('BOMBER') && c.has('ANTINAVY')],
   ['Bomber', (c) => c.has('BOMBER')],
   ['Artillery', (c) => c.has('ARTILLERY')],
