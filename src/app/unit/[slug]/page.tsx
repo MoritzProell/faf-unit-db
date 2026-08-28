@@ -637,8 +637,12 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                     <span className="rule" />
                   </div>
                   <div className={styles.fieldGrid}>
-                    <Field label="Mass" value={fmtNum(unit.wreckage.mass)} icon="wreck" />
-                    <Field label="Mass in water" value={fmtNum(unit.wreckage.massInWater)} icon="wreck" />
+                    <Field label="Mass" value={fmtNum(unit.wreckage.mass)} mark={<MassMark size={11} />} />
+                    <Field
+                      label="Mass in water"
+                      value={fmtNum(unit.wreckage.massInWater)}
+                      mark={<MassMark size={11} />}
+                    />
                     <Field label="Health" value={fmtNum(unit.wreckage.health)} icon="health" />
                   </div>
                 </>
@@ -852,12 +856,16 @@ function Rank({ percent, text }: { percent: number; text: string }) {
 }
 
 function Field({
-  label, value, sub, icon,
-}: { label: string; value: string; sub?: string; icon?: IconName }) {
+  label, value, sub, icon, mark,
+}: {
+  label: string; value: string; sub?: string; icon?: IconName;
+  /** A rendered glyph instead of a line icon, for mass and energy. */
+  mark?: React.ReactNode;
+}) {
   return (
     <div className={styles.field}>
       <span className={`lbl ${styles.fieldLabel}`} style={{ fontSize: 9 }}>
-        {icon && <Icon name={icon} size={10} strokeWidth={1.7} />}
+        {mark ?? (icon && <Icon name={icon} size={10} strokeWidth={1.7} />)}
         {label}
       </span>
       <span>

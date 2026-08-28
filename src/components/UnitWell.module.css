@@ -35,3 +35,6 @@
   justify-content: center;
   color: var(--fac);
 }
+/* When the well is sized by CSS rather than by a pixel number, the render
+   fills it proportionally instead of carrying width/height attributes. */
+.imgFill { width: 93%; height: 93%; }

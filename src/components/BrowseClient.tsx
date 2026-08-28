@@ -102,10 +102,10 @@ export function BrowseClient({
       if (!filters.kinds.has(u.kind)) return false;
       // Unchecking a role excludes units that carry it; roleless units always pass.
       if (!rolesAllOn && u.roles.some((r) => !filters.roles.has(r))) return false;
-      if (q) {
-        const hay = `${u.name} ${u.role} ${u.type} ${u.id} ${u.abilities.join(' ')} ${u.upgrades.join(' ')}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
+      // Prebuilt on the server, and wider than the game's own words: it
+      // carries the community's names too, so "tmd" and "terminal missile
+      // defense" find the buildings the game calls Tactical Missile Defense.
+      if (q && !u.search.includes(q)) return false;
       return true;
     });
 

@@ -19,6 +19,24 @@ export function EnergyMark({ size = 13 }: { size?: number }) {
   );
 }
 
+/** Green, because health is green everywhere on this site. */
+export function HealthMark({ size = 13 }: { size?: number }) {
+  return (
+    <span className={`${styles.ring} ${styles.health}`} style={{ width: size, height: size }} aria-hidden="true">
+      <Icon name="health" size={Math.max(8, size - 5)} strokeWidth={1.4} />
+    </span>
+  );
+}
+
+/** Blue, because shields are blue in the game. */
+export function ShieldMark({ size = 13 }: { size?: number }) {
+  return (
+    <span className={`${styles.ring} ${styles.shield}`} style={{ width: size, height: size }} aria-hidden="true">
+      <Icon name="shield" size={Math.max(8, size - 5)} strokeWidth={1.4} />
+    </span>
+  );
+}
+
 export function TimeMark({ size = 13 }: { size?: number }) {
   return (
     <span className={`${styles.ring} ${styles.time}`} style={{ width: size, height: size }} aria-hidden="true">

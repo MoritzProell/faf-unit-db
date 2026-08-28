@@ -193,7 +193,7 @@ export const UNIT_NOTES: Record<string, UnitNote> = {
   },
   UAB4201: {
     text:
-      'Every faction’s tactical missile defence costs the same 280 mass, about a third of the launcher it answers, but the Aeon one is the odd one out twice over: it covers range 24 where the others cover 31, and it has 500 health where the others have 950 to 1000. Aeon have to place them tighter and lose them faster.',
+      'Not the same weapon as the other three. Every faction’s tactical missile defence costs 280 mass, but the UEF, Cybran and Seraphim ones fire a tracking interceptor that does 1 damage every 1.8 seconds out to range 31, while the Aeon one lobs a drifting flare that does 30 damage every 4 seconds out to range 24, does not track its target, and falls under gravity. It also has 500 health where the others have 950 to 1000. So it is placed tighter, dies faster, and does not answer incoming fire the way the others do.',
     derived: true,
     patch: '3838',
   },

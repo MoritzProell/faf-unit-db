@@ -26,6 +26,16 @@
   --best: #a8e84a;
   --best-bg: rgba(136, 216, 27, 0.13);
   --best-line: rgba(136, 216, 27, 0.38);
+  /* Damage reads amber, not green. Green is health everywhere else on the
+     site, and a DPS figure in the same colour as a health figure invites the
+     two to be read as the same kind of number. */
+  --dmg: #f0a93c;
+  --dmg-bg: rgba(240, 169, 60, 0.12);
+  --dmg-line: rgba(240, 169, 60, 0.36);
+  /* Shields are blue in the game and blue here. */
+  --shield: #7cc2f5;
+  --shield-bg: rgba(61, 155, 233, 0.12);
+  --shield-line: rgba(61, 155, 233, 0.34);
   --worse: #e07a63;
   --primary: #dfe6ec;
 

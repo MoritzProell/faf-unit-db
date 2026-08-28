@@ -25,7 +25,7 @@ export function UnitChip({
   eager = false,
 }: {
   unit: BrowseUnit;
-  size?: number;
+  size?: number | string;
   selected: boolean;
   onToggle: (id: string) => void;
   sort: SortDef;
@@ -79,7 +79,7 @@ export function UnitChip({
           faction={unit.faction}
           techLabel={unit.techLabel}
           size={size}
-          imageSize={Math.round(size * 0.93)}
+          imageSize={typeof size === 'number' ? Math.round(size * 0.93) : undefined}
           hasRender={unit.hasRender}
           priority={eager}
         />

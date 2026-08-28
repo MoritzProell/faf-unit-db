@@ -9,3 +9,7 @@
 .massDot { border-radius: 50%; background: var(--mass); }
 .energy { background: var(--energy-bg); border: 1px solid var(--energy); box-shadow: inset 0 0 2px var(--energy); color: var(--energy); }
 .time { background: #1a1d20; border: 1px solid #5b646d; color: var(--time); }
+/* Health and shield, ringed like mass and energy so the four read as one
+   family of glyphs rather than three glyphs and two line icons. */
+.health { background: var(--best-bg); border: 1px solid var(--best-line); color: var(--best); }
+.shield { background: var(--shield-bg); border: 1px solid var(--shield-line); color: var(--shield); }

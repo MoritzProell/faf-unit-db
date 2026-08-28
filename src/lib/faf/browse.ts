@@ -1,6 +1,7 @@
 import { roleOf } from './roles';
 import { combatDps } from './dps';
 import { enhancementsOf } from './enhancements';
+import { searchTextFor } from './aliases';
 import type { Faction, Kind, Tech, Unit } from './types';
 
 export const ROLE_CATEGORY: Record<string, string> = {
@@ -60,6 +61,12 @@ export interface BrowseUnit {
   shieldRadius: number | null;
   /** The game's own strategic icon, the symbol players actually read. */
   icon: string | null;
+  /**
+   * Everything a query matches against, lowercased and built once here rather
+   * than reassembled on every keystroke. Includes the community's words for
+   * the unit, not just the game's: TMD, mex, pgen, anti-nuke.
+   */
+  search: string;
 }
 
 export function rolesOf(unit: Unit): string[] {
@@ -100,6 +107,7 @@ export function toBrowseUnit(u: Unit): BrowseUnit {
     shieldHp: u.Defense?.Shield?.ShieldMaxHealth ?? null,
     shieldRadius: u.Defense?.Shield?.ShieldSize ?? null,
     icon: u.StrategicIconName ?? null,
+    search: searchTextFor(u, [...u.abilities, ...enhancementsOf(u).map((e) => e.name)]),
   };
 }
 

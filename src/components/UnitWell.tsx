@@ -23,8 +23,9 @@ export function UnitWell({
   id: string;
   faction: Faction;
   techLabel: string;
-  size?: number;
-  imageSize?: number;
+  /** A number of px, or any CSS length so the caller can size it responsively. */
+  size?: number | string;
+  imageSize?: number | string;
   pip?: boolean;
   priority?: boolean;
   /** A few blueprints have no render; show the faction mark rather than a gap. */
@@ -37,7 +38,11 @@ export function UnitWell({
   /** Lets a caller hang its own rules on the well (the unit hero resizes in dense mode). */
   className?: string;
 }) {
-  const inner = imageSize ?? Math.round(size * 0.93);
+  // A CSS length (e.g. "var(--chip)") sizes through the stylesheet instead of
+  // through width/height attributes, which only take numbers. The compact
+  // roster needs that: its chip size follows the viewport.
+  const css = typeof size === 'string';
+  const inner = imageSize ?? (css ? undefined : Math.round((size as number) * 0.93));
   return (
     <div
       className={className ? `${styles.well} ${className}` : styles.well}
@@ -46,18 +51,18 @@ export function UnitWell({
     >
       {hasRender ? (
         <img
-          className={styles.img}
+          className={css ? `${styles.img} ${styles.imgFill}` : styles.img}
           src={`/units${hires ? '-lg' : ''}/${id}.png`}
           alt=""
-          width={inner}
-          height={inner}
+          width={typeof inner === 'number' ? inner : undefined}
+          height={typeof inner === 'number' ? inner : undefined}
           loading={priority ? 'eager' : 'lazy'}
           fetchPriority={priority ? 'high' : 'auto'}
           decoding="async"
         />
       ) : (
         <span className={styles.placeholder} title="No unit render available">
-          <FactionMark faction={faction} size={Math.round(inner * 0.5)} opacity={0.45} />
+          <FactionMark faction={faction} size={typeof inner === 'number' ? Math.round(inner * 0.5) : 14} opacity={0.45} />
         </span>
       )}
       {pip && (

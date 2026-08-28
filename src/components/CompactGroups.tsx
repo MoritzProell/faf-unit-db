@@ -13,22 +13,24 @@ const TECH_ORDER: Tech[] = ['T1', 'T2', 'T3', 'EXP'];
 const TECH_LABEL: Record<string, string> = { T1: 'T1', T2: 'T2', T3: 'T3', EXP: 'T4' };
 
 /**
- * Chip size drives the whole view, so it is one number.
+ * Chip size follows the window, because no single number is right.
  *
- * Measured, not guessed. Land's widest tier is 20 chips across 11 columns, so
- * its box needs 20·CHIP + 194 px; Air and Naval are 12 chips across 7 columns
- * and need 12·CHIP + 138 each. Three of them side by side therefore want
- * 44·CHIP + 494. A 1440px screen gives the grid 1152, which does not fit three
- * at any chip size worth looking at — two across is the honest outcome there,
- * and the boxes wrap on their own to get it.
+ * Measured on the live page with the boxes' flex-grow off, so these are the
+ * widths the content actually asks for. Land, Air and Naval side by side need
+ * 22·chip + 328px of fixed furniture, which means the largest chip that keeps
+ * all three on one row is:
  *
- * 42 was too big: it pushed Land's own columns past its box, and because a
- * wrapping flex container reports a small min-content, the box squeezed to
- * 668px and wrapped its columns mid-row instead of claiming the width. That
- * is fixed below by not wrapping; this number is back where it reads well.
+ *     1440px screen (1152 grid) -> 36
+ *     1920px screen (1600 grid) -> 56
+ *     2000px screen (1712 grid) -> 61
+ *
+ * A fixed 32 was leaving most of a wide screen empty; a fixed 42 broke the
+ * narrow one. So the size lives in CSS as --chip and steps with the viewport,
+ * and every width here is a calc() against it rather than a number baked in at
+ * render time. Chosen conservatively: each step sits a little under its own
+ * ceiling so the layout never sits exactly on the edge of wrapping.
  */
-const CHIP = 32;
-const CHIP_GAP = 3;
+const CHIP_VAR = 'var(--chip)';
 
 /** The icon most of a column's units carry, or none if the column disagrees. */
 function modalIcon(units: BrowseUnit[]): string | null {
@@ -81,10 +83,7 @@ export function CompactGroups({
   let rendered = 0;
 
   return (
-    // The empty-slot placeholders have to be exactly chip-sized or a faction
-    // missing a unit knocks its whole row out of alignment, so the size is
-    // published to CSS rather than repeated there.
-    <div className={styles.groups} style={{ '--chip': `${CHIP}px` } as React.CSSProperties}>
+    <div className={styles.groups}>
       {sections.map(([section, list]) => {
         const tiers = TECH_ORDER.map((tech) => [tech, list.filter((u) => u.tech === tech)] as const)
           .filter(([, us]) => us.length > 0);
@@ -123,7 +122,10 @@ export function CompactGroups({
                   }
                 );
 
-                const colWidth = (w: number) => w * CHIP + (w - 1) * CHIP_GAP;
+                // calc, not arithmetic: --chip changes with the viewport and
+                // the columns have to change with it.
+                const colWidth = (w: number) =>
+                  `calc(${CHIP_VAR} * ${w} + var(--chip-gap) * ${w - 1})`;
 
                 return (
                   <div key={tech} className={styles.tier}>
@@ -186,7 +188,7 @@ export function CompactGroups({
                                       <UnitChip
                                         key={u.id}
                                         unit={u}
-                                        size={CHIP}
+                                        size={CHIP_VAR}
                                         selected={selected.includes(u.id)}
                                         onToggle={onToggle}
                                         sort={sort}

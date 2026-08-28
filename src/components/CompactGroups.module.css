@@ -1,6 +1,19 @@
 /* Sections flow into as many columns as fit rather than stacking. A single
    column left most of the width empty and ran the page to six screens. Boxes
    are grid items, not CSS columns, so a section is never split down the middle. */
+/* Chip size, and everything measured against it.
+   Stepped rather than fluid: a clamp() would leave the chips at some awkward
+   in-between size at most widths, where these steps each sit just under the
+   width at which Land, Air and Naval stop fitting on one row. Measured on the
+   live page, not estimated. */
+.groups {
+  --chip: 32px;
+  --chip-gap: 3px;
+}
+@media (min-width: 1660px) { .groups { --chip: 40px; } }
+@media (min-width: 1900px) { .groups { --chip: 48px; } }
+@media (min-width: 2200px) { .groups { --chip: 56px; } }
+
 .groups {
   /* Flex, not a uniform grid.
      Sections need very different widths — Land's T2 is about 420px once every
