@@ -111,7 +111,8 @@ export function toBrowseUnit(u: Unit): BrowseUnit {
   };
 }
 
-export type SortKey = 'hpPerMass' | 'dpsPerMass' | 'directDps' | 'health' | 'mass' | 'speed';
+export type SortKey =
+  | 'recommended' | 'hpPerMass' | 'dpsPerMass' | 'directDps' | 'health' | 'mass' | 'speed';
 
 export interface SortDef {
   key: SortKey;
@@ -129,6 +130,19 @@ const ratio = (val: number, dp = 3): string => {
 };
 
 export const SORTS: Record<SortKey, SortDef> = {
+  /**
+   * The default, and the one the roster is actually read in.
+   *
+   * Cheapest first, because that is the order you build in and the order a
+   * tier's units are learned in: the T1 tank before the T2 tank, the scout
+   * before the bomber. Every other sort ranks units against each other, which
+   * is a question you ask once you know what they are; this one just puts them
+   * in the order you meet them.
+   */
+  recommended: {
+    key: 'recommended', label: 'Recommended', tileLabel: 'Mass', direction: 'asc',
+    value: (u) => u.mass, format: (u) => fmt(u.mass),
+  },
   hpPerMass: {
     key: 'hpPerMass', label: 'HP per mass', tileLabel: 'HP / mass', direction: 'desc',
     value: (u) => u.hpPerMass, format: (u) => ratio(u.hpPerMass),
@@ -155,7 +169,9 @@ export const SORTS: Record<SortKey, SortDef> = {
   },
 };
 
-export const SORT_ORDER: SortKey[] = ['hpPerMass', 'dpsPerMass', 'directDps', 'health', 'mass', 'speed'];
+export const SORT_ORDER: SortKey[] = [
+  'recommended', 'hpPerMass', 'dpsPerMass', 'directDps', 'health', 'mass', 'speed',
+];
 
 export function fmt(val: number | null | undefined): string {
   if (val === null || val === undefined || Number.isNaN(val)) return '–';

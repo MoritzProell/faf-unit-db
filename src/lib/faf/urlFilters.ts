@@ -27,7 +27,7 @@ export const defaults = (view: ViewMode = 'compact'): BrowseState => ({
   techs: new Set(TECHS),
   kinds: new Set(KINDS),
   roles: new Set(ROLE_KEYS),
-  sort: 'hpPerMass',
+  sort: 'recommended',
   view,
 });
 

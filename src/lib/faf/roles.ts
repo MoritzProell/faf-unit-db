@@ -219,8 +219,11 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
       c.has('DIRECTFIRE') && c.has('LAND') && c.has('TECH2') &&
       (c.has('HOVER') || c.has('AMPHIBIOUS')),
   ],
+  // Light bot, not a separate "light tank" role: the Titan and the Loyalist are
+  // the T3 members of the same slot the Mech Marine and the Hunter hold at T1,
+  // and splitting them into a role of their own made a column of two.
   [
-    'Light tank',
+    'Light bot',
     (c, u) =>
       c.has('DIRECTFIRE') && c.has('LAND') && c.has('TECH3') &&
       (u.Economy?.BuildCostMass ?? 0) < T3_HEAVY_MASS,
@@ -326,7 +329,6 @@ export const ROLE_SHORT: Record<string, string> = {
   Skirmisher: 'SKIRM',
   Hover: 'HOVER',
   'Light bot': 'LT BOT',
-  'Light tank': 'LIGHT',
   'Heavy tank': 'HEAVY',
   Tank: 'TANK',
   'Point defence': 'PD',

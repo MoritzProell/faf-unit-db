@@ -3,7 +3,8 @@
 import { FactionMark } from './FactionMark';
 import { UnitChip } from './UnitChip';
 import { SECTION_ORDER } from '@/lib/faf/sections';
-import { ROLE_ORDER, ROLE_SHORT } from '@/lib/faf/roles';
+import { ROLE_SHORT } from '@/lib/faf/roles';
+import { orderedRoles } from '@/lib/faf/columns';
 import type { BrowseUnit, SortDef } from '@/lib/faf/browse';
 import type { Faction, Tech } from '@/lib/faf/types';
 import ICON_DIMS from '@/data/strategic-icons.json';
@@ -104,7 +105,11 @@ export function CompactGroups({
 
                 // A column is as wide as the busiest faction's count for that
                 // role, so every faction row lines up beneath the same label.
-                const roles = ROLE_ORDER.filter((r) => tierUnits.some((u) => u.roleKey === r)).map(
+                const roles = orderedRoles(
+                  section,
+                  [...new Set(tierUnits.map((u) => u.roleKey))],
+                  (r) => new Set(tierUnits.filter((u) => u.roleKey === r).map((u) => u.faction)).size
+                ).map(
                   (role) => {
                     const mine = tierUnits.filter((u) => u.roleKey === role);
                     return {
