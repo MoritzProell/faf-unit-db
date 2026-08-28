@@ -23,6 +23,16 @@ export interface UnitData {
   descriptions: Record<string, string>;
 }
 
+const UNBUILDABLE = new Set([
+  'XSL0402', // Ythotha death storm
+  'XRL0002', // Crab Egg (Engineer)
+  'XRL0003', // Crab Egg (Brick)
+  'XRL0004', // Crab Egg (Flak)
+  'XRL0005', // Crab Egg (Artillery)
+  'DRLK005', // Crab Egg (Bouncer)
+  'URB3103', // Scout-Deployed Land Sensor
+]);
+
 const data = raw as unknown as UnitDefaults & {
   units: Blueprint[];
   descriptions?: Record<string, string>;
@@ -34,11 +44,17 @@ export const getUnitData = cache(async (): Promise<UnitData> => {
 
   const units = data.units
     .filter((b) => b.Id && b.General?.FactionName)
-    // The Ythotha's death storm is scenery, not a unit: nothing builds it and
-    // it exists only while the corpse burns. The satellites are UNTARGETABLE
-    // too but are real things a player deploys and shoots with, so they stay —
-    // which is why this is an explicit id rather than a category rule.
-    .filter((b) => b.Id !== 'XSL0402')
+    // Things the game spawns rather than things you build. None of these has a
+    // BUILTBY category, so nothing in the roster can construct one: the
+    // Ythotha's death storm exists only while the corpse burns, the crab eggs
+    // hatch out of a deploy action, and the land sensor is dropped by a scout.
+    // They belong to no slot, no matchup and no comparison, and leaving them in
+    // bought a "Structures - Other" box holding six oddities.
+    //
+    // Listed by id rather than by rule because the trait they share — nothing
+    // builds them — is also true of the Novax and Nomads satellites, which are
+    // real things a player deploys and shoots with, and which stay.
+    .filter((b) => !UNBUILDABLE.has(b.Id))
     .map((b) => decorateUnit(b, defaults))
     .sort((a, b) => a.name.localeCompare(b.name));
 
