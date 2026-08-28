@@ -17,7 +17,7 @@ import { notablesOf } from '@/lib/faf/notable';
 import { UNIT_NOTES } from '@/data/unit-notes';
 import { fmtNum, fmtRatio, round } from '@/lib/faf/decorate';
 import { buildCohort, ordinal } from '@/lib/faf/cohort';
-import { shieldEconomy, massEconomy, powerEconomy, fmtDuration } from '@/lib/faf/economy';
+import { shieldEconomy, massEconomy, powerEconomy, intelEconomy, fmtDuration } from '@/lib/faf/economy';
 import { roleOf } from '@/lib/faf/roles';
 import { describe, hasThinDescription } from '@/lib/faf/describe';
 import ICON_DIMS from '@/data/strategic-icons.json';
@@ -131,6 +131,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
       ? massEconomy(unit)
       : null;
   const powerEcon = roleKey === 'Power' ? powerEconomy(unit) : null;
+  const intelEcon = intelEconomy(unit, roleKey);
   const kindLabel = unit.kind === 'Base' ? 'Structures' : unit.kind;
 
   const stat = (name: string, value: number | string | null | undefined, unitCode?: string) =>
@@ -366,6 +367,59 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                         {massEcon.upkeep > 0
                           ? `Draws ${fmtNum(massEcon.upkeep)} e/s while it runs`
                           : 'Runs for free'}
+                      </span>
+                    }
+                  />
+                  <Glance
+                    label="Health"
+                    mark={<HealthMark size={12} />}
+                    figure={fmtNum(unit.health)}
+                    unit="hp"
+                    foot={
+                      <Rank
+                        percent={cohort.healthPercent}
+                        text={`${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label}`}
+                      />
+                    }
+                  />
+                </>
+              ) : intelEcon ? (
+                <>
+                  <Glance
+                    label={intelEcon.kind === 'stealth' ? 'Stealth radius' : 'Radius'}
+                    icon="radius"
+                    figure={fmtNum(intelEcon.radius)}
+                    foot={
+                      <span className={styles.glanceFoot}>
+                        {intelEcon.sonarRadius
+                          ? `${fmtNum(intelEcon.sonarRadius)} against sonar`
+                          : intelEcon.kind === 'stealth'
+                            ? 'Hides from radar and sonar alike'
+                            : 'What it can see'}
+                      </span>
+                    }
+                  />
+                  <Glance
+                    label="Radius per 1k energy"
+                    icon="bolt"
+                    figure={
+                      intelEcon.per1kEnergy ? fmtRatio(intelEcon.per1kEnergy, 2) : '\u2013'
+                    }
+                    foot={
+                      <span className={styles.glanceFoot}>
+                        {intelEcon.upkeep > 0
+                          ? `Then ${fmtNum(intelEcon.upkeep)} e/s to keep it running`
+                          : 'No upkeep'}
+                      </span>
+                    }
+                  />
+                  <Glance
+                    label="Radius per mass"
+                    mark={<MassMark size={12} />}
+                    figure={intelEcon.perMass ? fmtRatio(intelEcon.perMass, 3) : '\u2013'}
+                    foot={
+                      <span className={styles.glanceFoot}>
+                        {fmtNum(unit.mass)} mass to build
                       </span>
                     }
                   />
@@ -997,10 +1051,17 @@ function WeaponCard({ weapon: w }: { weapon: DecoratedWeapon }) {
  */
 const totalDps = (u: Unit): number => combatDps(u.weapons);
 
-function Delta({ n, format, unit }: { n: number; format: (v: number) => string; unit: string }) {
+function Delta({
+  n, format, unit, invert,
+}: {
+  n: number; format: (v: number) => string; unit: string;
+  /** For costs, where more is worse and the colour has to say so. */
+  invert?: boolean;
+}) {
   const sign = n > 0 ? '+' : n < 0 ? '−' : '';
+  const good = invert ? n <= 0 : n >= 0;
   return (
-    <span className={`m ${styles.delta} ${n >= 0 ? styles.deltaUp : styles.deltaDown}`}>
+    <span className={`m ${styles.delta} ${good ? styles.deltaUp : styles.deltaDown}`}>
       {sign}{format(Math.abs(n))} {unit}
     </span>
   );
@@ -1026,6 +1087,28 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
         <div className={styles.deltas}>
           <Delta n={peerShield.hp - baseShield.hp} format={fmtNum} unit="shield" />
           <Delta n={peerShield.radius - baseShield.radius} format={(v) => fmtRatio(v, 1)} unit="radius" />
+        </div>
+      </Link>
+    );
+  }
+
+  // Sensors and stealth fields compare on what they cover and what they draw,
+  // not on the hit points of an unarmed building. At T2 every faction's
+  // stealth generator covers exactly radius 24, so the whole comparison is
+  // cost, which the radius-per-mass row makes visible.
+  const baseIntel = intelEconomy(base, baseRole);
+  const peerIntel = roleOf(peer) === baseRole ? intelEconomy(peer, baseRole) : null;
+  if (baseIntel && peerIntel) {
+    return (
+      <Link href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
+        <UnitWell id={peer.Id} faction={peer.faction} techLabel={peer.techLabel} size={38} imageSize={34} pip={false} hasRender={peer.hasRender} />
+        <div className={styles.peerBody}>
+          <div className={`t ${styles.peerName}`}>{peer.name}</div>
+          <div className={styles.peerRole}>{peer.role}</div>
+        </div>
+        <div className={styles.deltas}>
+          <Delta n={peerIntel.radius - baseIntel.radius} format={(v) => fmtRatio(v, 1)} unit="radius" />
+          <Delta n={peer.mass - base.mass} format={fmtNum} unit="mass" invert />
         </div>
       </Link>
     );

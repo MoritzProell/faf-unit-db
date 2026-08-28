@@ -31,6 +31,10 @@ const SECTION_COLUMNS: Record<string, string[]> = {
     'Missile',
     'Sniper',
     'Special',
+    'Stealth',
+    'Radar',
+    'Sonar',
+    'Omni',
     'Intel',
   ],
   Air: [
@@ -44,6 +48,8 @@ const SECTION_COLUMNS: Record<string, string[]> = {
     'Gunship',
     'Transport',
     'Special',
+    'Radar',
+    'Omni',
     'Intel',
   ],
   Naval: [
@@ -59,8 +65,14 @@ const SECTION_COLUMNS: Record<string, string[]> = {
     'Anti-navy',
     'Anti-air',
     'Shield',
+    'Stealth',
+    'Sonar',
+    'Radar',
     'Intel',
   ],
+  // Radar, then stealth, then sonar: the order they are built in, and the
+  // order the tier offers them. Omni arrives at T3 and replaces the radar.
+  'Structures - Intelligence': ['Radar', 'Stealth', 'Omni', 'Sonar', 'Optics', 'Intel'],
   Experimental: [
     'Experimental assault',
     'Long range',

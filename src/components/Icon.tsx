@@ -51,6 +51,21 @@ const PATHS = {
   transport: <><path d="M2.6 5.4h7.6v5.2H2.6z" /><path d="M10.2 7.4h1.9l1.3 1.6v1.6h-3.2z" /></>,
   pulses: <><circle cx="3.4" cy="8" r="1.3" /><circle cx="8" cy="8" r="1.3" /><circle cx="12.6" cy="8" r="1.3" /></>,
   check: <path d="M3.4 8.4 L6.4 11.3 L12.6 4.8" />,
+  /* Stealth: the vision eye, struck through. */
+  stealth: (
+    <>
+      <path d="M1.7 8C4 4.5 12 4.5 14.3 8 12 11.5 4 11.5 1.7 8Z" />
+      <circle cx="8" cy="8" r="1.9" />
+      <path d="M3 13 L13 3" />
+    </>
+  ),
+  omni: (
+    <>
+      <circle cx="8" cy="8" r="2" />
+      <circle cx="8" cy="8" r="5.6" />
+      <path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15" />
+    </>
+  ),
   // The game's mass glyph: a ring around a filled dot. MassMark draws the
   // coloured version for the cost strip; this is the line version for labels.
   mass: <><circle cx="8" cy="8" r="5.6" /><circle cx="8" cy="8" r="2.1" fill="currentColor" stroke="none" /></>,

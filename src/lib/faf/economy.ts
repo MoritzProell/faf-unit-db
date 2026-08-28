@@ -120,3 +120,70 @@ export function fmtDuration(seconds: number): string {
   const m = Math.round((s % 3600) / 60);
   return m ? `${h}h ${m}m` : `${h}h`;
 }
+
+interface Intel {
+  RadarRadius?: number;
+  SonarRadius?: number;
+  OmniRadius?: number;
+  RadarStealthFieldRadius?: number;
+  SonarStealthFieldRadius?: number;
+  ReactivateTime?: number;
+}
+
+export interface IntelEconomy {
+  kind: 'radar' | 'sonar' | 'omni' | 'stealth';
+  /** What it covers: sensor reach, or the radius of the field it projects. */
+  radius: number;
+  /** Present only when a stealth field hides from radar and sonar unequally. */
+  sonarRadius: number | null;
+  upkeep: number;
+  /** Radius bought per point of mass, and per 1 000 energy of build cost. */
+  perMass: number | null;
+  per1kEnergy: number | null;
+  /** Seconds off the air after it is switched on again. */
+  reactivate: number | null;
+}
+
+/**
+ * What a sensor or a stealth field costs for what it covers.
+ *
+ * A radar's own hit points are nearly irrelevant and it has no damage at all,
+ * so the stat block on those pages said nothing: the question is how much
+ * ground it watches, or hides, for what you pay. The T2 stealth generators are
+ * the clearest case — every faction's covers exactly radius 24, so the entire
+ * difference between them is the 360 to 400 mass and the 5 400 to 6 000 energy
+ * it costs to put one down.
+ */
+export function intelEconomy(u: Unit, role: string): IntelEconomy | null {
+  const i = (u.Intel ?? {}) as Intel;
+  const e = econ(u);
+  const mass = e.BuildCostMass ?? 0;
+  const energy = e.BuildCostEnergy ?? 0;
+
+  const pick = (): { kind: IntelEconomy['kind']; radius: number; sonar: number | null } | null => {
+    if (role === 'Stealth' && i.RadarStealthFieldRadius) {
+      const sonar = i.SonarStealthFieldRadius ?? null;
+      return {
+        kind: 'stealth',
+        radius: i.RadarStealthFieldRadius,
+        sonar: sonar && sonar !== i.RadarStealthFieldRadius ? sonar : null,
+      };
+    }
+    if (role === 'Omni' && i.OmniRadius) return { kind: 'omni', radius: i.OmniRadius, sonar: null };
+    if (role === 'Sonar' && i.SonarRadius) return { kind: 'sonar', radius: i.SonarRadius, sonar: null };
+    if (role === 'Radar' && i.RadarRadius) return { kind: 'radar', radius: i.RadarRadius, sonar: null };
+    return null;
+  };
+
+  const got = pick();
+  if (!got) return null;
+  return {
+    kind: got.kind,
+    radius: got.radius,
+    sonarRadius: got.sonar,
+    upkeep: e.MaintenanceConsumptionPerSecondEnergy ?? 0,
+    perMass: mass > 0 ? got.radius / mass : null,
+    per1kEnergy: energy > 0 ? (got.radius / energy) * 1000 : null,
+    reactivate: i.ReactivateTime ?? null,
+  };
+}

@@ -167,7 +167,7 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
 
   // Before the ship classes: a sonar buoy carries NAVAL and SUBMERSIBLE, so
   // the Seraphim one was being filed as a submarine.
-  ['Intel', (c) => c.has('MOBILESONAR')],
+  ['Sonar', (c) => c.has('MOBILESONAR')],
 
   // Ship classes, before the generic weapon rules, so a cruiser is a cruiser
   // rather than "anti-air" and a destroyer is not filed under "direct fire".
@@ -287,10 +287,20 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
   // and lumping it in with radar hides that. Without this it fell through to
   // "Other" and was compared against quantum gateways.
   ['Optics', (c) => c.has('OPTICS')],
-  [
-    'Intel',
-    (c) => has(c, 'RADAR', 'SONAR', 'OMNI', 'MOBILESONAR', 'COUNTERINTELLIGENCE', 'STEALTHFIELD'),
-  ],
+  // Intel is four different buildings, not one. A radar and a sonar answer
+  // different questions and are built at different times, a stealth field is
+  // not a sensor at all, and omni is the thing that beats stealth. Filing them
+  // in a single column put a T1 radar next to a T1 sonar and called that a
+  // comparison, and left the tier with one column where the game gives you a
+  // choice of two or three.
+  //
+  // Omni before radar: an omni sensor carries RADAR as well, and it is the
+  // omni that names it.
+  ['Omni', (c) => c.has('OMNI')],
+  ['Stealth', (c) => has(c, 'STEALTHFIELD', 'COUNTERINTELLIGENCE')],
+  ['Sonar', (c) => c.has('SONAR')],
+  ['Radar', (c) => c.has('RADAR')],
+  ['Intel', (c) => has(c, 'INTELLIGENCE')],
 ];
 
 /**
@@ -351,6 +361,10 @@ export const ROLE_SHORT: Record<string, string> = {
   'Air staging': 'AIRPAD',
   Wall: 'WALL',
   Optics: 'OPTICS',
+  Omni: 'OMNI',
+  Radar: 'RADAR',
+  Sonar: 'SONAR',
+  Stealth: 'STEALTH',
   Intel: 'INTEL',
   Other: 'OTHER',
 };

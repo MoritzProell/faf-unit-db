@@ -7,6 +7,7 @@ import { ROLE_SHORT } from '@/lib/faf/roles';
 import { orderedRoles } from '@/lib/faf/columns';
 import type { BrowseUnit, SortDef } from '@/lib/faf/browse';
 import type { Faction, Tech } from '@/lib/faf/types';
+import { Icon, type IconName } from './Icon';
 import ICON_DIMS from '@/data/strategic-icons.json';
 import styles from './CompactGroups.module.css';
 
@@ -35,6 +36,21 @@ const TECH_LABEL: Record<string, string> = { T1: 'T1', T2: 'T2', T3: 'T3', EXP: 
 const CHIP_VAR = 'var(--chip)';
 
 const DIMS = ICON_DIMS as unknown as Record<string, [number, number]>;
+
+/**
+ * Columns whose strategic icon does not distinguish them.
+ *
+ * The game draws a T1 radar and a T1 sonar with the same
+ * `icon_structure1_intel`, so the split columns would carry identical symbols
+ * and the icon would say nothing. These four use the site's own line icons
+ * instead, which do tell them apart.
+ */
+const ROLE_ICON: Record<string, IconName> = {
+  Radar: 'radar',
+  Sonar: 'sonar',
+  Omni: 'omni',
+  Stealth: 'stealth',
+};
 
 /** The icon most of a column's units carry, or none if the column disagrees. */
 function modalIcon(units: BrowseUnit[]): string | null {
@@ -154,7 +170,11 @@ export function CompactGroups({
                               <span className={`lbl ${styles.roleLabel}`} title={role}>
                                 {ROLE_SHORT[role] ?? role}
                               </span>
-                              {icon && DIMS[icon] && (
+                              {ROLE_ICON[role] ? (
+                                <span className={styles.roleGlyph}>
+                                  <Icon name={ROLE_ICON[role]} size={14} strokeWidth={1.6} />
+                                </span>
+                              ) : icon && DIMS[icon] && (
                                 // Native size, and never forced square: these
                                 // icons come in eight shapes and a square box
                                 // stretched most of them.

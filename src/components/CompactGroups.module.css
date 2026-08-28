@@ -141,3 +141,10 @@
   .tierTab { width: 22px; }
   .row { padding: 5px 7px; gap: 6px; }
 }
+/* Stand-in for the strategic icon where the game's own symbol does not
+   distinguish the column (radar and sonar share one). Same position and
+   weight, so a mixed header row still reads as one strip. */
+.roleGlyph {
+  position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+  display: flex; color: var(--text-3); opacity: 0.85;
+}
