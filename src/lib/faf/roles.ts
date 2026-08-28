@@ -144,6 +144,25 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
   ['Missile', (c) => has(c, 'SILO', 'TACTICALMISSILEPLATFORM')],
   ['Anti-air', (c) => c.has('ANTIAIR')],
   ['Anti-navy', (c) => c.has('ANTINAVY')],
+  // Economy and production. These were the whole of the "Other" bucket: 154
+  // units with no role, so a quantum gateway and a mass fabricator sat in the
+  // same undifferentiated pile. The categories to split them by were there all
+  // along. Factories need no domain of their own — a slot is already keyed on
+  // one, so land, air and naval factories separate by themselves.
+  // Tactical missile defence: a defensive structure with no gun, so it matched
+  // nothing and sat in Other.
+  ['Missile defence', (c) => c.has('ANTIMISSILE') && !c.has('MOBILE')],
+  // Gateways carry FACTORY as well as GATE, so they must be claimed first or a
+  // quantum gateway is filed as a land factory.
+  ['Gateway', (c) => c.has('GATE')],
+  ['Factory', (c) => c.has('FACTORY')],
+  ['Mass extraction', (c) => c.has('MASSEXTRACTION')],
+  ['Mass fabrication', (c) => c.has('MASSFABRICATION')],
+  ['Power', (c) => c.has('ENERGYPRODUCTION')],
+  ['Storage', (c) => has(c, 'MASSSTORAGE', 'ENERGYSTORAGE')],
+  ['Air staging', (c) => c.has('AIRSTAGINGPLATFORM')],
+  ['Wall', (c) => c.has('WALL')],
+
   // Quantum optics is its own thing: two factions have one, nobody else does,
   // and lumping it in with radar hides that. Without this it fell through to
   // "Other" and was compared against quantum gateways.
@@ -190,6 +209,15 @@ export const ROLE_SHORT: Record<string, string> = {
   'Anti-air': 'AA',
   'Anti-navy': 'A-NAVY',
   Shield: 'SHIELD',
+  Factory: 'FACTORY',
+  'Mass extraction': 'MEX',
+  'Mass fabrication': 'MASSFAB',
+  Power: 'POWER',
+  Storage: 'STORAGE',
+  Gateway: 'GATE',
+  'Missile defence': 'TMD',
+  'Air staging': 'AIRPAD',
+  Wall: 'WALL',
   Optics: 'OPTICS',
   Intel: 'INTEL',
   Other: 'OTHER',
