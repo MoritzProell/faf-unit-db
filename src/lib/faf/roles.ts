@@ -14,6 +14,7 @@
  * the display order of the columns.
  */
 export interface RoleInput {
+  Id?: string;
   Categories?: string[];
   Description?: string;
   Economy?: { BuildCostMass?: number };
@@ -31,6 +32,14 @@ const T3_HEAVY_MASS = 700;
 /** T1 light bots are 30-42 mass, T1 tanks 54-56. */
 const T1_TANK_MASS = 50;
 
+/**
+ * Experimentals that play as long-range units despite being direct-fire, and
+ * so are not separable by any rule. The Megalith and the Monkeylord both reach
+ * 64, so range cannot tell them apart; this is a judgement about how the unit
+ * is used, listed explicitly rather than dressed up as derivation.
+ */
+const LONG_RANGE_EXPERIMENTALS = new Set(['XRL0403']);
+
 const has = (c: Set<string>, ...names: string[]) => names.some((n) => c.has(n));
 
 export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolean]> = [
@@ -41,7 +50,12 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
   // run before every general rule: the Fatboy carries a shield and the Megalith
   // carries SNIPER, so either would otherwise be filed as a shield unit or a
   // sniper rather than as the experimental it is.
-  ['Long range', (c) => c.has('EXPERIMENTAL') && c.has('ARTILLERY')],
+  [
+    'Long range',
+    (c, u) =>
+      c.has('EXPERIMENTAL') &&
+      (c.has('ARTILLERY') || LONG_RANGE_EXPERIMENTALS.has(u.Id ?? '')),
+  ],
   ['Experimental special', (c) => c.has('EXPERIMENTAL') && c.has('STRUCTURE')],
   ['Experimental air', (c) => c.has('EXPERIMENTAL') && c.has('AIR')],
   ['Experimental navy', (c) => c.has('EXPERIMENTAL') && c.has('NAVAL')],

@@ -34,10 +34,11 @@ export const getUnitData = cache(async (): Promise<UnitData> => {
 
   const units = data.units
     .filter((b) => b.Id && b.General?.FactionName)
-    // Spawned entities, not units you build: the Ythotha's death storm and the
-    // two satellites. Nothing constructs them and nothing can shoot them, so
-    // they are not part of any slot, matchup or comparison.
-    .filter((b) => !b.Categories?.includes('UNTARGETABLE'))
+    // The Ythotha's death storm is scenery, not a unit: nothing builds it and
+    // it exists only while the corpse burns. The satellites are UNTARGETABLE
+    // too but are real things a player deploys and shoots with, so they stay —
+    // which is why this is an explicit id rather than a category rule.
+    .filter((b) => b.Id !== 'XSL0402')
     .map((b) => decorateUnit(b, defaults))
     .sort((a, b) => a.name.localeCompare(b.name));
 
