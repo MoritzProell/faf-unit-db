@@ -348,3 +348,11 @@ a.historyVersion:hover { color: var(--text); text-decoration: underline; text-un
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .buildRole { font-size: 10.5px; color: var(--text-3); }
+
+/* Patch row heading: this site's diff on the left, FAF's own notes beside it. */
+.historyHead { display: flex; align-items: baseline; gap: 8px; }
+.historyNotes {
+  font-size: 10px; letter-spacing: 0.04em; color: var(--text-3);
+  border-bottom: 1px dotted var(--line-2);
+}
+.historyNotes:hover { color: var(--text); border-bottom-color: var(--primary); }

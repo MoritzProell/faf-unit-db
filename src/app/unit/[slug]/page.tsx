@@ -847,9 +847,25 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
               </div>
               {history.slice(0, 4).map((h) => (
                 <div key={h.version} className={styles.historyRow}>
-                  <Link href={`/changelog#patch-${h.version}`} className={`m ${styles.historyVersion}`}>
-                    Patch {h.version}
-                  </Link>
+                  <span className={styles.historyHead}>
+                    <Link href={`/changelog#patch-${h.version}`} className={`m ${styles.historyVersion}`}>
+                      Patch {h.version}
+                    </Link>
+                    {/* Out to FAF's own notes for that patch, not just to this
+                        site's summary of what moved. The numbers here are the
+                        diff; the reasoning is theirs. */}
+                    {h.notesUrl && (
+                      <a
+                        href={h.notesUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.historyNotes}
+                        title={`FAF's official notes for patch ${h.version}`}
+                      >
+                        FAF notes
+                      </a>
+                    )}
+                  </span>
                   <div className={styles.historyFields}>
                     {h.change.fields.map((f, i) => (
                       <FieldPill key={i} field={f} />

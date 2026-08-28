@@ -11,10 +11,22 @@ export const getPatch = cache(async (version: string): Promise<PatchDiff | undef
 );
 
 /** Every patch in which this unit's blueprint moved, newest first. */
+/**
+ * Every patch that touched this unit, newest first, carrying FAF's own notes
+ * URL for each so a unit page can send you to the source rather than only to
+ * this site's summary of it.
+ */
 export const getUnitHistory = cache(async (id: string) =>
   patches
-    .map((p) => ({ version: p.version, change: p.changed.find((c) => c.id === id) }))
-    .filter((x): x is { version: string; change: NonNullable<typeof x.change> } => !!x.change)
+    .map((p) => ({
+      version: p.version,
+      notesUrl: p.notesUrl,
+      releasedAt: p.releasedAt,
+      change: p.changed.find((c) => c.id === id),
+    }))
+    .filter(
+      (x): x is typeof x & { change: NonNullable<typeof x.change> } => !!x.change
+    )
 );
 
 /** Ids touched by the most recent patch that touched anything. */
