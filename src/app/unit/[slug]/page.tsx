@@ -633,10 +633,23 @@ function WeaponCard({ weapon: w }: { weapon: DecoratedWeapon }) {
   );
 }
 
+/**
+ * Every weapon a unit can actually bring, not just its direct-fire gun.
+ * `directDps` is null for anything whose damage is torpedoes or AA, which is
+ * most of the navy — comparing two destroyers on it showed no damage at all.
+ */
+function totalDps(u: Unit): number {
+  return u.weapons.reduce(
+    (n, w) => (w.WeaponCategory === 'Death' ? n : n + (w.dps ?? 0)),
+    0
+  );
+}
+
 function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
   const hpDelta = peer.health - base.health;
-  const dpsDelta =
-    peer.directDps !== null && base.directDps !== null ? peer.directDps - base.directDps : null;
+  const peerDps = totalDps(peer);
+  const baseDps = totalDps(base);
+  const dpsDelta = peerDps > 0 || baseDps > 0 ? peerDps - baseDps : null;
   const sign = (n: number) => (n > 0 ? '+' : n < 0 ? '−' : '');
   return (
     <Link href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>

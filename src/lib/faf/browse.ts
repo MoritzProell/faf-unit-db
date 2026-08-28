@@ -75,7 +75,7 @@ export function toBrowseUnit(u: Unit): BrowseUnit {
     role: u.role,
     type: u.type,
     section: u.section,
-    roleKey: roleOf(u.Categories),
+    roleKey: roleOf(u),
     abilities: u.abilities,
     roles: rolesOf(u),
     upgrades: enhancementsOf(u).map((e) => e.name),

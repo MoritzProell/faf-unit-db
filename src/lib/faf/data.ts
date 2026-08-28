@@ -34,6 +34,10 @@ export const getUnitData = cache(async (): Promise<UnitData> => {
 
   const units = data.units
     .filter((b) => b.Id && b.General?.FactionName)
+    // Spawned entities, not units you build: the Ythotha's death storm and the
+    // two satellites. Nothing constructs them and nothing can shoot them, so
+    // they are not part of any slot, matchup or comparison.
+    .filter((b) => !b.Categories?.includes('UNTARGETABLE'))
     .map((b) => decorateUnit(b, defaults))
     .sort((a, b) => a.name.localeCompare(b.name));
 

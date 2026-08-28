@@ -43,7 +43,7 @@ const shieldHealth = (u: Unit): number => u.Defense?.Shield?.ShieldMaxHealth ?? 
  * now one unit per other faction, matched on role and tier.
  */
 export function buildCohort(unit: Unit, all: Unit[]): Cohort {
-  const role = roleOf(unit.Categories);
+  const role = roleOf(unit);
 
   // Ranking cohort: same domain and tier. Broad on purpose — "7th of 27 in T1
   // Land" is a more useful sense of scale than a rank out of four.
@@ -69,7 +69,7 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
   // what "the only T3 point defence" and "the best T2 shield" are claims about,
   // so Nomads counts — leaving it out would let the site state a false only.
   const slot = all.filter(
-    (u) => roleOf(u.Categories) === role && u.tech === unit.tech && u.kind === unit.kind
+    (u) => roleOf(u) === role && u.tech === unit.tech && u.kind === unit.kind
   );
 
   const peers = ['UEF', 'Cybran', 'Aeon', 'Seraphim', 'Nomads']
@@ -103,7 +103,7 @@ export function buildCohort(unit: Unit, all: Unit[]): Cohort {
   // otherwise a land one-shot unit and an air one-shot unit each announce
   // themselves as "the only T2 one-shot unit in the game".
   const sameJobElsewhere = all.some(
-    (u) => roleOf(u.Categories) === role && u.tech === unit.tech && u.kind !== unit.kind
+    (u) => roleOf(u) === role && u.tech === unit.tech && u.kind !== unit.kind
   );
   const domain = sameJobElsewhere && unit.kind !== 'Base' ? `${unit.kind.toLowerCase()} ` : '';
   const slotLabel = `${unit.techLabel} ${domain}${roleLabel}`;

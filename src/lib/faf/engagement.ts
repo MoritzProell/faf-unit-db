@@ -158,7 +158,7 @@ export function engagementOf(subject: Unit, all: Unit[]): Engagement {
     if (other.Id === subject.Id) continue;
     if (!canHit(other, subject)) continue;
 
-    const role = roleOf(other.Categories);
+    const role = roleOf(other);
     engagingRoles.add(role);
     if (NOT_A_THREAT.has(role)) continue;
     if (canHit(subject, other)) continue;
@@ -187,7 +187,7 @@ export function engagementOf(subject: Unit, all: Unit[]): Engagement {
   const armedRoles = new Set(
     all
       .filter((u) => (u.Weapon ?? []).some((w) => isLiveWeapon(w as Weapon & Record<string, unknown>)))
-      .map((u) => roleOf(u.Categories))
+      .map((u) => roleOf(u))
   );
 
   return {

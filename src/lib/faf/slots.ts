@@ -108,7 +108,7 @@ export function buildSlots(all: Unit[]): Slot[] {
   const groups = new Map<string, Unit[]>();
   for (const u of all) {
     if (u.kind === 'Unknown') continue;
-    const role = roleOf(u.Categories);
+    const role = roleOf(u);
     if (role === 'Other') continue;
     const id = `${u.kind}|${u.tech}|${role}`;
     const list = groups.get(id);
