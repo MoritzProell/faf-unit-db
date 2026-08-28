@@ -20,6 +20,7 @@ import { buildCohort, ordinal } from '@/lib/faf/cohort';
 import { shieldEconomy, massEconomy, powerEconomy, intelEconomy, fmtDuration } from '@/lib/faf/economy';
 import { roleOf } from '@/lib/faf/roles';
 import { describe, hasThinDescription } from '@/lib/faf/describe';
+import { buildsOf } from '@/lib/faf/builds';
 import ICON_DIMS from '@/data/strategic-icons.json';
 import { enhancementsOf, groupBySlot, SLOT_LABEL, type Enhancement } from '@/lib/faf/enhancements';
 import { getUnitHistory } from '@/lib/faf/changelog';
@@ -73,7 +74,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function UnitPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const { bySlug, units, version, descriptions } = await getUnitData();
+  const { bySlug, units, hidden, version, descriptions } = await getUnitData();
   const unit = bySlug.get(slug);
   if (!unit) notFound();
 
@@ -132,6 +133,10 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
       : null;
   const powerEcon = roleKey === 'Power' ? powerEconomy(unit) : null;
   const intelEcon = intelEconomy(unit, roleKey);
+  // What it produces. Factories obviously, but also the Fatboy, the Atlantis,
+  // the CZAR, the naval carriers and the Megalith, which are factories in
+  // everything but name.
+  const builds = buildsOf(unit, [...units, ...hidden]);
   const kindLabel = unit.kind === 'Base' ? 'Structures' : unit.kind;
 
   const stat = (name: string, value: number | string | null | undefined, unitCode?: string) =>
@@ -604,6 +609,33 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                     ))}
                   </div>
                 ))}
+              </div>
+            </section>
+          )}
+
+          {builds.length > 0 && (
+            <section className={styles.secBuilds}>
+              <SectionHead label="Builds" note={String(builds.length)} />
+              <div className={styles.panel}>
+                <div className={styles.buildGrid}>
+                  {builds.map((b) => (
+                    <Link key={b.id} href={`/unit/${b.slug}`} className={styles.buildItem}>
+                      <UnitWell
+                        id={b.id}
+                        faction={unit.faction}
+                        techLabel={b.techLabel}
+                        size={34}
+                        imageSize={31}
+                        pip={false}
+                        hasRender={b.hasRender}
+                      />
+                      <span className={styles.buildBody}>
+                        <span className={`t ${styles.buildName}`}>{b.name}</span>
+                        <span className={styles.buildRole}>{b.role}</span>
+                      </span>
+                    </Link>
+                  ))}
+                </div>
               </div>
             </section>
           )}

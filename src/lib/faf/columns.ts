@@ -73,6 +73,14 @@ const SECTION_COLUMNS: Record<string, string[]> = {
   // Radar, then stealth, then sonar: the order they are built in, and the
   // order the tier offers them. Omni arrives at T3 and replaces the radar.
   'Structures - Intelligence': ['Radar', 'Stealth', 'Omni', 'Sonar', 'Optics', 'Intel'],
+  'Structures - Construction': [
+    'Engineer',
+    'Land factory',
+    'Air factory',
+    'Naval factory',
+    'Factory',
+    'Gateway',
+  ],
   Experimental: [
     'Experimental assault',
     'Long range',

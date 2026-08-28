@@ -275,6 +275,12 @@ export const ROLE_RULES: Array<[string, (c: Set<string>, u: RoleInput) => boolea
   // Gateways carry FACTORY as well as GATE, so they must be claimed first or a
   // quantum gateway is filed as a land factory.
   ['Gateway', (c) => c.has('GATE')],
+  // Split by domain, because a land factory and an air factory are not
+  // alternatives and the game already draws them with different icons. One
+  // column held all three and could only show one of those icons.
+  ['Land factory', (c) => c.has('FACTORY') && c.has('LAND')],
+  ['Air factory', (c) => c.has('FACTORY') && c.has('AIR')],
+  ['Naval factory', (c) => c.has('FACTORY') && c.has('NAVAL')],
   ['Factory', (c) => c.has('FACTORY')],
   ['Mass extraction', (c) => c.has('MASSEXTRACTION')],
   ['Mass fabrication', (c) => c.has('MASSFABRICATION')],
@@ -351,6 +357,9 @@ export const ROLE_SHORT: Record<string, string> = {
   'Anti-navy': 'A-NAVY',
   Shield: 'SHIELD',
   'Shield disruptor': 'DISRUPT',
+  'Land factory': 'LAND FAC',
+  'Air factory': 'AIR FAC',
+  'Naval factory': 'NAVY FAC',
   Factory: 'FACTORY',
   'Mass extraction': 'MEX',
   'Mass fabrication': 'MASSFAB',

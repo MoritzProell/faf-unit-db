@@ -330,3 +330,21 @@ a.historyVersion:hover { color: var(--text); text-decoration: underline; text-un
   image-rendering: pixelated;
   opacity: 0.92;
 }
+
+/* What a factory produces. A grid of small wells rather than a list of names:
+   the roster is recognised by silhouette, and this is the same roster. */
+.buildGrid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+}
+.buildItem {
+  display: flex; align-items: center; gap: 9px; padding: 7px 10px; min-width: 0;
+  color: inherit;
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.buildItem:hover { background: rgba(255, 255, 255, 0.03); }
+.buildBody { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.buildName {
+  font-size: 12.5px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.buildRole { font-size: 10.5px; color: var(--text-3); }

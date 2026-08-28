@@ -14,6 +14,12 @@ export interface UnitData {
   version: string;
   defaults: UnitDefaults;
   units: Unit[];
+  /**
+   * The spawn-only units kept out of the roster. Nothing in the game builds
+   * them, so they belong to no slot and no comparison, but the Megalith
+   * genuinely deploys the crab eggs and its page has to be able to name them.
+   */
+  hidden: Unit[];
   bySlug: Map<string, Unit>;
   byId: Map<string, Unit>;
   /**
@@ -69,10 +75,15 @@ export const getUnitData = cache(async (): Promise<UnitData> => {
     .map((b) => decorateUnit(b, defaults))
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  const hidden = data.units
+    .filter((b) => b.Id && b.General?.FactionName && UNBUILDABLE.has(b.Id))
+    .map((b) => decorateUnit(b, defaults));
+
   return {
     version: data.version,
     defaults,
     units,
+    hidden,
     bySlug: new Map(units.map((u) => [u.slug, u])),
     byId: new Map(units.map((u) => [u.Id, u])),
     descriptions: data.descriptions ?? {},
