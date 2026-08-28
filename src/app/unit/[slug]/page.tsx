@@ -9,7 +9,7 @@ import { EnhancementIcon } from '@/components/EnhancementIcon';
 import { Icon, type IconName } from '@/components/Icon';
 import { AbilityChips } from '@/components/AbilityChips';
 import { AddToCompareButton, DensityToggle } from '@/components/UnitActions';
-import { MassMark, EnergyMark, TimeMark } from '@/components/Marks';
+import { MassMark, EnergyMark, TimeMark, HealthMark, ShieldMark } from '@/components/Marks';
 import { combatDps, isAirCrash } from '@/lib/faf/dps';
 import { getUnitData } from '@/lib/faf/data';
 import { engagementOf } from '@/lib/faf/engagement';
@@ -281,7 +281,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                 <>
                   <Glance
                     label="Shield health"
-                    icon="shield"
+                    mark={<ShieldMark size={12} />}
                     tone="shield"
                     figure={fmtNum(shield.hp)}
                     unit="hp"
@@ -307,7 +307,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                   />
                   <Glance
                     label="Shield per mass"
-                    icon="shield"
+                    mark={<ShieldMark size={12} />}
                     tone="shield"
                     figure={shield.perMass ? fmtRatio(shield.perMass, 2) : '–'}
                     foot={
@@ -371,7 +371,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                   />
                   <Glance
                     label="Health"
-                    icon="health"
+                    mark={<HealthMark size={12} />}
                     figure={fmtNum(unit.health)}
                     unit="hp"
                     foot={
@@ -408,7 +408,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                   />
                   <Glance
                     label="Health"
-                    icon="health"
+                    mark={<HealthMark size={12} />}
                     figure={fmtNum(unit.health)}
                     unit="hp"
                     foot={
@@ -420,7 +420,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                   />
                   <Glance
                     label="HP per mass"
-                    icon="shield"
+                    mark={<HealthMark size={12} />}
                     figure={fmtRatio(unit.hpPerMass)}
                     foot={
                       <Rank
@@ -434,7 +434,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                 <>
               <Glance
                 label="Health"
-                icon="health"
+                mark={<HealthMark size={12} />}
                 figure={fmtNum(unit.health)}
                 unit="hp"
                 extra={
@@ -457,7 +457,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
               />
               <Glance
                 label="HP per mass"
-                icon="shield"
+                mark={<HealthMark size={12} />}
                 figure={fmtRatio(unit.hpPerMass)}
                 foot={
                   <Rank
@@ -599,7 +599,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                     <span className="rule" />
                   </div>
                   <div className={styles.fieldGrid}>
-                    <Field label="Shield health" value={fmtNum(unit.Defense.Shield.ShieldMaxHealth)} icon="shield" />
+                    <Field label="Shield health" value={fmtNum(unit.Defense.Shield.ShieldMaxHealth)} mark={<ShieldMark size={12} />} />
                     <Field label="Regen" value={`+${fmtNum(unit.Defense.Shield.ShieldRegenRate ?? 0)}`} sub="hp/s" icon="regen" />
                     <Field label="Recharge" value={fmtNum(unit.Defense.Shield.ShieldRechargeTime ?? 0)} sub="s" icon="clock" />
                     {unit.Defense.Shield.ShieldSize ? (
@@ -612,7 +612,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                       <Field
                         label="Shield per mass"
                         value={fmtRatio((unit.Defense.Shield.ShieldMaxHealth / unit.mass), 2)}
-                        icon="shield"
+                        mark={<ShieldMark size={12} />}
                       />
                     )}
                     {unit.energy > 0 && (
@@ -650,7 +650,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                       value={fmtNum(unit.wreckage.massInWater)}
                       mark={<MassMark size={11} />}
                     />
-                    <Field label="Health" value={fmtNum(unit.wreckage.health)} icon="health" />
+                    <Field label="Health" value={fmtNum(unit.wreckage.health)} mark={<HealthMark size={12} />} />
                   </div>
                 </>
               )}
@@ -661,7 +661,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                     <span className="rule" />
                   </div>
                   <div className={styles.fieldGrid}>
-                    <Field label="Health" value={`+${fmtNum(unit.veterancy.healthPerLevel)}`} icon="health" />
+                    <Field label="Health" value={`+${fmtNum(unit.veterancy.healthPerLevel)}`} mark={<HealthMark size={12} />} />
                     <Field label="Regen" value={`+${unit.veterancy.regenPerLevel}`} sub="hp/s" icon="regen" />
                     <Field label="Mass to kill" value={fmtNum(unit.veterancy.massToKillPerLevel)} icon="veterancy" />
                   </div>
@@ -832,15 +832,17 @@ function SectionHead({ label, note }: { label: string; note?: string }) {
 }
 
 function Glance({
-  label, figure, unit, foot, icon, tone, extra,
+  label, figure, unit, foot, icon, tone, extra, mark,
 }: {
   label: string; figure: string; unit?: string; foot: React.ReactNode;
   icon?: IconName; tone?: 'shield' | 'damage'; extra?: React.ReactNode;
+  /** A ringed glyph instead of a line icon, for health, shields and mass. */
+  mark?: React.ReactNode;
 }) {
   return (
     <div className={styles.glance} data-tone={tone}>
       <span className={`lbl ${styles.fieldLabel}`}>
-        {icon && <Icon name={icon} size={11} strokeWidth={1.7} />}
+        {mark ?? (icon && <Icon name={icon} size={11} strokeWidth={1.7} />)}
         {label}
       </span>
       <div className={styles.glanceValue}>
