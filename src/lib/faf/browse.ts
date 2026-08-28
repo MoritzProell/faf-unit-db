@@ -55,6 +55,11 @@ export interface BrowseUnit {
   /** Every weapon, not just direct fire — naval and AA units have no directDps. */
   totalDps: number | null;
   speed: number | null;
+  /** Shield pool, for the units where that is the stat that matters. */
+  shieldHp: number | null;
+  shieldRadius: number | null;
+  /** The game's own strategic icon, the symbol players actually read. */
+  icon: string | null;
 }
 
 export function rolesOf(unit: Unit): string[] {
@@ -92,6 +97,9 @@ export function toBrowseUnit(u: Unit): BrowseUnit {
     dpsPerMass: u.directDps && u.mass ? u.directDps / u.mass : null,
     totalDps: combatDps(u.weapons) || null,
     speed: u.Physics?.MaxSpeed ?? null,
+    shieldHp: u.Defense?.Shield?.ShieldMaxHealth ?? null,
+    shieldRadius: u.Defense?.Shield?.ShieldSize ?? null,
+    icon: u.StrategicIconName ?? null,
   };
 }
 

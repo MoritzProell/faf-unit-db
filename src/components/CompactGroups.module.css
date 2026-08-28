@@ -48,16 +48,26 @@
   display: flex; align-items: flex-end; gap: 8px;
   padding: 4px 9px 2px 7px;
   border-bottom: 1px solid var(--line);
-  min-height: 40px;
+  min-height: 58px;
 }
 .roleLabel {
   display: block; font-size: 8.5px; letter-spacing: 0.07em; color: var(--text-3);
   white-space: nowrap;
   transform: rotate(-52deg);
   transform-origin: 0 100%;
-  position: absolute; bottom: 1px; left: 3px;
+  /* Lifted clear of the icon strip along the bottom of the header. */
+  position: absolute; bottom: 20px; left: 3px;
 }
 .roleHead .roleCol { position: relative; overflow: visible; min-width: 26px; }
+/* The column's own strategic icon, sitting at the foot of the diagonal label
+   where the column it names begins. Pixelated on purpose: these are small
+   hand-drawn symbols and smoothing turns their strokes to mush. */
+.roleIcon {
+  position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+  width: 16px; height: 16px;
+  image-rendering: pixelated;
+  opacity: 0.75;
+}
 
 .row {
   display: flex; align-items: center; gap: 8px; padding: 6px 9px 6px 7px;

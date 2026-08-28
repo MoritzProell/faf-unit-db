@@ -30,6 +30,20 @@ const TECH_LABEL: Record<string, string> = { T1: 'T1', T2: 'T2', T3: 'T3', EXP: 
 const CHIP = 32;
 const CHIP_GAP = 3;
 
+/** The icon most of a column's units carry, or none if the column disagrees. */
+function modalIcon(units: BrowseUnit[]): string | null {
+  const counts = new Map<string, number>();
+  for (const u of units) {
+    if (u.icon) counts.set(u.icon, (counts.get(u.icon) ?? 0) + 1);
+  }
+  let best: string | null = null;
+  let bestN = 0;
+  for (const [icon, n] of counts) {
+    if (n > bestN) { best = icon; bestN = n; }
+  }
+  return best;
+}
+
 /**
  * The roster again, but dense: same section, tier, faction and role structure
  * as the grouped view, with two things traded for height.
@@ -89,14 +103,24 @@ export function CompactGroups({
                 // A column is as wide as the busiest faction's count for that
                 // role, so every faction row lines up beneath the same label.
                 const roles = ROLE_ORDER.filter((r) => tierUnits.some((u) => u.roleKey === r)).map(
-                  (role) => ({
-                    role,
-                    width: Math.max(
-                      ...factions.map(
-                        (f) => tierUnits.filter((u) => u.faction === f && u.roleKey === role).length
-                      )
-                    ),
-                  })
+                  (role) => {
+                    const mine = tierUnits.filter((u) => u.roleKey === role);
+                    return {
+                      role,
+                      width: Math.max(
+                        ...factions.map(
+                          (f) => mine.filter((u) => u.faction === f).length
+                        )
+                      ),
+                      // The column's own symbol, taken by vote of the units
+                      // standing in it rather than from a hand-written map:
+                      // strategic icons already encode domain, tier and weapon
+                      // role, so a column of T2 gunships agrees with itself,
+                      // and where a column is mixed the majority is the honest
+                      // answer. A hand-written map would go stale; this cannot.
+                      icon: modalIcon(mine),
+                    };
+                  }
                 );
 
                 const colWidth = (w: number) => w * CHIP + (w - 1) * CHIP_GAP;
@@ -111,7 +135,7 @@ export function CompactGroups({
                       <div className={styles.roleHead}>
                         <span className={styles.facMark} aria-hidden="true" />
                         <div className={styles.roleCols}>
-                          {roles.map(({ role, width }) => (
+                          {roles.map(({ role, width, icon }) => (
                             <div
                               key={role}
                               className={styles.roleCol}
@@ -120,6 +144,17 @@ export function CompactGroups({
                               <span className={`lbl ${styles.roleLabel}`} title={role}>
                                 {ROLE_SHORT[role] ?? role}
                               </span>
+                              {icon && (
+                                // Pixel art, already tiny, must not be resampled.
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={`/strategic/${icon}.png`}
+                                  alt=""
+                                  width={16}
+                                  height={16}
+                                  className={styles.roleIcon}
+                                />
+                              )}
                             </div>
                           ))}
                         </div>

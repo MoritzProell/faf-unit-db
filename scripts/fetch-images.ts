@@ -49,32 +49,33 @@ async function main() {
   const todo = usable.filter((e) => !existing.has(e.name));
 
   console.log(`${usable.length} usable upstream images, ${existing.size} already local, ${todo.length} to fetch`);
-  if (!todo.length) {
-    await writeUpscaled();
-    await writeEnhancementIcons();
-    await writeManifest();
-    return;
+
+  // The renders are the only step with an early exit; everything after it runs
+  // either way. It used to be written out twice, once per branch, and a step
+  // added to one copy silently never ran.
+  if (todo.length) {
+    let done = 0;
+    let bytes = 0;
+    const queue = [...todo];
+    const workers = Array.from({ length: CONCURRENCY }, async () => {
+      for (;;) {
+        const e = queue.shift();
+        if (!e) return;
+        const r = await fetch(e.download_url, { headers });
+        if (!r.ok) throw new Error(`${e.name}: ${r.status}`);
+        const buf = Buffer.from(await r.arrayBuffer());
+        await writeFile(join(OUT, e.name), buf);
+        bytes += buf.length;
+        if (++done % 100 === 0) console.log(`  ${done}/${todo.length}`);
+      }
+    });
+    await Promise.all(workers);
+    console.log(`fetched ${done} images, ${(bytes / 1048576).toFixed(1)} MB -> public/units/`);
   }
 
-  let done = 0;
-  let bytes = 0;
-  const queue = [...todo];
-  const workers = Array.from({ length: CONCURRENCY }, async () => {
-    for (;;) {
-      const e = queue.shift();
-      if (!e) return;
-      const r = await fetch(e.download_url, { headers });
-      if (!r.ok) throw new Error(`${e.name}: ${r.status}`);
-      const buf = Buffer.from(await r.arrayBuffer());
-      await writeFile(join(OUT, e.name), buf);
-      bytes += buf.length;
-      if (++done % 100 === 0) console.log(`  ${done}/${todo.length}`);
-    }
-  });
-  await Promise.all(workers);
-  console.log(`fetched ${done} images, ${(bytes / 1048576).toFixed(1)} MB -> public/units/`);
   await writeUpscaled();
   await writeEnhancementIcons();
+  await writeStrategicIcons();
   await writeManifest();
 }
 
@@ -119,6 +120,62 @@ async function writeEnhancementIcons() {
     }
   }
   console.log(`enhancement icons: ${made} fetched, ${skipped} already local`);
+}
+
+/**
+ * Strategic icons, from FAForever/UnitDB.
+ *
+ * These are the symbols you actually read when the camera is out: a player
+ * recognises a Percival by its icon long before they recognise the render.
+ * The game ships them as DDS, which no browser draws; UnitDB vendored the
+ * same set as PNG, named after the blueprint's own `StrategicIconName` plus
+ * the `_rest` state suffix, so the mapping is exact rather than guessed.
+ * Every one of the 119 names the dataset uses resolves.
+ *
+ * Stored as public/strategic/<StrategicIconName>.png.
+ */
+async function writeStrategicIcons() {
+  const headers: Record<string, string> = { 'User-Agent': 'faf-unit-db-build' };
+  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+
+  // Only the icons the dataset actually names, not all 295 in the repo.
+  const units = JSON.parse(
+    await readFile(join(process.cwd(), 'src', 'data', 'units.json'), 'utf8')
+  ) as { units: Array<{ StrategicIconName?: string }> };
+  const wanted = [
+    ...new Set(units.units.map((u) => u.StrategicIconName).filter((n): n is string => !!n)),
+  ].sort();
+
+  const dir = join(process.cwd(), 'public', 'strategic');
+  await mkdir(dir, { recursive: true });
+  const have = new Set(await readdir(dir).catch(() => [] as string[]));
+
+  let made = 0;
+  let skipped = 0;
+  const missing: string[] = [];
+  const queue = [...wanted];
+  await Promise.all(
+    Array.from({ length: CONCURRENCY }, async () => {
+      for (;;) {
+        const name = queue.shift();
+        if (!name) return;
+        if (have.has(`${name}.png`)) { skipped++; continue; }
+        const url =
+          'https://raw.githubusercontent.com/FAForever/UnitDB/master/www/res/img/strategic/' +
+          `${name}_rest.png`;
+        const res = await fetch(url, { headers });
+        if (!res.ok) { missing.push(name); continue; }
+        await writeFile(join(dir, `${name}.png`), Buffer.from(await res.arrayBuffer()));
+        made++;
+      }
+    })
+  );
+  // Loud, not silent: a missing icon means a new unit shipped with an icon
+  // name UnitDB has not vendored, and the page would quietly show a gap.
+  if (missing.length) {
+    console.log(`  WARNING: ${missing.length} strategic icon(s) not found: ${missing.join(', ')}`);
+  }
+  console.log(`strategic icons: ${made} fetched, ${skipped} already local, ${wanted.length} in use`);
 }
 
 /**

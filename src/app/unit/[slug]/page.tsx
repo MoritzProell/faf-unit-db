@@ -198,6 +198,23 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
         <UnitWell id={unit.Id} faction={unit.faction} techLabel={unit.techLabel} size={132} imageSize={124} pip={false} priority hires hasRender={unit.hasRender} className={styles.heroWell} />
         <div className={styles.heroBody}>
           <div className={styles.heroTitleRow}>
+            {/* The strategic icon, which is what a player actually reads on the
+                battlefield: at any real zoom the render is a smudge and the
+                icon is the unit. Sits with the name because it identifies the
+                unit as much as the name does. */}
+            {unit.StrategicIconName && (
+              // Pixel-art PNG from our own public dir. next/image would
+              // resample it and cost a request to gain nothing.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={`/strategic/${unit.StrategicIconName}.png`}
+                alt=""
+                width={30}
+                height={30}
+                className={styles.heroIcon}
+                title={unit.StrategicIconName}
+              />
+            )}
             <h1 className={`t ${styles.heroName}`}>{unit.name}</h1>
             {/* The faction and tier are the two facets a reader is most likely
                 to want next, so they filter the roster rather than sitting

@@ -95,18 +95,36 @@ export function UnitChip({
           <div className={styles.role}>{unit.name === unit.role ? unit.type : unit.role}</div>
           <div className={styles.rule} />
           <div className={styles.stats}>
-            <Stat label="Mass" value={fmt(unit.mass)} />
-            <Stat label="Health" value={fmt(unit.health)} />
-            {/* Damage is worth more here than whatever the list happens to be
-                sorted by, so it is fixed. The sort stat still shows when it is
-                something else. */}
-            <Stat
-              label="DPS"
-              value={unit.totalDps === null ? '–' : unit.totalDps.toFixed(1)}
-              accent
-            />
-            {sort.key !== 'directDps' && sort.key !== 'dpsPerMass' && (
-              <Stat label={sort.tileLabel} value={sort.format(unit)} />
+            {/* A shield generator has no damage and its own hit points are
+                beside the point: 220 mass buys a Parashield's 3000 shield, and
+                that is the number you are comparing. Mobile shields and shield
+                structures both. */}
+            {unit.roleKey === 'Shield' ? (
+              <>
+                <Stat label="Mass" value={fmt(unit.mass)} />
+                <Stat label="Shield" value={fmt(unit.shieldHp)} accent />
+                <Stat
+                  label="Per mass"
+                  value={unit.shieldHp && unit.mass ? (unit.shieldHp / unit.mass).toFixed(2) : '–'}
+                />
+                <Stat label="Radius" value={fmt(unit.shieldRadius)} />
+              </>
+            ) : (
+              <>
+                <Stat label="Mass" value={fmt(unit.mass)} />
+                <Stat label="Health" value={fmt(unit.health)} />
+                {/* Damage is worth more here than whatever the list happens to be
+                    sorted by, so it is fixed. The sort stat still shows when it is
+                    something else. */}
+                <Stat
+                  label="DPS"
+                  value={unit.totalDps === null ? '–' : unit.totalDps.toFixed(1)}
+                  accent
+                />
+                {sort.key !== 'directDps' && sort.key !== 'dpsPerMass' && (
+                  <Stat label={sort.tileLabel} value={sort.format(unit)} />
+                )}
+              </>
             )}
           </div>
           <button

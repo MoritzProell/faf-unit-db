@@ -69,6 +69,35 @@ async function fetchNotes(version: string) {
   }
 }
 
+/**
+ * When the patch actually shipped.
+ *
+ * FAF tags every patch on its game repository and cuts a GitHub release for
+ * it, so the release date is the patch date, from FAF's own record rather than
+ * a date this project made up. Missing is fine and common for old patches: the
+ * page just omits the line.
+ */
+async function fetchReleaseDate(version: string): Promise<string | undefined> {
+  const headers: Record<string, string> = { 'User-Agent': 'faf-unit-db-build' };
+  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/FAForever/fa/releases/tags/${version}`,
+      { headers }
+    );
+    if (!res.ok) {
+      console.log(`  no release date for ${version} (${res.status})`);
+      return undefined;
+    }
+    const rel = (await res.json()) as { published_at?: string };
+    if (rel.published_at) console.log(`  released ${rel.published_at.slice(0, 10)}`);
+    return rel.published_at;
+  } catch (err) {
+    console.log(`  could not fetch release date: ${(err as Error).message}`);
+    return undefined;
+  }
+}
+
 async function main() {
   const from = flag('from');
   const to = flag('to') ?? join(process.cwd(), 'src', 'data', 'units.json');
@@ -82,13 +111,17 @@ async function main() {
     return;
   }
 
-  const { notes, notesUrl } = await fetchNotes(after.version);
+  const [{ notes, notesUrl }, releasedAt] = await Promise.all([
+    fetchNotes(after.version),
+    fetchReleaseDate(after.version),
+  ]);
   const diff: PatchDiff = {
     version: after.version,
     previousVersion: before.version,
     ...diffPatches(before.units, after.units),
     notes,
     notesUrl,
+    releasedAt,
   };
 
   let existing: PatchDiff[] = [];

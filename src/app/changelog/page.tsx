@@ -18,6 +18,21 @@ export const metadata: Metadata = {
     'What each Forged Alliance Forever patch actually changed, computed from the unit blueprints themselves, alongside FAF’s own release notes.',
 };
 
+/**
+ * "25 Aug 2026". Fixed en-GB and UTC on purpose: this renders at build time on
+ * a server in an unknown locale and timezone, and a date that shifts by a day
+ * depending on where it was built is worse than one that reads slightly
+ * foreign.
+ */
+function formatPatchDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
 export default async function ChangelogPage() {
   const { units, version } = await getUnitData();
   const patches = await getPatches();
@@ -58,6 +73,7 @@ export default async function ChangelogPage() {
                   <a key={p.version} href={`#patch-${p.version}`} className={styles.railItem}>
                     <span className={`m ${styles.railVersion}`}>{p.version}</span>
                     <span className={styles.railMeta}>
+                      {p.releasedAt ? `${formatPatchDate(p.releasedAt)} · ` : ''}
                       {units === 0 ? 'no unit changes' : `${units} unit${units === 1 ? '' : 's'}`}
                     </span>
                     {i === 0 && <span className={styles.railLatest}>latest</span>}
@@ -76,6 +92,14 @@ export default async function ChangelogPage() {
             <section key={p.version} id={`patch-${p.version}`} className={styles.patch}>
               <div className={styles.patchHead}>
                 <h2 className={`t ${styles.patchVersion}`}>Patch {p.version}</h2>
+                {/* When FAF actually shipped it, from the GitHub release for
+                    the patch tag. "Patch 3838" means nothing on its own; the
+                    date is how you place it against a game you played. */}
+                {p.releasedAt && (
+                  <time className={`m ${styles.patchDate}`} dateTime={p.releasedAt}>
+                    {formatPatchDate(p.releasedAt)}
+                  </time>
+                )}
                 <span className={styles.patchMeta}>
                   {p.changed.length === 0 && p.added.length === 0
                     ? `no unit changes since ${p.previousVersion}`

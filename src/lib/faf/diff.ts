@@ -35,6 +35,11 @@ export interface PatchDiff {
   /** FAF's own notes for this patch, as markdown-ish sections. */
   notes?: Array<{ heading: string; items: string[] }>;
   notesUrl?: string;
+  /**
+   * When FAF released it, ISO 8601, from the GitHub release for the patch tag.
+   * Absent for patches with no release cut, which the page simply omits.
+   */
+  releasedAt?: string;
 }
 
 type Probe = { label: string; get: (u: Unit) => number | null | undefined; higherIsBetter?: boolean };
