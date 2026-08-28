@@ -149,10 +149,14 @@
    did nothing: it is a flex child with flex:1, so the shell grew to fit the
    rail and then stretched the middle to match. Pin the shell to the viewport
    and the flex children divide what is actually there. */
-.shell[data-view='onepage'] { height: 100dvh; min-height: 0; overflow: hidden; }
-.middle[data-view='onepage'] { min-height: 0; overflow: hidden; }
-.middle[data-view='onepage'] .railWrap { overflow-y: auto; overflow-x: hidden; }
-.main[data-view='onepage'] {
+.shell[data-view='onepage'],
+.shell[data-view='compact'] { height: 100dvh; min-height: 0; overflow: hidden; }
+.middle[data-view='onepage'],
+.middle[data-view='compact'] { min-height: 0; overflow: hidden; }
+.middle[data-view='onepage'] .railWrap,
+.middle[data-view='compact'] .railWrap { overflow-y: auto; overflow-x: hidden; }
+.main[data-view='onepage'],
+.main[data-view='compact'] {
   min-height: 0;
   overflow: hidden;
   /* Every pixel above the roster is a pixel the chips do not get. In a window
@@ -161,19 +165,24 @@
   padding: 10px 20px 10px;
   gap: 8px;
 }
-.main[data-view='onepage'] .title { font-size: 17px; }
-.main[data-view='onepage'] .resultsBar { gap: 6px; }
+.main[data-view='onepage'] .title,
+.main[data-view='compact'] .title { font-size: 17px; }
+.main[data-view='onepage'] .resultsBar,
+.main[data-view='compact'] .resultsBar { gap: 6px; }
 /* The footer keeps its attribution, which is not optional, but it says it on
    one tight line here rather than taking 120px of the roster's height. */
-.shell[data-view='onepage'] footer {
+.shell[data-view='onepage'] footer,
+.shell[data-view='compact'] footer {
   padding: 6px 22px 7px;
   font-size: 10.5px;
   line-height: 1.35;
   gap: 2px 14px;
   flex-shrink: 0;
 }
-.shell[data-view='onepage'] footer > :nth-child(n + 2):nth-child(-n + 4) { display: none; }
-.main[data-view='onepage'] > :last-child { flex: 1; min-height: 0; }
+.shell[data-view='onepage'] footer > :nth-child(n + 2):nth-child(-n + 4),
+.shell[data-view='compact'] footer > :nth-child(n + 2):nth-child(-n + 4) { display: none; }
+.main[data-view='onepage'] > :last-child,
+.main[data-view='compact'] > :last-child { flex: 1; min-height: 0; }
 /* The roster scrolls inside itself here, not the page: the army stays a fixed
    first screen and the structures are below it. */
-.main[data-view='onepage'] { overflow: hidden; }
+

@@ -1,0 +1,54 @@
+/* Everything on one screen: a column per faction, units flowing down it.
+   No role columns and no role labels, which is the whole reason it fits. */
+.screen {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  height: 100%;
+  min-height: 0;
+  /* If the solver is ever beaten by the numbers, clip rather than scroll: a
+     scrollbar here would mean the view is not doing the one thing it promises,
+     and it should look wrong rather than quietly become another list. */
+  overflow: hidden;
+  /* Held back until the size is solved, so nothing renders at a guessed size
+     and visibly resettles a frame later. */
+  opacity: 0;
+  transition: opacity 90ms ease;
+}
+.screen[data-ready='true'] { opacity: 1; }
+
+.col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 0 5px 5px;
+  /* The faction's own colour, at a fraction, so four columns read apart
+     without a heading on every tier. */
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--fac) 9%, transparent), transparent 120px);
+}
+
+.head {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 2px 4px;
+  color: var(--fac);
+}
+.name { font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; }
+.count { font-size: 9.5px; color: var(--text-3); margin-left: auto; }
+
+.tier { display: flex; flex-direction: column; }
+.tierLabel {
+  font-size: 8px; font-weight: 700; letter-spacing: 0.08em;
+  color: var(--text-3);
+  height: 13px; display: flex; align-items: center;
+}
+.flow { display: flex; flex-wrap: wrap; gap: var(--gap); align-content: flex-start; }
+
+/* Under this there is no honest single screen for 497 units, so it gives up
+   the promise rather than rendering something unreadably small. */
+@media (max-width: 900px), (max-height: 520px) {
+  .screen { overflow: auto; flex-wrap: wrap; height: auto; }
+}

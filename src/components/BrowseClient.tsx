@@ -6,7 +6,7 @@ import { TopBar } from './TopBar';
 import { FilterRail, FACTIONS, TECHS, KINDS, type Facets, type FilterState } from './FilterRail';
 import { UnitTile } from './UnitTile';
 import { OnePage } from './OnePage';
-import { CompactGroups } from './CompactGroups';
+import { OneScreen } from './OneScreen';
 import { SECTION_ORDER } from '@/lib/faf/sections';
 import { CompareTray } from './CompareTray';
 import { SiteFooter } from './SiteFooter';
@@ -208,7 +208,7 @@ export function BrowseClient({
               {/* One page arranges by section, tier, faction and role, so it
                   has no free axis left for a sort to act on. Showing the
                   control there implies it does something. */}
-              {view !== 'onepage' && (
+              {view === 'cards' && (
               <label className={styles.control}>
                 <span className="lbl" style={{ fontSize: 9 }}>Sort</span>
                 <span className={styles.selectWrap}>
@@ -276,9 +276,9 @@ export function BrowseClient({
               <button className={styles.emptyAction} onClick={reset}>Reset filters</button>
             </div>
           ) : view === 'onepage' ? (
-            <OnePage units={results} selected={compare.ids} onToggle={compare.toggle} sort={sort} pickMode={pickMode} />
+            <OneScreen units={results} selected={compare.ids} onToggle={compare.toggle} pickMode={pickMode} sort={sort} />
           ) : view === 'compact' ? (
-            <CompactGroups units={results} selected={compare.ids} onToggle={compare.toggle} sort={sort} pickMode={pickMode} />
+            <OnePage units={results} selected={compare.ids} onToggle={compare.toggle} sort={sort} pickMode={pickMode} />
           ) : (
             <>
               {cardSections.map(([section, list], si) => (
