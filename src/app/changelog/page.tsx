@@ -159,9 +159,11 @@ export default async function ChangelogPage() {
                             key={c.id}
                             change={c}
                             hasRender={byId.get(c.id)?.hasRender ?? false}
+                            listed={byId.has(c.id)}
                             related={(nested.get(c.id) ?? []).map((r) => ({
                               change: r,
                               hasRender: byId.get(r.id)?.hasRender ?? false,
+                              listed: byId.has(r.id),
                             }))}
                           />
                         ));
@@ -207,66 +209,78 @@ export default async function ChangelogPage() {
   );
 }
 
+/**
+ * A unit's stat changes in one patch.
+ *
+ * `listed` is false for a unit the roster deliberately leaves out, which the
+ * Novax satellite became when its page was removed in favour of the Novax
+ * Centre that deploys it. The change still happened and is still worth
+ * showing; it just has nowhere to link to, and linking anyway left a 404 on
+ * the changelog.
+ */
 function ChangedUnit({
   change,
   hasRender,
+  listed = true,
   related = [],
 }: {
   change: UnitChange;
   hasRender: boolean;
-  related?: Array<{ change: UnitChange; hasRender: boolean }>;
+  listed?: boolean;
+  related?: Array<{ change: UnitChange; hasRender: boolean; listed?: boolean }>;
 }) {
+  const body = (c: UnitChange, render: boolean, size: number, tick = false) => (
+    <>
+      <div className={styles.unitTop}>
+        {tick && <span className={styles.relatedTick} aria-hidden="true">&#8627;</span>}
+        <UnitWell
+          id={c.id}
+          faction={c.faction as Faction}
+          techLabel={c.techLabel}
+          size={size}
+          imageSize={size - 2}
+          pip={false}
+          hasRender={render}
+        />
+        <span className={`t ${styles.unitName}`}>{c.name}</span>
+        <span className={styles.unitRole}>{c.role}</span>
+      </div>
+      <div className={styles.fields}>
+        {c.fields.map((f, i) => (
+          <FieldPill key={i} field={f} />
+        ))}
+      </div>
+    </>
+  );
+
   return (
     <div className={styles.unitGroup} data-faction={change.faction}>
-      <Link href={`/unit/${change.slug}`} className={styles.unit} data-faction={change.faction}>
-        <div className={styles.unitTop}>
-          <UnitWell
-            id={change.id}
-            faction={change.faction as Faction}
-            techLabel={change.techLabel}
-            size={30}
-            imageSize={28}
-            pip={false}
-            hasRender={hasRender}
-          />
-          <span className={`t ${styles.unitName}`}>{change.name}</span>
-          <span className={styles.unitRole}>{change.role}</span>
-        </div>
-        <div className={styles.fields}>
-          {change.fields.map((f, i) => (
-            <FieldPill key={i} field={f} />
-          ))}
-        </div>
-      </Link>
-
-      {related.map((r) => (
-        <Link
-          key={r.change.id}
-          href={`/unit/${r.change.slug}`}
-          className={`${styles.unit} ${styles.related}`}
-          data-faction={r.change.faction}
-        >
-          <div className={styles.unitTop}>
-            <span className={styles.relatedTick} aria-hidden="true">&#8627;</span>
-            <UnitWell
-              id={r.change.id}
-              faction={r.change.faction as Faction}
-              techLabel={r.change.techLabel}
-              size={26}
-              imageSize={24}
-              pip={false}
-              hasRender={r.hasRender}
-            />
-            <span className={`t ${styles.unitName}`}>{r.change.name}</span>
-            <span className={styles.unitRole}>{r.change.role}</span>
-          </div>
-          <div className={styles.fields}>
-            {r.change.fields.map((f, i) => (
-              <FieldPill key={i} field={f} />
-            ))}
-          </div>
+      {listed ? (
+        <Link href={`/unit/${change.slug}`} className={styles.unit} data-faction={change.faction}>
+          {body(change, hasRender, 30)}
         </Link>
-      ))}
+      ) : (
+        <div className={styles.unit} data-faction={change.faction}>
+          {body(change, hasRender, 30)}
+        </div>
+      )}
+
+      {related.map((r) =>
+        r.listed === false ? (
+          <div key={r.change.id} className={`${styles.unit} ${styles.related}`} data-faction={r.change.faction}>
+            {body(r.change, r.hasRender, 26, true)}
+          </div>
+        ) : (
+          <Link
+            key={r.change.id}
+            href={`/unit/${r.change.slug}`}
+            className={`${styles.unit} ${styles.related}`}
+            data-faction={r.change.faction}
+          >
+            {body(r.change, r.hasRender, 26, true)}
+          </Link>
+        )
+      )}
     </div>
   );
 }
