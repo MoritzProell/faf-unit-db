@@ -102,7 +102,7 @@ export function UnitChip({
             {unit.roleKey === 'Shield' ? (
               <>
                 <Stat label="Mass" value={fmt(unit.mass)} />
-                <Stat label="Shield" value={fmt(unit.shieldHp)} accent />
+                <Stat label="Shield" value={fmt(unit.shieldHp)} tone="shield" />
                 <Stat
                   label="Per mass"
                   value={unit.shieldHp && unit.mass ? (unit.shieldHp / unit.mass).toFixed(2) : '–'}
@@ -119,7 +119,7 @@ export function UnitChip({
                 <Stat
                   label="DPS"
                   value={unit.totalDps === null ? '–' : unit.totalDps.toFixed(1)}
-                  accent
+                  tone="damage"
                 />
                 {sort.key !== 'directDps' && sort.key !== 'dpsPerMass' && (
                   <Stat label={sort.tileLabel} value={sort.format(unit)} />
@@ -144,11 +144,19 @@ export function UnitChip({
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+/**
+ * Damage is red and shields are blue, matching the unit pages. Neither is
+ * green: green is health, and a damage figure in the health colour reads as
+ * another health figure.
+ */
+function Stat({ label, value, tone }: { label: string; value: string; tone?: 'damage' | 'shield' }) {
   return (
     <div className={styles.stat}>
       <span className="lbl" style={{ fontSize: 8 }}>{label}</span>
-      <span className={`m ${styles.figure}`} style={accent ? { color: 'var(--best)' } : undefined}>
+      <span
+        className={`m ${styles.figure}`}
+        style={tone ? { color: `var(--${tone === 'damage' ? 'dmg' : 'shield'})` } : undefined}
+      >
         {value}
       </span>
     </div>

@@ -325,7 +325,8 @@ a.historyVersion:hover { color: var(--text); text-decoration: underline; text-un
    pixel grid rather than smoothed: these are small hand-made symbols and
    interpolation turns their thin strokes to mush. */
 .heroIcon {
-  width: 30px; height: 30px; flex-shrink: 0;
+  /* Sized by its own width/height attributes, which vary by icon shape. */
+  flex-shrink: 0;
   image-rendering: pixelated;
   opacity: 0.92;
 }

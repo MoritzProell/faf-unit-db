@@ -79,7 +79,8 @@
    hand-drawn symbols and smoothing turns their strokes to mush. */
 .roleIcon {
   position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
-  width: 16px; height: 16px;
+  /* No width/height here: the element carries its own, which differ per icon.
+     Overriding them in CSS is what squashed them into a square. */
   image-rendering: pixelated;
   opacity: 0.75;
 }

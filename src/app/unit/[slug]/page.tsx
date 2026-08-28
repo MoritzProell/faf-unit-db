@@ -20,6 +20,7 @@ import { buildCohort, ordinal } from '@/lib/faf/cohort';
 import { shieldEconomy, massEconomy, powerEconomy, fmtDuration } from '@/lib/faf/economy';
 import { roleOf } from '@/lib/faf/roles';
 import { describe, hasThinDescription } from '@/lib/faf/describe';
+import ICON_DIMS from '@/data/strategic-icons.json';
 import { enhancementsOf, groupBySlot, SLOT_LABEL, type Enhancement } from '@/lib/faf/enhancements';
 import { getUnitHistory } from '@/lib/faf/changelog';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
@@ -109,6 +110,9 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
   // ("Heavy Shield Generator"), not the taxonomy slot.
   const roleKey = roleOf(unit);
   const thinDescription = hasThinDescription(unit);
+  const iconDims = unit.StrategicIconName
+    ? (ICON_DIMS as unknown as Record<string, [number, number]>)[unit.StrategicIconName]
+    : undefined;
   // Any shield at all, including the personal ones. A Titan, a Fatboy and an
   // Obsidian are balanced around a smaller health pool than their peers plus a
   // shield that comes back, so reading their health alone reads them as
@@ -202,15 +206,17 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                 battlefield: at any real zoom the render is a smudge and the
                 icon is the unit. Sits with the name because it identifies the
                 unit as much as the name does. */}
-            {unit.StrategicIconName && (
-              // Pixel-art PNG from our own public dir. next/image would
-              // resample it and cost a request to gain nothing.
+            {unit.StrategicIconName && iconDims && (
+              // Its own dimensions doubled, never a square box. These icons are
+              // 16x16 but also 12x16, 16x12, 20x16 and 16x20, and forcing them
+              // square stretched half of them. A whole multiple keeps the pixel
+              // grid intact as well.
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={`/strategic/${unit.StrategicIconName}.png`}
                 alt=""
-                width={30}
-                height={30}
+                width={iconDims[0] * 2}
+                height={iconDims[1] * 2}
                 className={styles.heroIcon}
                 title={unit.StrategicIconName}
               />
@@ -463,6 +469,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
               <Glance
                 label={primary ? `${primary.category} DPS` : payload ? 'Payload' : 'Weapons'}
                 icon="damage"
+                tone={primary || payload ? 'damage' : undefined}
                 figure={
                   primary?.dps
                     ? fmtRatio(primary.dps, 1)
@@ -828,7 +835,7 @@ function Glance({
   label, figure, unit, foot, icon, tone, extra,
 }: {
   label: string; figure: string; unit?: string; foot: React.ReactNode;
-  icon?: IconName; tone?: 'shield'; extra?: React.ReactNode;
+  icon?: IconName; tone?: 'shield' | 'damage'; extra?: React.ReactNode;
 }) {
   return (
     <div className={styles.glance} data-tone={tone}>
@@ -939,7 +946,7 @@ function WeaponCard({ weapon: w }: { weapon: DecoratedWeapon }) {
         {w.dps ? (
           <span className={styles.dpsPill}>
             <span className={`m ${styles.dpsFigure}`}>{fmtRatio(w.dps, 1)}</span>
-            <span className="lbl" style={{ fontSize: 9, color: 'var(--best)' }}>DPS</span>
+            <span className="lbl" style={{ fontSize: 9, color: 'var(--dmg)' }}>DPS</span>
           </span>
         ) : null}
       </div>

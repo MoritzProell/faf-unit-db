@@ -6,6 +6,7 @@ import { SECTION_ORDER } from '@/lib/faf/sections';
 import { ROLE_ORDER, ROLE_SHORT } from '@/lib/faf/roles';
 import type { BrowseUnit, SortDef } from '@/lib/faf/browse';
 import type { Faction, Tech } from '@/lib/faf/types';
+import ICON_DIMS from '@/data/strategic-icons.json';
 import styles from './CompactGroups.module.css';
 
 const FACTIONS: Faction[] = ['UEF', 'Cybran', 'Aeon', 'Seraphim', 'Nomads'];
@@ -31,6 +32,8 @@ const TECH_LABEL: Record<string, string> = { T1: 'T1', T2: 'T2', T3: 'T3', EXP: 
  * ceiling so the layout never sits exactly on the edge of wrapping.
  */
 const CHIP_VAR = 'var(--chip)';
+
+const DIMS = ICON_DIMS as unknown as Record<string, [number, number]>;
 
 /** The icon most of a column's units carry, or none if the column disagrees. */
 function modalIcon(units: BrowseUnit[]): string | null {
@@ -146,14 +149,16 @@ export function CompactGroups({
                               <span className={`lbl ${styles.roleLabel}`} title={role}>
                                 {ROLE_SHORT[role] ?? role}
                               </span>
-                              {icon && (
-                                // Pixel art, already tiny, must not be resampled.
+                              {icon && DIMS[icon] && (
+                                // Native size, and never forced square: these
+                                // icons come in eight shapes and a square box
+                                // stretched most of them.
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                   src={`/strategic/${icon}.png`}
                                   alt=""
-                                  width={16}
-                                  height={16}
+                                  width={DIMS[icon][0]}
+                                  height={DIMS[icon][1]}
                                   className={styles.roleIcon}
                                 />
                               )}

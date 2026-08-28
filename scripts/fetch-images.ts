@@ -175,7 +175,32 @@ async function writeStrategicIcons() {
   if (missing.length) {
     console.log(`  WARNING: ${missing.length} strategic icon(s) not found: ${missing.join(', ')}`);
   }
-  console.log(`strategic icons: ${made} fetched, ${skipped} already local, ${wanted.length} in use`);
+
+  // These icons are not square: 16x16, but also 12x16 for structures, 16x12
+  // for bots, 20x16 for bombers, 16x20 for fighters. Drawn into a square box
+  // they come out stretched or squashed, which is exactly what happened. So
+  // the real dimensions are recorded here and the pages scale by whole
+  // multiples of them, which also keeps the pixel grid intact.
+  const dims: Record<string, [number, number]> = {};
+  for (const name of wanted) {
+    try {
+      const buf = await readFile(join(dir, `${name}.png`));
+      // PNG IHDR: width and height are big-endian uint32 at bytes 16 and 20.
+      dims[name] = [buf.readUInt32BE(16), buf.readUInt32BE(20)];
+    } catch {
+      // Missing icons are already reported above.
+    }
+  }
+  await writeFile(
+    join(process.cwd(), 'src', 'data', 'strategic-icons.json'),
+    JSON.stringify(dims)
+  );
+
+  const shapes = new Set(Object.values(dims).map(([w, h]) => `${w}x${h}`));
+  console.log(
+    `strategic icons: ${made} fetched, ${skipped} already local, ${wanted.length} in use, ` +
+      `${shapes.size} distinct shapes (${[...shapes].sort().join(', ')})`
+  );
 }
 
 /**

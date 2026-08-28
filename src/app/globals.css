@@ -26,12 +26,13 @@
   --best: #a8e84a;
   --best-bg: rgba(136, 216, 27, 0.13);
   --best-line: rgba(136, 216, 27, 0.38);
-  /* Damage reads amber, not green. Green is health everywhere else on the
-     site, and a DPS figure in the same colour as a health figure invites the
-     two to be read as the same kind of number. */
-  --dmg: #f0a93c;
-  --dmg-bg: rgba(240, 169, 60, 0.12);
-  --dmg-line: rgba(240, 169, 60, 0.36);
+  /* Damage takes the same red the cross-faction rows use for a worse number.
+     Green is health everywhere else on the site, and amber sat close enough to
+     it to be read as a shade of the same thing; the red separates cleanly at a
+     glance and is already part of the palette rather than a sixth hue. */
+  --dmg: #e07a63;
+  --dmg-bg: rgba(224, 122, 99, 0.13);
+  --dmg-line: rgba(224, 122, 99, 0.38);
   /* Shields are blue in the game and blue here. */
   --shield: #7cc2f5;
   --shield-bg: rgba(61, 155, 233, 0.12);
