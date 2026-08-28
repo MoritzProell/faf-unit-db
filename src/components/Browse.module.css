@@ -174,3 +174,6 @@
 }
 .shell[data-view='onepage'] footer > :nth-child(n + 2):nth-child(-n + 4) { display: none; }
 .main[data-view='onepage'] > :last-child { flex: 1; min-height: 0; }
+/* The roster scrolls inside itself here, not the page: the army stays a fixed
+   first screen and the structures are below it. */
+.main[data-view='onepage'] { overflow: hidden; }

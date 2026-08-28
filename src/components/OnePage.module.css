@@ -3,16 +3,27 @@
    first decides and neither dimension ever scrolls. The subtracted constants
    are the chrome around the sheet: top bar, filter chips, section heads, tier
    strips and the per-row padding. Measured on the live page, not estimated. */
-.sheet {
+/* The scroll container, and where the chip size is decided.
+
+   The variables live here rather than on the army sheet because the structures
+   below inherit them too: defined on the sheet alone, everything under it fell
+   back to no width at all and rendered at roughly twice the size. It is also
+   the right container to measure — 100cqh is one screenful, which is exactly
+   what the army has to fit into. */
+.scroll {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  container-type: size;
+
   --chip-gap: 2px;
   --row-pad: 3px;
   --head-h: 15px;
-  /* Measured against the sheet itself, not the viewport.
-     100cqw and 100cqh are the space this element was actually given, so the
-     fit does not need to know the height of the top bar or the width of the
-     filter rail, and stops being wrong when either changes. */
-  container-type: size;
-  /* Height left for unit rows: the sheet, less one column header and each
+  /* Height left for unit rows: one screenful, less a column header and each
      tier's icon strip and border, divided by the rows in the tallest column. */
   --fit-h: calc(
     (100cqh - 34px - (var(--heads) * (var(--head-h) + 1px)) - var(--rows) * 1px)
@@ -21,16 +32,31 @@
   /* Width left for chips: the sheet, less the counted furniture. */
   --fit-w: calc((100cqw - var(--furniture)) / var(--wide));
   --chip: max(14px, min(var(--fit-h), var(--fit-w)));
+}
 
+.sheet {
+  /* Exactly the visible area, never less, so the army fills the first screen
+     whatever is under it. flex-shrink 0 stops the structures below from
+     squeezing it. */
+  height: 100%;
+  flex: 0 0 auto;
   display: flex;
   align-items: flex-start;
   gap: 8px;
   /* No scrollbars: this view either fits or it is not doing its job. The floor
      on --chip above keeps it legible rather than letting it vanish. */
   overflow: hidden;
-  height: 100%;
   min-height: 0;
 }
+
+/* Below the fold: the same columns at the same chip size, wrapping rather than
+   competing for one row, because there is no height budget to respect here. */
+.rest { display: flex; flex-direction: column; gap: 8px; padding-bottom: 4px; }
+.restHead { display: flex; align-items: center; gap: 10px; }
+.restLabel { font-size: 10px; color: var(--text-2); }
+.restNote { font-size: 10.5px; color: var(--text-3); }
+.restCols { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; }
+.restCols .col { flex: 0 1 auto; }
 
 .col {
   display: flex; flex-direction: column;

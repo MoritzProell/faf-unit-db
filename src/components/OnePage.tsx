@@ -5,6 +5,7 @@ import { UnitChip } from './UnitChip';
 import { Icon, type IconName } from './Icon';
 import { ROLE_SHORT } from '@/lib/faf/roles';
 import { orderedRoles } from '@/lib/faf/columns';
+import { SECTION_ORDER } from '@/lib/faf/sections';
 import ICON_DIMS from '@/data/strategic-icons.json';
 import type { BrowseUnit, SortDef } from '@/lib/faf/browse';
 import type { Faction, Tech } from '@/lib/faf/types';
@@ -35,6 +36,10 @@ const COLUMNS: Array<{ section: string; tiers: Tech[] }> = [
 ];
 
 const TECH_LABEL: Record<string, string> = { T1: 'T1', T2: 'T2', T3: 'T3', EXP: 'T4' };
+const TECH_ORDER: Tech[] = ['T1', 'T2', 'T3', 'EXP'];
+
+/** The army is what fits on the screen; everything else waits below it. */
+const ARMY = new Set(COLUMNS.map((c) => c.section));
 
 function modalIcon(units: BrowseUnit[]): string | null {
   const counts = new Map<string, number>();
@@ -137,11 +142,30 @@ export function OnePage({
     8 * (columns.length - 1) +
     18;
 
-  let rendered = 0;
+  // Shared across both blocks so the eager-loading budget is spent on what is
+  // actually above the fold, not restarted for the structures below it.
+  const counter = { n: 0 };
+
+  /**
+   * Everything that is not the army, laid out the same way but below the fold.
+   *
+   * The one-screen promise is about the army: that is what you compare mid-game
+   * and what has to be there without moving. Structures are 274 units and were
+   * simply absent, which made the view feel like it was hiding things. They are
+   * a scroll away now, in the same columns, so the page keeps its promise
+   * without pretending the rest of the game does not exist.
+   */
+  const restColumns = SECTION_ORDER.filter((sec) => !ARMY.has(sec) && bySection.has(sec)).map(
+    (section) => ({
+      section,
+      tiers: TECH_ORDER.filter((t) => bySection.get(section)!.some((u) => u.tech === t)),
+      units: bySection.get(section)!,
+    })
+  );
 
   return (
     <div
-      className={styles.sheet}
+      className={styles.scroll}
       style={
         {
           '--rows': rows,
@@ -152,109 +176,164 @@ export function OnePage({
         } as React.CSSProperties
       }
     >
+    <div className={styles.sheet}>
       {columns.map((col) => (
-        <section key={col.section} className={styles.col}>
-          <header className={styles.colHead}>
-            <h2 className={`t ${styles.colTitle}`}>{col.section}</h2>
-            <span className={`m ${styles.colCount}`}>{col.units.length}</span>
-          </header>
+        <Column
+          key={col.section}
+          col={col}
+          selected={selected}
+          onToggle={onToggle}
+          sort={sort}
+          pickMode={pickMode}
+          counter={counter}
+        />
+      ))}
+    </div>
 
-          {col.tiers.map((tech) => {
-            const tierUnits = col.units.filter((u) => u.tech === tech);
-            if (!tierUnits.length) return null;
-            const factions = FACTIONS.filter((f) => tierUnits.some((u) => u.faction === f));
-            const roles = orderedRoles(
-              col.section,
-              [...new Set(tierUnits.map((u) => u.roleKey))],
-              (r) => new Set(tierUnits.filter((u) => u.roleKey === r).map((u) => u.faction)).size
-            ).map((role) => {
-              const mine = tierUnits.filter((u) => u.roleKey === role);
-              return {
-                role,
-                width: Math.max(...factions.map((f) => mine.filter((u) => u.faction === f).length)),
-                icon: modalIcon(mine),
-              };
-            });
+    {restColumns.length > 0 && (
+      <div className={styles.rest}>
+        <div className={styles.restHead}>
+          <span className={`lbl ${styles.restLabel}`}>Structures</span>
+          <span className="rule" />
+          <span className={`m ${styles.restNote}`}>
+            {restColumns.reduce((n, c) => n + c.units.length, 0)} more
+          </span>
+        </div>
+        <div className={styles.restCols}>
+          {restColumns.map((col) => (
+            <Column
+              key={col.section}
+              col={col}
+              selected={selected}
+              onToggle={onToggle}
+              sort={sort}
+              pickMode={pickMode}
+              counter={counter}
+            />
+          ))}
+        </div>
+      </div>
+    )}
+    </div>
+  );
+}
 
-            const colWidth = (w: number) =>
-              `calc(var(--chip) * ${w} + var(--chip-gap) * ${w - 1})`;
+/**
+ * One section as a column of tiers. Shared by the army above the fold and the
+ * structures below it, so both read the same way and a change to either is a
+ * change to both.
+ */
+function Column({
+  col, selected, onToggle, sort, pickMode, counter,
+}: {
+  col: { section: string; tiers: Tech[]; units: BrowseUnit[] };
+  selected: string[];
+  onToggle: (id: string) => void;
+  sort: SortDef;
+  pickMode: boolean;
+  counter: { n: number };
+}) {
+  return (
+    <section className={styles.col}>
+      <header className={styles.colHead}>
+        <h2 className={`t ${styles.colTitle}`}>{col.section}</h2>
+        <span className={`m ${styles.colCount}`}>{col.units.length}</span>
+      </header>
 
-            return (
-              <div key={tech} className={styles.tier}>
-                <div className={styles.tierTab}>
-                  <span className={`m ${styles.tierLabel}`}>{TECH_LABEL[tech]}</span>
-                </div>
+      {col.tiers.map((tech) => {
+        const tierUnits = col.units.filter((u) => u.tech === tech);
+        if (!tierUnits.length) return null;
+        const factions = FACTIONS.filter((f) => tierUnits.some((u) => u.faction === f));
+        const roles = orderedRoles(
+          col.section,
+          [...new Set(tierUnits.map((u) => u.roleKey))],
+          (r) => new Set(tierUnits.filter((u) => u.roleKey === r).map((u) => u.faction)).size
+        ).map((role) => {
+          const mine = tierUnits.filter((u) => u.roleKey === role);
+          return {
+            role,
+            width: Math.max(...factions.map((f) => mine.filter((u) => u.faction === f).length)),
+            icon: modalIcon(mine),
+          };
+        });
 
-                <div className={styles.tierBody}>
-                  {/* Icons only, no rotated words. A diagonal label costs 20px
-                      of height per tier, which at three tiers is a whole unit
-                      row. The name is on hover instead. */}
-                  <div className={styles.roleHead}>
-                    <span className={styles.facMark} aria-hidden="true" />
-                    <div className={styles.roleCols}>
-                      {roles.map(({ role, width, icon }) => (
-                        <div key={role} className={styles.roleCol} style={{ width: colWidth(width) }} title={role}>
-                          {ROLE_ICON[role] ? (
-                            <span className={styles.roleGlyph}>
-                              <Icon name={ROLE_ICON[role]} size={11} strokeWidth={1.7} />
-                            </span>
-                          ) : icon && DIMS[icon] ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={`/strategic/${icon}.png`}
-                              alt=""
-                              width={DIMS[icon][0]}
-                              height={DIMS[icon][1]}
-                              className={styles.roleIcon}
-                            />
-                          ) : (
-                            <span className={`lbl ${styles.roleText}`}>{ROLE_SHORT[role] ?? role}</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+        const colWidth = (w: number) =>
+          `calc(var(--chip) * ${w} + var(--chip-gap) * ${w - 1})`;
 
-                  {factions.map((faction) => (
-                    <div key={faction} className={styles.row} data-faction={faction}>
-                      <span className={styles.facMark} title={faction}>
-                        <FactionMark faction={faction} size={11} />
-                      </span>
-                      <div className={styles.roleCols}>
-                        {roles.map(({ role, width }) => {
-                          const mine = tierUnits
-                            .filter((u) => u.faction === faction && u.roleKey === role)
-                            .sort((a, b) => a.name.localeCompare(b.name));
-                          return (
-                            <div key={role} className={styles.roleCol} style={{ width: colWidth(width) }} title={role}>
-                              {Array.from({ length: width }, (_, i) => {
-                                const u = mine[i];
-                                if (!u) return <span key={i} className={styles.slot} aria-hidden="true" />;
-                                return (
-                                  <UnitChip
-                                    key={u.id}
-                                    unit={u}
-                                    size="var(--chip)"
-                                    selected={selected.includes(u.id)}
-                                    onToggle={onToggle}
-                                    sort={sort}
-                                    eager={rendered++ < 120}
-                                    pickMode={pickMode}
-                                  />
-                                );
-                              })}
-                            </div>
-                          );
-                        })}
-                      </div>
+        return (
+          <div key={tech} className={styles.tier}>
+            <div className={styles.tierTab}>
+              <span className={`m ${styles.tierLabel}`}>{TECH_LABEL[tech]}</span>
+            </div>
+
+            <div className={styles.tierBody}>
+              {/* Icons only, no rotated words. A diagonal label costs 20px
+                  of height per tier, which at three tiers is a whole unit
+                  row. The name is on hover instead. */}
+              <div className={styles.roleHead}>
+                <span className={styles.facMark} aria-hidden="true" />
+                <div className={styles.roleCols}>
+                  {roles.map(({ role, width, icon }) => (
+                    <div key={role} className={styles.roleCol} style={{ width: colWidth(width) }} title={role}>
+                      {ROLE_ICON[role] ? (
+                        <span className={styles.roleGlyph}>
+                          <Icon name={ROLE_ICON[role]} size={11} strokeWidth={1.7} />
+                        </span>
+                      ) : icon && DIMS[icon] ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={`/strategic/${icon}.png`}
+                          alt=""
+                          width={DIMS[icon][0]}
+                          height={DIMS[icon][1]}
+                          className={styles.roleIcon}
+                        />
+                      ) : (
+                        <span className={`lbl ${styles.roleText}`}>{ROLE_SHORT[role] ?? role}</span>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
-            );
-          })}
-        </section>
-      ))}
-    </div>
+
+              {factions.map((faction) => (
+                <div key={faction} className={styles.row} data-faction={faction}>
+                  <span className={styles.facMark} title={faction}>
+                    <FactionMark faction={faction} size={11} />
+                  </span>
+                  <div className={styles.roleCols}>
+                    {roles.map(({ role, width }) => {
+                      const mine = tierUnits
+                        .filter((u) => u.faction === faction && u.roleKey === role)
+                        .sort((a, b) => a.name.localeCompare(b.name));
+                      return (
+                        <div key={role} className={styles.roleCol} style={{ width: colWidth(width) }} title={role}>
+                          {Array.from({ length: width }, (_, i) => {
+                            const u = mine[i];
+                            if (!u) return <span key={i} className={styles.slot} aria-hidden="true" />;
+                            return (
+                              <UnitChip
+                                key={u.id}
+                                unit={u}
+                                size="var(--chip)"
+                                selected={selected.includes(u.id)}
+                                onToggle={onToggle}
+                                sort={sort}
+                                eager={counter.n++ < 120}
+                                pickMode={pickMode}
+                              />
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </section>
   );
 }
