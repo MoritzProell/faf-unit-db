@@ -167,10 +167,24 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
         <div className={styles.heroBody}>
           <div className={styles.heroTitleRow}>
             <h1 className={`t ${styles.heroName}`}>{unit.name}</h1>
-            <span className={`${styles.badge} ${styles.badgeFaction}`}>
+            {/* The faction and tier are the two facets a reader is most likely
+                to want next, so they filter the roster rather than sitting
+                there as labels. The blueprint id is not a facet; it stays
+                plain, and it is the string you paste into a search. */}
+            <Link
+              href={`/?f=${encodeURIComponent(unit.faction)}`}
+              className={`${styles.badge} ${styles.badgeFaction} ${styles.badgeLink}`}
+              title={`Every ${unit.faction} unit`}
+            >
               <FactionMark faction={unit.faction} size={12} /> {unit.faction}
-            </span>
-            <span className={styles.badge}>{unit.techLabel === 'T4' ? 'T4 EXPERIMENTAL' : unit.techLabel}</span>
+            </Link>
+            <Link
+              href={`/?t=${unit.tech}`}
+              className={`${styles.badge} ${styles.badgeLink}`}
+              title={`Every ${unit.techLabel} unit`}
+            >
+              {unit.techLabel === 'T4' ? 'T4 EXPERIMENTAL' : unit.techLabel}
+            </Link>
             <span className={`m ${styles.badge}`}>{unit.Id}</span>
             {lastChange && (
               <Link href={`/changelog#patch-${lastChange.version}`} className={styles.changedBadge}>

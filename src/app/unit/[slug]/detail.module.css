@@ -37,6 +37,9 @@
   border-radius: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
   background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line-2); color: var(--text-2);
 }
+.badgeLink { color: inherit; }
+.badgeLink:hover { border-color: var(--primary); color: var(--text); }
+.badgeFaction.badgeLink:hover { border-color: var(--fac); color: var(--fac); }
 .badgeFaction {
   background: color-mix(in srgb, var(--fac) 14%, transparent);
   border-color: color-mix(in srgb, var(--fac) 42%, transparent);
