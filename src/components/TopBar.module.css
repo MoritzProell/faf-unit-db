@@ -5,6 +5,17 @@
   flex-shrink: 0;
 }
 .brand { display: flex; align-items: center; gap: 9px; color: var(--text); }
+.brandText { display: flex; flex-direction: column; gap: 1px; line-height: 1; }
+.byline {
+  display: flex; align-items: baseline; gap: 3px;
+  font-size: 9.5px; letter-spacing: 0.04em; color: var(--text-3);
+}
+.bylineName { color: var(--text-2); font-weight: 600; }
+.bylineSep { color: var(--line-2); }
+.bylineHandle { color: var(--primary); font-weight: 600; }
+.brand:hover .bylineHandle { color: var(--primary); }
+
+@media (max-width: 620px) { .byline { display: none; } }
 .wordmark { font-size: 13px; font-weight: 700; letter-spacing: 0.15em; white-space: nowrap; }
 .divider { width: 1px; height: 20px; background: var(--line-2); }
 .patchLink {

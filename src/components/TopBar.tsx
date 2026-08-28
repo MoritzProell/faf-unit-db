@@ -62,7 +62,16 @@ export function TopBar({
     <header className={styles.bar}>
       <Link href="/" className={styles.brand}>
         <BrandMark />
-        <span className={`t ${styles.wordmark}`}>FAF UNIT DB</span>
+        <span className={styles.brandText}>
+          <span className={`t ${styles.wordmark}`}>FAF UNIT DB</span>
+          {/* Authorship in the masthead rather than only the footer: this is a
+              one-person project and the byline is the point of building it. */}
+          <span className={styles.byline}>
+            by <span className={styles.bylineName}>Moritz</span>
+            <span className={styles.bylineSep}>/</span>
+            <span className={styles.bylineHandle}>RhyZ1ne</span>
+          </span>
+        </span>
       </Link>
       <span className={styles.divider} />
       <Link href="/changelog" className={styles.patchLink} title="What changed in each patch">
