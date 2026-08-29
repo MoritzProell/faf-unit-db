@@ -52,3 +52,13 @@
 @media (max-width: 900px), (max-height: 520px) {
   .screen { overflow: auto; flex-wrap: wrap; height: auto; }
 }
+
+/* The break between a tier's mobile units and its buildings. A rule rather
+   than a label: a word here would cost more height than the division is worth,
+   and the order already says which side is which. */
+.split {
+  display: block;
+  height: 0;
+  margin: 3px 0;
+  border-top: 1px dashed color-mix(in srgb, var(--fac) 60%, transparent);
+}

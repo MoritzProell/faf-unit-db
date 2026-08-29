@@ -15,6 +15,8 @@ const TECH_LABEL: Record<string, string> = { T1: 'T1', T2: 'T2', T3: 'T3', EXP: 
 
 const GAP = 2;
 const TIER_HEAD = 13;
+/** The rule between a tier's mobile units and its buildings. */
+const SPLIT = 7;
 const MIN_CHIP = 9;
 const MAX_CHIP = 52;
 
@@ -62,18 +64,23 @@ export function OneScreen({
     return {
       faction,
       total: mine.length,
-      tiers: TECH_ORDER.map((tech) => ({
-        tech,
-        units: mine
-          .filter((u) => u.tech === tech)
-          .sort(
-            (a, b) =>
-              sectionRank(a.section) - sectionRank(b.section) ||
-              roleRank(a.roleKey) - roleRank(b.roleKey) ||
-              a.mass - b.mass ||
-              a.name.localeCompare(b.name)
-          ),
-      })).filter((t) => t.units.length > 0),
+      tiers: TECH_ORDER.map((tech) => {
+        // Within a tier, what you build things with and what you build are
+        // different questions, so they are drawn as two groups rather than one
+        // run of chips. Order inside each is still section then role.
+        const order = (a: BrowseUnit, b: BrowseUnit) =>
+          sectionRank(a.section) - sectionRank(b.section) ||
+          roleRank(a.roleKey) - roleRank(b.roleKey) ||
+          a.mass - b.mass ||
+          a.name.localeCompare(b.name);
+        const inTier = mine.filter((u) => u.tech === tech);
+        return {
+          tech,
+          mobile: inTier.filter((u) => u.kind !== 'Base').sort(order),
+          built: inTier.filter((u) => u.kind === 'Base').sort(order),
+          count: inTier.length,
+        };
+      }).filter((t) => t.count > 0),
     };
   });
 
@@ -95,7 +102,13 @@ export function OneScreen({
       for (const col of columns) {
         let used = 0;
         for (const t of col.tiers) {
-          used += TIER_HEAD + Math.ceil(t.units.length / perRow) * (size + GAP);
+          // Each group wraps on its own, so a partial last row in the mobile
+          // units does not get filled by the buildings: the rows have to be
+          // counted per group or the solver picks a size that overflows.
+          used += TIER_HEAD;
+          if (t.mobile.length) used += Math.ceil(t.mobile.length / perRow) * (size + GAP);
+          if (t.built.length) used += Math.ceil(t.built.length / perRow) * (size + GAP);
+          if (t.mobile.length && t.built.length) used += SPLIT;
         }
         if (used > h) return false;
       }
@@ -150,20 +163,40 @@ export function OneScreen({
           {col.tiers.map((t) => (
             <div key={t.tech} className={styles.tier}>
               <span className={`m ${styles.tierLabel}`}>{TECH_LABEL[t.tech]}</span>
-              <div className={styles.flow}>
-                {t.units.map((u, i) => (
-                  <UnitChip
-                    key={u.id}
-                    unit={u}
-                    size="var(--chip)"
-                    selected={selected.includes(u.id)}
-                    onToggle={onToggle}
-                    sort={sort}
-                    eager={i < 30}
-                    pickMode={pickMode}
-                  />
-                ))}
-              </div>
+              {t.mobile.length > 0 && (
+                <div className={styles.flow} title="Units">
+                  {t.mobile.map((u, i) => (
+                    <UnitChip
+                      key={u.id}
+                      unit={u}
+                      size="var(--chip)"
+                      selected={selected.includes(u.id)}
+                      onToggle={onToggle}
+                      sort={sort}
+                      eager={i < 30}
+                      pickMode={pickMode}
+                    />
+                  ))}
+                </div>
+              )}
+              {t.mobile.length > 0 && t.built.length > 0 && (
+                <span className={styles.split} aria-hidden="true" />
+              )}
+              {t.built.length > 0 && (
+                <div className={styles.flow} title="Buildings">
+                  {t.built.map((u) => (
+                    <UnitChip
+                      key={u.id}
+                      unit={u}
+                      size="var(--chip)"
+                      selected={selected.includes(u.id)}
+                      onToggle={onToggle}
+                      sort={sort}
+                      pickMode={pickMode}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </section>
