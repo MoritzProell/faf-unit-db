@@ -74,3 +74,20 @@
 .wrap[data-pick='true'][data-selected='true'] .pickMark {
   background: var(--best-bg); border-color: var(--best-line); color: var(--best);
 }
+
+/* The unit's own strategic icon, over the render's top-right corner.
+   Sized as a fraction of the chip so it shrinks with it, and pixelated because
+   these are small hand-drawn symbols that smooth into mush. The dark plate
+   behind it keeps it readable over a light render. */
+.corner {
+  position: absolute; top: 1px; right: 1px; z-index: 1;
+  width: 36%; height: auto; max-height: 36%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  opacity: 0.92;
+  background: rgba(8, 10, 12, 0.55);
+  border-radius: 2px;
+  padding: 1px;
+  pointer-events: none;
+}
+.btn { position: relative; }

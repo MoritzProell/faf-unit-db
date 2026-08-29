@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useMemo, useState } from 'react';
 import { TopBar } from './TopBar';
-import { FilterRail, FACTIONS, TECHS, KINDS, type Facets, type FilterState } from './FilterRail';
+import { FilterRail, SectionNav, FACTIONS, TECHS, KINDS, type Facets, type FilterState } from './FilterRail';
 import { UnitTile } from './UnitTile';
 import { OnePage } from './OnePage';
 import { OneScreen } from './OneScreen';
@@ -192,6 +192,13 @@ export function BrowseClient({
         </div>
 
         <main className={styles.main} data-view={view}>
+          {/* Mobile only. The rail that normally carries these is a drawer
+              here, so without this the only way to reach Learn or Build
+              orders is to open the filter panel. */}
+          <div className={styles.mobileNav}>
+            <SectionNav layout="strip" />
+          </div>
+
           <div className={styles.resultsBar}>
             <div className={styles.resultsTop}>
               <h1 className={`t ${styles.title}`}>{title}</h1>

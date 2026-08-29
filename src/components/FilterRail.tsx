@@ -28,6 +28,40 @@ export interface FilterState {
 const KIND_LABEL: Record<string, string> = { Land: 'Land', Air: 'Air', Naval: 'Naval', Base: 'Structure' };
 const TECH_LABEL: Record<string, string> = { T1: 'T1', T2: 'T2', T3: 'T3', EXP: 'T4' };
 
+/**
+ * The other places to go. Lives in the rail on a wide screen, and is rendered
+ * again above the roster on a narrow one: on mobile the rail is a drawer
+ * behind the Filters button, which meant Learn, Build orders and the rest were
+ * only reachable by opening a filter panel to look for something that is not a
+ * filter.
+ */
+export function SectionNav({ layout = 'rail' }: { layout?: 'rail' | 'strip' }) {
+  return (
+    <nav className={layout === 'strip' ? styles.browseStrip : styles.browse} aria-label="Sections">
+      <Link href="/learn" className={styles.railLink}>
+        <Icon name="target" size={13} />
+        <span>Learn</span>
+        <Icon name="chevronRight" size={12} />
+      </Link>
+      <Link href="/build-orders" className={styles.railLink}>
+        <Icon name="rows" size={13} />
+        <span>Build orders</span>
+        <Icon name="chevronRight" size={12} />
+      </Link>
+      <Link href="/factions" className={styles.railLink}>
+        <Icon name="layers" size={13} />
+        <span>Faction comparison</span>
+        <Icon name="chevronRight" size={12} />
+      </Link>
+      <Link href="/upgrades" className={styles.railLink}>
+        <Icon name="gear" size={13} />
+        <span>Commander upgrades</span>
+        <Icon name="chevronRight" size={12} />
+      </Link>
+    </nav>
+  );
+}
+
 export function FilterRail({
   facets,
   state,
@@ -47,28 +81,7 @@ export function FilterRail({
           and a reader looking for them should not have to scroll past every
           facet to find out they exist. Kept out of the FILTERS heading because
           they are not filters. */}
-      <nav className={styles.browse} aria-label="Sections">
-        <Link href="/learn" className={styles.railLink}>
-          <Icon name="target" size={13} />
-          <span>Learn</span>
-          <Icon name="chevronRight" size={12} />
-        </Link>
-        <Link href="/build-orders" className={styles.railLink}>
-          <Icon name="rows" size={13} />
-          <span>Build orders</span>
-          <Icon name="chevronRight" size={12} />
-        </Link>
-        <Link href="/factions" className={styles.railLink}>
-          <Icon name="layers" size={13} />
-          <span>Faction comparison</span>
-          <Icon name="chevronRight" size={12} />
-        </Link>
-        <Link href="/upgrades" className={styles.railLink}>
-          <Icon name="gear" size={13} />
-          <span>Commander upgrades</span>
-          <Icon name="chevronRight" size={12} />
-        </Link>
-      </nav>
+      <SectionNav />
 
       <div className={styles.head}>
         <Icon name="sliders" size={15} />

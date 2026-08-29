@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { FactionMark } from './FactionMark';
 import { UnitChip } from './UnitChip';
 import { SECTION_ORDER } from '@/lib/faf/sections';
@@ -80,12 +80,16 @@ export function OneScreen({
           a.mass - b.mass ||
           a.name.localeCompare(b.name);
         const inTier = mine.filter((u) => u.tech === tech);
-        return {
-          tech,
-          mobile: inTier.filter((u) => u.kind !== 'Base').sort(order),
-          built: inTier.filter((u) => u.kind === 'Base').sort(order),
-          count: inTier.length,
-        };
+        // Four groups, not two. Land, air and naval are different armies and
+        // reading them as one run of chips told you nothing about which was
+        // which; structures are a fourth thing again.
+        const groups = [
+          inTier.filter((u) => u.kind === 'Land').sort(order),
+          inTier.filter((u) => u.kind === 'Air').sort(order),
+          inTier.filter((u) => u.kind === 'Naval').sort(order),
+          inTier.filter((u) => u.kind === 'Base').sort(order),
+        ].filter((g) => g.length > 0);
+        return { tech, groups, count: inTier.length };
       }).filter((t) => t.count > 0),
     };
   });
@@ -123,9 +127,10 @@ export function OneScreen({
           if (x > 0 && x + itemW > w + 0.5) { rows++; x = 0; }
           x += itemW + GAP;
         };
-        for (let i = 0; i < t.mobile.length; i++) place(size);
-        if (t.mobile.length && t.built.length) place(SPLIT_W);
-        for (let i = 0; i < t.built.length; i++) place(size);
+        t.groups.forEach((g, gi) => {
+          if (gi > 0) place(SPLIT_W);
+          for (let i = 0; i < g.length; i++) place(size);
+        });
         total += TIER_HEAD + rows * step;
       }
       return total;
@@ -203,31 +208,23 @@ export function OneScreen({
             <div key={t.tech} className={styles.tier}>
               <span className={`m ${styles.tierLabel}`}>{TECH_LABEL[t.tech]}</span>
               <div className={styles.flow}>
-                {t.mobile.map((u, i) => (
-                  <UnitChip
-                    key={u.id}
-                    unit={u}
-                    size="var(--chip)"
-                    selected={selected.includes(u.id)}
-                    onToggle={onToggle}
-                    sort={sort}
-                    eager={i < 30}
-                    pickMode={pickMode}
-                  />
-                ))}
-                {t.mobile.length > 0 && t.built.length > 0 && (
-                  <span className={styles.split} title="Buildings below" aria-hidden="true" />
-                )}
-                {t.built.map((u) => (
-                  <UnitChip
-                    key={u.id}
-                    unit={u}
-                    size="var(--chip)"
-                    selected={selected.includes(u.id)}
-                    onToggle={onToggle}
-                    sort={sort}
-                    pickMode={pickMode}
-                  />
+                {t.groups.map((g, gi) => (
+                  <Fragment key={g[0].id}>
+                    {gi > 0 && <span className={styles.split} aria-hidden="true" />}
+                    {g.map((u, i) => (
+                      <UnitChip
+                        key={u.id}
+                        unit={u}
+                        size="var(--chip)"
+                        selected={selected.includes(u.id)}
+                        onToggle={onToggle}
+                        sort={sort}
+                        eager={gi === 0 && i < 24}
+                        pickMode={pickMode}
+                        cornerIcon
+                      />
+                    ))}
+                  </Fragment>
                 ))}
               </div>
             </div>

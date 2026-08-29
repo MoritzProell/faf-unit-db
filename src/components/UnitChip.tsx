@@ -24,6 +24,7 @@ export function UnitChip({
   sort,
   eager = false,
   pickMode = false,
+  cornerIcon = false,
 }: {
   unit: BrowseUnit;
   size?: number | string;
@@ -39,6 +40,13 @@ export function UnitChip({
    * says "Done picking" promises.
    */
   pickMode?: boolean;
+  /**
+   * Overlay the unit's strategic icon in the corner. Only the one-page view
+   * asks for it: at 29px the render is a silhouette and the icon is what a
+   * player actually reads on the battlefield, so having both is worth the
+   * clutter there. It is sized off the chip, so it shrinks with it.
+   */
+  cornerIcon?: boolean;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [flip, setFlip] = useState({ x: false, up: false, down: false });
@@ -114,6 +122,10 @@ export function UnitChip({
             hasRender={unit.hasRender}
             priority={eager}
           />
+          {cornerIcon && unit.icon && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={`/strategic/${unit.icon}.png`} alt="" className={styles.corner} />
+          )}
         </Link>
       )}
 

@@ -50,3 +50,15 @@
 }
 .railLink:hover { color: var(--text); border-color: var(--primary); }
 .railLink span:first-of-type { flex: 1; }
+
+/* The same links as a horizontal strip, for the mobile header. Scrolls
+   sideways rather than wrapping, so it costs one row whatever the width. */
+.browseStrip {
+  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px;
+  scrollbar-width: none;
+}
+.browseStrip::-webkit-scrollbar { display: none; }
+.browseStrip .railLink {
+  flex: 0 0 auto; white-space: nowrap; padding: 6px 10px;
+}
+.browseStrip .railLink svg:last-child { display: none; }

@@ -193,3 +193,28 @@
 /* The roster scrolls inside itself here, not the page: the army stays a fixed
    first screen and the structures are below it. */
 
+
+/* Mobile. The two fitting views stop fitting here: a phone cannot show four
+   columns of army at a readable size, and pinning the shell to the viewport
+   just made the page unscrollable with most of the roster unreachable below
+   the fold. Below this width they behave like every other page and scroll. */
+.mobileNav { display: none; }
+@media (max-width: 980px) {
+  .mobileNav { display: block; }
+  .shell[data-view='onepage'],
+  .shell[data-view='compact'] { height: auto; min-height: 100dvh; overflow: visible; }
+  .middle[data-view='onepage'],
+  .middle[data-view='compact'] { overflow: visible; }
+  .middle[data-view='onepage'] .railWrap :global(aside),
+  .middle[data-view='compact'] .railWrap :global(aside) { width: 248px; }
+  .main[data-view='onepage'],
+  .main[data-view='compact'] { overflow: visible; padding: 12px 14px 0; }
+  .main[data-view='onepage'] > :last-child,
+  .main[data-view='compact'] > :last-child { flex: 0 0 auto; }
+
+  /* The footer was taking a third of a phone screen: two long sentences at
+     desktop size with 22px of padding. The sources belong on the repo page;
+     what has to stay here is the attribution. */
+  .shell footer { padding: 10px 14px 14px; font-size: 10.5px; line-height: 1.45; gap: 4px 10px; }
+  .shell footer > :nth-child(n + 2):nth-child(-n + 4) { display: none; }
+}
