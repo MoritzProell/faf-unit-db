@@ -123,14 +123,14 @@ export function OneScreen({
           if (x > 0 && x + itemW > w + 0.5) { rows++; x = 0; }
           x += itemW + GAP;
         };
-        for (const _ of t.mobile) place(size);
+        for (let i = 0; i < t.mobile.length; i++) place(size);
         if (t.mobile.length && t.built.length) place(SPLIT_W);
-        for (const _ of t.built) place(size);
+        for (let i = 0; i < t.built.length; i++) place(size);
         total += TIER_HEAD + rows * step;
       }
       return total;
     },
-    [columns]
+    []
   );
 
   const fits = useCallback(
