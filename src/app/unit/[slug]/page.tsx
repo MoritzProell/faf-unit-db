@@ -44,7 +44,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!unit) return { title: 'Unit not found' };
   const dps = unit.directDps ? `, ${fmtRatio(unit.directDps, 1)} DPS` : '';
   // Lead with the unit name and the words people type: "percival stats faf".
-  const title = `${unit.name} stats · ${unit.techLabel} ${unit.faction} ${unit.role}`;
+  // Absolute, so it does not inherit the "· FAF Unit DB" suffix. A unit page's
+  // job is to win "percival stats" and "monkeylord supreme commander", and the
+  // second of those needs the game's name in the title, which the site name
+  // alone does not supply. Front-loaded: the unit name is the part that must
+  // survive truncation.
+  const title = `${unit.name} stats · ${unit.techLabel} ${unit.faction} ${unit.role} · Forged Alliance Forever`;
   // The game's own rollover text describes what the unit is for far better than
   // a stat recital, so it leads when there is one.
   const description =
@@ -56,7 +61,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const url = `${SITE_URL}/unit/${unit.slug}`;
 
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: { canonical: `/unit/${unit.slug}` },
     // No `images` here on purpose: setting it overrides the generated card in
