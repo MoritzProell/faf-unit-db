@@ -2,6 +2,7 @@
 
 import { FactionMark } from './FactionMark';
 import { UnitChip } from './UnitChip';
+import { ROLE_SHORT } from '@/lib/faf/roles';
 import { orderedRoles } from '@/lib/faf/columns';
 import { SECTION_ORDER } from '@/lib/faf/sections';
 import type { BrowseUnit, SortDef } from '@/lib/faf/browse';
@@ -257,11 +258,24 @@ function Column({
             </div>
 
             <div className={styles.tierBody}>
-              {/* No role header strip here any more. It was 15px per tier
-                  carrying one icon for the whole column, and that icon now
-                  sits on every chip: the same information per unit rather
-                  than per column, and three tiers' worth of strips given back
-                  to the rows. The role name is still on each column's title. */}
+              {/* Names, not icons. The icon this strip used to carry is on
+                  every chip now, which says it per unit instead of per column;
+                  what a column still needs is what it is called, and a title
+                  attribute only tells you if you go looking. Diagonal because
+                  horizontal would force each column to be at least as wide as
+                  its word: "TORPEDO BOMBER" over one chip. */}
+              <div className={styles.roleHead}>
+                <span className={styles.facMark} aria-hidden="true" />
+                <div className={styles.roleCols}>
+                  {roles.map(({ role, width }) => (
+                    <div key={role} className={styles.roleCol} style={{ width: colWidth(width) }}>
+                      <span className={`lbl ${styles.roleLabel}`} title={role}>
+                        {ROLE_SHORT[role] ?? role}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
               {factions.map((faction) => (
                 <div key={faction} className={styles.row} data-faction={faction}>
                   <span className={styles.facMark} title={faction}>
