@@ -30,9 +30,13 @@ const TECH_LABEL: Record<string, string> = { T1: 'Tech 1', T2: 'Tech 2', T3: 'Te
 const MOBILE_KINDS = ['Land', 'Air', 'Naval'];
 
 const VIEWS: Array<{ id: ViewMode; label: string; icon: IconName }> = [
-  { id: 'cards', label: 'Cards', icon: 'grid' },
+  // "Compact" described how it looked, not what it was for, and it was the
+  // landing view: the one that answers "what does each faction field in this
+  // slot". Roster says that. The id stays `compact` so saved preferences and
+  // shared ?v= links keep working.
+  { id: 'compact', label: 'Roster', icon: 'rows' },
   { id: 'onepage', label: 'One page', icon: 'layers' },
-  { id: 'compact', label: 'Compact', icon: 'rows' },
+  { id: 'cards', label: 'Cards', icon: 'grid' },
 ];
 
 export function BrowseClient({

@@ -155,6 +155,13 @@
 .middle[data-view='compact'] { min-height: 0; overflow: hidden; }
 .middle[data-view='onepage'] .railWrap,
 .middle[data-view='compact'] .railWrap { overflow-y: auto; overflow-x: hidden; }
+/* Narrower in the two views that must fit a screen. It looks like it should
+   buy nothing, since the one-page solver is height-bound, and a first test
+   said so: but the test was wrong. Width sets how many chips fit a row, and
+   fewer per row means each is bigger, so 36px off the rail moves the chip from
+   28px to 29.5. Measured, after the first measurement lied. */
+.middle[data-view='onepage'] .railWrap :global(aside),
+.middle[data-view='compact'] .railWrap :global(aside) { width: 212px; }
 .main[data-view='onepage'],
 .main[data-view='compact'] {
   min-height: 0;

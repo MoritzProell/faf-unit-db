@@ -8,10 +8,11 @@ const KEY = 'faf.view';
 const EVENT = 'faf:view-change';
 
 /**
- * Compact is the landing view. It carries the same role alignment and labels as
- * the grouped roster but fits three sections across instead of one, so a first
- * visit sees most of the game rather than the top of Land. Anyone who has
- * chosen a view keeps it — this is only the fallback.
+ * Roster is the landing view: Land, Air, Naval and Experimental side by side,
+ * every tier, with the structures a scroll below. A first visit sees the whole
+ * army lined up by role across the factions, which is the question this site
+ * exists to answer. Anyone who has chosen a view keeps it; this is only the
+ * fallback. The value is still `compact` so saved preferences survive.
  */
 const DEFAULT: ViewMode = 'compact';
 

@@ -40,6 +40,7 @@
 .count { font-size: 9.5px; color: var(--text-3); margin-left: auto; }
 
 .tier { display: flex; flex-direction: column; }
+
 .tierLabel {
   font-size: 8px; font-weight: 700; letter-spacing: 0.08em;
   color: var(--text-3);
@@ -53,12 +54,17 @@
   .screen { overflow: auto; flex-wrap: wrap; height: auto; }
 }
 
-/* The break between a tier's mobile units and its buildings. A rule rather
-   than a label: a word here would cost more height than the division is worth,
-   and the order already says which side is which. */
+/* The break between a tier's mobile units and its buildings.
+
+   Inline and vertical, not a horizontal rule across the flow. A rule forced
+   the buildings onto a new row however few there were, which cost UEF's T4 an
+   entire row to show two chips. In the flow it divides just as clearly and the
+   two groups share a row whenever they fit. */
 .split {
-  display: block;
-  height: 0;
-  margin: 3px 0;
-  border-top: 1px dashed color-mix(in srgb, var(--fac) 60%, transparent);
+  flex: 0 0 auto;
+  align-self: stretch;
+  width: 9px;
+  background:
+    linear-gradient(color-mix(in srgb, var(--fac) 65%, transparent), color-mix(in srgb, var(--fac) 65%, transparent))
+    center / 1px 100% no-repeat;
 }
