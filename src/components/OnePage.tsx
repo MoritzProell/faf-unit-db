@@ -2,23 +2,13 @@
 
 import { FactionMark } from './FactionMark';
 import { UnitChip } from './UnitChip';
-import { Icon, type IconName } from './Icon';
-import { ROLE_SHORT } from '@/lib/faf/roles';
 import { orderedRoles } from '@/lib/faf/columns';
 import { SECTION_ORDER } from '@/lib/faf/sections';
-import ICON_DIMS from '@/data/strategic-icons.json';
 import type { BrowseUnit, SortDef } from '@/lib/faf/browse';
 import type { Faction, Tech } from '@/lib/faf/types';
 import styles from './OnePage.module.css';
 
 const FACTIONS: Faction[] = ['UEF', 'Cybran', 'Aeon', 'Seraphim', 'Nomads'];
-const DIMS = ICON_DIMS as unknown as Record<string, [number, number]>;
-
-/** Same stand-ins the compact view uses where the game's icon does not differ. */
-const ROLE_ICON: Record<string, IconName> = {
-  Radar: 'radar', Sonar: 'sonar', Omni: 'omni', Stealth: 'stealth',
-};
-
 /**
  * The four columns, and the tiers each one shows.
  *
