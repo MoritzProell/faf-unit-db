@@ -22,7 +22,6 @@ const GAP = 2;
 const TIER_HEAD = 13;
 /** The divider between a tier's mobile units and its buildings, inline. */
 const SPLIT_W = 9;
-const MAX_PER_ROW = 26;
 const MIN_CHIP = 9;
 const MAX_CHIP = 52;
 
@@ -169,8 +168,21 @@ export function OneScreen({
      * spends that remainder on the chips instead, which is where the visible
      * gap down the right of each faction box was going.
      */
+    /**
+     * The candidate range comes from the width, not from a fixed ceiling.
+     *
+     * It used to run perRow from 1 to 26, which silently had no legal answer
+     * once a column got wide: filter to one faction on a 27-inch screen and
+     * the column is 1600px, so every perRow up to 26 asks for a chip larger
+     * than the 52px cap, every candidate is rejected, and it fell back to the
+     * 9px floor. The whole roster rendered at nine pixels. Deriving both ends
+     * from the width means there is always a candidate at each legal size.
+     */
+    const minPerRow = Math.max(1, Math.ceil((w + GAP) / (MAX_CHIP + GAP)));
+    const maxPerRow = Math.max(minPerRow, Math.ceil((w + GAP) / (MIN_CHIP + GAP)));
+
     let best = 0;
-    for (let perRow = 1; perRow <= MAX_PER_ROW; perRow++) {
+    for (let perRow = minPerRow; perRow <= maxPerRow; perRow++) {
       const size = (w + GAP) / perRow - GAP;
       if (size < MIN_CHIP || size > MAX_CHIP) continue;
       if (fits(size, w, h)) best = Math.max(best, size);

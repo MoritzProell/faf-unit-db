@@ -50,8 +50,9 @@
 
 /* Under this there is no honest single screen for 497 units, so it gives up
    the promise rather than rendering something unreadably small. */
-@media (max-width: 900px), (max-height: 520px) {
-  .screen { overflow: auto; flex-wrap: wrap; height: auto; }
+@media (max-width: 980px), (max-height: 520px) {
+  .screen { overflow: visible; flex-wrap: wrap; height: auto; opacity: 1; }
+  .col { flex: 1 1 320px; }
 }
 
 /* The break between a tier's mobile units and its buildings.

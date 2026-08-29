@@ -267,35 +267,11 @@ function Column({
             </div>
 
             <div className={styles.tierBody}>
-              {/* Icons only, no rotated words. A diagonal label costs 20px
-                  of height per tier, which at three tiers is a whole unit
-                  row. The name is on hover instead. */}
-              <div className={styles.roleHead}>
-                <span className={styles.facMark} aria-hidden="true" />
-                <div className={styles.roleCols}>
-                  {roles.map(({ role, width, icon }) => (
-                    <div key={role} className={styles.roleCol} style={{ width: colWidth(width) }} title={role}>
-                      {ROLE_ICON[role] ? (
-                        <span className={styles.roleGlyph}>
-                          <Icon name={ROLE_ICON[role]} size={11} strokeWidth={1.7} />
-                        </span>
-                      ) : icon && DIMS[icon] ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={`/strategic/${icon}.png`}
-                          alt=""
-                          width={DIMS[icon][0]}
-                          height={DIMS[icon][1]}
-                          className={styles.roleIcon}
-                        />
-                      ) : (
-                        <span className={`lbl ${styles.roleText}`}>{ROLE_SHORT[role] ?? role}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
+              {/* No role header strip here any more. It was 15px per tier
+                  carrying one icon for the whole column, and that icon now
+                  sits on every chip: the same information per unit rather
+                  than per column, and three tiers' worth of strips given back
+                  to the rows. The role name is still on each column's title. */}
               {factions.map((faction) => (
                 <div key={faction} className={styles.row} data-faction={faction}>
                   <span className={styles.facMark} title={faction}>
@@ -321,6 +297,7 @@ function Column({
                                 sort={sort}
                                 eager={counter.n++ < 120}
                                 pickMode={pickMode}
+                                cornerIcon
                               />
                             );
                           })}

@@ -26,7 +26,7 @@
   /* Height left for unit rows: one screenful, less a column header and each
      tier's icon strip and border, divided by the rows in the tallest column. */
   --fit-h: calc(
-    (100cqh - 34px - (var(--heads) * (var(--head-h) + 1px)) - var(--rows) * 1px)
+    (100cqh - 34px - var(--rows) * 1px)
     / var(--rows) - (var(--row-pad) * 2)
   );
   /* Width left for chips: the sheet, less the counted furniture. */
@@ -121,8 +121,14 @@
 }
 
 /* Below this there is no honest one-screen layout for four columns of army, so
-   the view stops pretending and scrolls like the others. */
+   the view stops pretending and scrolls like the others.
+
+   The scroll container has to give up its own scrolling too, not just the
+   sheet. Left as an internal scroller the roster scrolled inside a
+   viewport-height box while the footer sat under it, permanently on screen
+   instead of at the end of the page where a footer belongs. */
 @media (max-width: 1100px), (max-height: 620px) {
-  .sheet { overflow: auto; flex-wrap: wrap; height: auto; }
-  .sheet { --chip: 26px; }
+  .scroll { height: auto; min-height: 0; overflow: visible; container-type: normal; }
+  .sheet { overflow: visible; flex-wrap: wrap; height: auto; }
+  .scroll { --chip: 26px; }
 }
