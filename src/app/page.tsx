@@ -43,6 +43,45 @@ export default async function BrowsePage() {
           },
         }}
       />
+      {/* The site is a derived dataset, so it says so. This is the record that
+          lets a machine understand what it is looking at without inferring it
+          from a grid of images: where the data came from, what it covers, how
+          many records, and a distribution that actually resolves. */}
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'Dataset',
+          name: 'Forged Alliance Forever unit statistics',
+          alternateName: `FAF unit data, patch ${version}`,
+          description:
+            `Costs, weapons, damage per second, armour, veterancy, wreckage and abilities for all ` +
+            `${units.length} units in Supreme Commander: Forged Alliance Forever at patch ${version}. ` +
+            `Generated directly from FAForever's game blueprints; the weapon maths is a transliteration ` +
+            `of the game's own unit view code.`,
+          url: SITE_URL,
+          identifier: `faf-units-${version}`,
+          version,
+          keywords: [
+            'Supreme Commander', 'Forged Alliance Forever', 'FAF',
+            'unit statistics', 'game balance', 'real-time strategy',
+          ],
+          isBasedOn: 'https://github.com/FAForever/fa',
+          creator: { '@type': 'Person', name: 'Moritz/RhyZ1ne' },
+          license: 'https://github.com/FAForever/fa/blob/deploy/faf/LICENSE',
+          codeRepository: 'https://github.com/MoritzProell/faf-unit-db',
+          measurementTechnique:
+            "Evaluated from FAForever's unit blueprints; derived stats follow lua/ui/game/unitviewDetail.lua",
+          variableMeasured: [
+            'mass cost', 'energy cost', 'build time', 'health', 'damage per second',
+            'weapon range', 'shield strength', 'speed', 'wreckage reclaim',
+          ],
+          distribution: {
+            '@type': 'DataDownload',
+            encodingFormat: 'application/json',
+            contentUrl: `${SITE_URL}/units.json`,
+          },
+        }}
+      />
       <BrowseClient units={units.map(toBrowseUnit)} facets={facets} version={version} />
     </>
   );

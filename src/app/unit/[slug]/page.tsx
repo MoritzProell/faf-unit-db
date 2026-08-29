@@ -23,7 +23,7 @@ import { describe, hasThinDescription } from '@/lib/faf/describe';
 import { buildsOf } from '@/lib/faf/builds';
 import ICON_DIMS from '@/data/strategic-icons.json';
 import { enhancementsOf, groupBySlot, SLOT_LABEL, type Enhancement } from '@/lib/faf/enhancements';
-import { getUnitHistory } from '@/lib/faf/changelog';
+import { getUnitHistory, getPatches } from '@/lib/faf/changelog';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { JsonLd } from '@/components/JsonLd';
 import { FieldPill } from '@/app/changelog/page';
@@ -80,6 +80,11 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
 
   const cohort = buildCohort(unit, units);
   const history = await getUnitHistory(unit.Id);
+  // When this page's facts were last true, which is a real date rather than a
+  // build timestamp: the stats come from a patch, and the patch has a release
+  // date. Answer engines weigh freshness, and this is the honest version of it.
+  const patches = await getPatches();
+  const patchDate = patches[0]?.releasedAt;
   // The most recent patch that touched this unit, surfaced in the hero so you
   // do not have to notice a panel in the sidebar to learn it was rebalanced.
   const lastChange = history[0];
@@ -152,6 +157,11 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
           '@type': 'ItemPage',
           url: `${SITE_URL}/unit/${unit.slug}`,
           name: `${unit.name} stats`,
+          ...(patchDate ? { dateModified: patchDate, datePublished: patchDate } : {}),
+          // What this page is derived from, said in the markup rather than only
+          // in the footer, so a machine reading it can follow the provenance.
+          isBasedOn: 'https://github.com/FAForever/fa',
+          license: 'https://github.com/FAForever/fa/blob/deploy/faf/LICENSE',
           isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL },
           breadcrumb: {
             '@type': 'BreadcrumbList',
