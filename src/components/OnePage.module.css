@@ -139,3 +139,39 @@
   .sheet { overflow: visible; flex-wrap: wrap; height: auto; }
   .scroll { --chip: 26px; }
 }
+
+/* Screen mode: every section on the screen at once, in bands.
+
+   The chip is solved in JS here rather than by the calc above, because the
+   band count is part of the answer and CSS cannot choose it. So the container
+   stops scrolling and stops being a query container, the bands share the
+   height, and --chip arrives as a number. */
+.scroll[data-mode='screen'] {
+  overflow: hidden;
+  container-type: normal;
+  gap: 8px;
+}
+.scroll[data-mode='screen'] .sheet {
+  height: auto;
+  flex: 0 0 auto;
+}
+/* The rotated labels sit over their column, so a floor wider than the chip
+   would push every sparse column out beyond what the solver budgeted for it,
+   and nine sections' worth of that overflows the screen. */
+.scroll[data-mode='screen'] .roleHead .roleCol { min-width: min(22px, var(--chip)); }
+
+/* Held back for one frame, so nothing renders at the calc's size and then
+   jumps to the solved one. */
+.scroll[data-ready='false'] { opacity: 0; }
+/* One line, always, and never wider than its column.
+
+   The fitter budgets a fixed header height per band, and a title that wraps
+   spends height it was not given: every structure column lost its bottom row to
+   the clip. But a title that cannot wrap puts its own width under the column
+   instead, and "INTELLIGENCE" is wider than the three chips beneath it, so it
+   would push the row out sideways instead. It gets clipped: the fitter's
+   arithmetic is over the chips, and nothing else may widen a column. */
+.scroll[data-mode='screen'] .colHead { overflow: hidden; }
+.scroll[data-mode='screen'] .colTitle {
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}

@@ -1,10 +1,12 @@
 'use client';
 
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { FactionMark } from './FactionMark';
 import { UnitChip } from './UnitChip';
 import { ROLE_SHORT } from '@/lib/faf/roles';
 import { orderedRoles } from '@/lib/faf/columns';
 import { SECTION_ORDER } from '@/lib/faf/sections';
+import { solveBands, type ColumnMetric } from '@/lib/faf/fit';
 import type { BrowseUnit, SortDef } from '@/lib/faf/browse';
 import type { Faction, Tech } from '@/lib/faf/types';
 import styles from './OnePage.module.css';
@@ -28,6 +30,10 @@ const COLUMNS: Array<{ section: string; tiers: Tech[] }> = [
 
 const TECH_LABEL: Record<string, string> = { T1: 'T1', T2: 'T2', T3: 'T3', EXP: 'T4' };
 const TECH_ORDER: Tech[] = ['T1', 'T2', 'T3', 'EXP'];
+
+/* The size below which a unit render is no longer recognisable. Matches the
+   floor in OnePage.module.css. */
+const MIN_CHIP = 14;
 
 /** The army is what fits on the screen; everything else waits below it. */
 const ARMY = new Set(COLUMNS.map((c) => c.section));
@@ -61,12 +67,24 @@ export function OnePage({
   onToggle,
   sort,
   pickMode = false,
+  mode = 'roster',
 }: {
   units: BrowseUnit[];
   selected: string[];
   onToggle: (id: string) => void;
   sort: SortDef;
   pickMode?: boolean;
+  /**
+   * 'roster' fits the army to the screen and puts the structures below it,
+   * which is the default and works at any width.
+   *
+   * 'screen' puts all nine sections in one row and fits the lot, structures
+   * included. It is only offered above 2000px because the role columns are
+   * sparse — a column exists even where one faction fills it — so the nine
+   * sections together need 55 chip-widths, and below that the chips come out
+   * at eight pixels.
+   */
+  mode?: 'roster' | 'screen';
 }) {
   const bySection = new Map<string, BrowseUnit[]>();
   for (const u of units) {
@@ -75,7 +93,15 @@ export function OnePage({
     else bySection.set(u.section, [u]);
   }
 
-  const columns = COLUMNS.map((c) => ({ ...c, units: bySection.get(c.section) ?? [] }))
+  const wanted =
+    mode === 'screen'
+      ? SECTION_ORDER.filter((sec) => bySection.has(sec)).map((section) => ({
+          section,
+          tiers: TECH_ORDER.filter((t) => bySection.get(section)!.some((u) => u.tech === t)),
+        }))
+      : COLUMNS;
+  const columns = wanted
+    .map((c) => ({ ...c, units: bySection.get(c.section) ?? [] }))
     .filter((c) => c.units.length > 0);
 
   // Chip size divides by the number of unit rows in the tallest column, so the
@@ -133,6 +159,59 @@ export function OnePage({
     8 * (columns.length - 1) +
     18;
 
+  /**
+   * Screen mode packs the sections into bands, and picks how many.
+   *
+   * All nine sections in one row is the obvious reading, and on a very wide
+   * screen it wins: 55 chip-widths across a 3440 is a 45px chip. But the same
+   * row on a 2560 is width-starved while half the height goes unused, and two
+   * bands of five and four turn that spare height into chip. Which way round it
+   * falls depends on the screen's shape, not on anything that can be decided
+   * here, so both are costed and the larger chip wins.
+   *
+   * The candidates are contiguous splits, so reading order survives: a band is
+   * always a run of adjacent sections, never a regrouping.
+   */
+  const metrics: ColumnMetric[] = columns.map((c, i) => ({
+    chips: widths[i].chips,
+    cols: widths[i].cols,
+    rows: rowsIn(c),
+    heads: headsIn(c),
+  }));
+
+  /**
+   * Screen mode measures its own box and solves for the arrangement, because
+   * the band count is part of the answer and CSS cannot choose it. The other
+   * mode leaves --chip to the calc in the stylesheet.
+   */
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [fit, setFit] = useState<{ chip: number; cuts: number[] } | null>(null);
+
+  const solve = useCallback(() => {
+    const el = boxRef.current;
+    if (!el || mode !== 'screen') return;
+    const best = solveBands(metrics, el.clientWidth, el.clientHeight);
+    if (best.chip <= 0) return;
+    setFit({ chip: Math.max(MIN_CHIP, Math.floor(best.chip * 2) / 2), cuts: best.cuts });
+    // metrics is rebuilt on every render, so it cannot be a dependency without
+    // re-running forever. What actually moves it is the filters, and those
+    // arrive as a new units array.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, units]);
+
+  useLayoutEffect(() => {
+    if (mode !== 'screen') return;
+    solve();
+    const el = boxRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(solve);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [mode, solve]);
+
+  const bounds = mode === 'screen' ? [0, ...(fit?.cuts ?? []), columns.length] : [0, columns.length];
+  const bands = bounds.slice(0, -1).map((from, i) => columns.slice(from, bounds[i + 1]));
+
   // Shared across both blocks so the eager-loading budget is spent on what is
   // actually above the fold, not restarted for the structures below it.
   const counter = { n: 0 };
@@ -146,7 +225,7 @@ export function OnePage({
    * a scroll away now, in the same columns, so the page keeps its promise
    * without pretending the rest of the game does not exist.
    */
-  const restColumns = SECTION_ORDER.filter((sec) => !ARMY.has(sec) && bySection.has(sec)).map(
+  const restColumns = (mode === 'screen' ? [] : SECTION_ORDER.filter((sec) => !ARMY.has(sec) && bySection.has(sec))).map(
     (section) => ({
       section,
       tiers: TECH_ORDER.filter((t) => bySection.get(section)!.some((u) => u.tech === t)),
@@ -156,7 +235,12 @@ export function OnePage({
 
   return (
     <div
+      ref={boxRef}
       className={styles.scroll}
+      data-mode={mode}
+      // Screen mode solves its own size, so it hands CSS a number rather than
+      // the calc; until the first measurement lands there is nothing to draw.
+      data-ready={mode !== 'screen' || fit !== null}
       style={
         {
           '--rows': rows,
@@ -164,22 +248,26 @@ export function OnePage({
           '--cols': columns.length,
           '--wide': totalWide,
           '--furniture': `${furniture}px`,
+          ...(fit ? { '--chip': `${fit.chip}px` } : null),
         } as React.CSSProperties
       }
     >
-    <div className={styles.sheet}>
-      {columns.map((col) => (
-        <Column
-          key={col.section}
-          col={col}
-          selected={selected}
-          onToggle={onToggle}
-          sort={sort}
-          pickMode={pickMode}
-          counter={counter}
-        />
-      ))}
-    </div>
+    {bands.map((cols) => (
+      <div className={styles.sheet} key={cols[0]?.section ?? 'empty'}>
+        {cols.map((col) => (
+          <Column
+            key={col.section}
+            col={col}
+            selected={selected}
+            onToggle={onToggle}
+            sort={sort}
+            pickMode={pickMode}
+            counter={counter}
+            short={mode === 'screen'}
+          />
+        ))}
+      </div>
+    ))}
 
     {restColumns.length > 0 && (
       <div className={styles.rest}>
@@ -215,7 +303,7 @@ export function OnePage({
  * change to both.
  */
 function Column({
-  col, selected, onToggle, sort, pickMode, counter,
+  col, selected, onToggle, sort, pickMode, counter, short = false,
 }: {
   col: { section: string; tiers: Tech[]; units: BrowseUnit[] };
   selected: string[];
@@ -223,11 +311,22 @@ function Column({
   sort: SortDef;
   pickMode: boolean;
   counter: { n: number };
+  /**
+   * Drop the "Structures - " prefix from the title.
+   *
+   * Not only to save room. On one screen all nine sections stand side by side,
+   * so which five are structures is plain from looking at them and the prefix
+   * is five repetitions of a word. It also has to stay on one line: wrapped, it
+   * made the structure columns 14px taller than the fitter had budgeted, and
+   * the bottom row of every one of them was clipped.
+   */
+  short?: boolean;
 }) {
+  const title = short ? col.section.replace(/^Structures\s*-\s*/, '') : col.section;
   return (
     <section className={styles.col}>
       <header className={styles.colHead}>
-        <h2 className={`t ${styles.colTitle}`}>{col.section}</h2>
+        <h2 className={`t ${styles.colTitle}`}>{title}</h2>
         <span className={`m ${styles.colCount}`}>{col.units.length}</span>
       </header>
 
