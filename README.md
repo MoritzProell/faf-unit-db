@@ -1,8 +1,14 @@
-# FAF Unit DB
+# fafunits.com
 
-A frontend for the Supreme Commander: Forged Alliance Forever unit database.
+A Supreme Commander: Forged Alliance Forever unit database. Every unit, all
+five factions, with costs, weapons, damage per second and cross-faction
+comparison, regenerated from FAForever's own game files each patch.
 
-**Live:** https://faf-unit-db.vercel.app
+The generated dataset is also served as one file at
+[fafunits.com/units.json](https://fafunits.com/units.json), CORS open, if you
+would rather build on it than scrape the pages.
+
+**Live:** https://fafunits.com
 **Built by:** Moritz/RhyZ1ne · **Game data and weapon maths:** [FAForever/fa](https://github.com/FAForever/fa) · **Unit renders:** [FAForever/spooky-db](https://github.com/FAForever/spooky-db) · **Upgrade icons:** [FAForever/UnitDB](https://github.com/FAForever/UnitDB)
 
 The dataset is **generated here from FAForever's own game repository**, so the
