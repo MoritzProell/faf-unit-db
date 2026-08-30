@@ -152,3 +152,10 @@
 .cardMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; font-size: 10.5px; color: var(--text-3); }
 .cardSource { padding: 2px 6px; border-radius: 3px; font-weight: 600; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line-2); color: var(--text-2); }
 .cardSignal { color: var(--best); }
+
+/* The transcribed openings, above the link index. */
+.openings { padding: 0 var(--page-pad, 22px) 26px; }
+.sectionHead { padding: 0 var(--page-pad, 22px) 12px; max-width: 96ch; }
+.openings .sectionHead { padding-left: 0; padding-right: 0; }
+.sectionTitle { font-size: 14px; font-weight: 650; margin: 0 0 5px; }
+.sectionLede { font-size: 12px; line-height: 1.6; color: var(--text-2); margin: 0; }
