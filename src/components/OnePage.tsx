@@ -31,9 +31,11 @@ const COLUMNS: Array<{ section: string; tiers: Tech[] }> = [
 const TECH_LABEL: Record<string, string> = { T1: 'T1', T2: 'T2', T3: 'T3', EXP: 'T4' };
 const TECH_ORDER: Tech[] = ['T1', 'T2', 'T3', 'EXP'];
 
-/* The size below which a unit render is no longer recognisable. Matches the
-   floor in OnePage.module.css. */
+/* The size below which a unit render is no longer recognisable, and the size
+   above which the view stops reading as a roster. Both match the clamp in
+   OnePage.module.css. */
 const MIN_CHIP = 14;
+const MAX_CHIP = 52;
 
 /** The army is what fits on the screen; everything else waits below it. */
 const ARMY = new Set(COLUMNS.map((c) => c.section));
@@ -192,7 +194,7 @@ export function OnePage({
     if (!el || mode !== 'screen') return;
     const best = solveBands(metrics, el.clientWidth, el.clientHeight);
     if (best.chip <= 0) return;
-    setFit({ chip: Math.max(MIN_CHIP, Math.floor(best.chip * 2) / 2), cuts: best.cuts });
+    setFit({ chip: Math.min(MAX_CHIP, Math.max(MIN_CHIP, Math.floor(best.chip * 2) / 2)), cuts: best.cuts });
     // metrics is rebuilt on every render, so it cannot be a dependency without
     // re-running forever. What actually moves it is the filters, and those
     // arrive as a new units array.
@@ -210,7 +212,18 @@ export function OnePage({
   }, [mode, solve]);
 
   const bounds = mode === 'screen' ? [0, ...(fit?.cuts ?? []), columns.length] : [0, columns.length];
-  const bands = bounds.slice(0, -1).map((from, i) => columns.slice(from, bounds[i + 1]));
+  /**
+   * Empty bands are dropped rather than drawn.
+   *
+   * A band is `height: 100%` so that the army always fills the first screen,
+   * which is right until there is no army: filter the roster to structures, or
+   * search for one, and it drew a full screen of nothing above the results.
+   * Reported by a player.
+   */
+  const bands = bounds
+    .slice(0, -1)
+    .map((from, i) => columns.slice(from, bounds[i + 1]))
+    .filter((b) => b.length > 0);
 
   // Shared across both blocks so the eager-loading budget is spent on what is
   // actually above the fold, not restarted for the structures below it.

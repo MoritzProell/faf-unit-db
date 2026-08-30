@@ -31,7 +31,10 @@
   );
   /* Width left for chips: the sheet, less the counted furniture. */
   --fit-w: calc((100cqw - var(--furniture)) / var(--wide));
-  --chip: max(14px, min(var(--fit-h), var(--fit-w)));
+  /* Floor so it stays legible, ceiling so it stays a roster. Without the
+     ceiling a filter down to five structures grew the chips to 141px and the
+     view stopped reading as a grid of units. 52px matches the other views. */
+  --chip: clamp(14px, min(var(--fit-h), var(--fit-w)), 52px);
 }
 
 .sheet {

@@ -81,7 +81,12 @@
    behind it keeps it readable over a light render. */
 .corner {
   position: absolute; top: 1px; right: 1px; z-index: 1;
-  width: 36%; height: auto; max-height: 36%;
+  /* A fraction of the chip, but never far past its own resolution. These are
+     8px to 20px hand-drawn symbols; filter the roster down to five units and
+     the chip grows until 36% of it was blowing a 12px icon up to 55px, which
+     renders as a coloured smear rather than a symbol. */
+  width: 36%; height: auto;
+  max-width: 22px; max-height: min(36%, 22px);
   object-fit: contain;
   image-rendering: pixelated;
   opacity: 0.92;

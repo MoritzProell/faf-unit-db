@@ -18,6 +18,8 @@ import { UNIT_NOTES } from '@/data/unit-notes';
 import { fmtNum, fmtRatio, round } from '@/lib/faf/decorate';
 import { buildCohort, ordinal } from '@/lib/faf/cohort';
 import { shieldEconomy, massEconomy, powerEconomy, intelEconomy, fmtDuration } from '@/lib/faf/economy';
+import { buildersOf, buildPowerOf, buildPointsOf, buildSeconds, isBuilder, fmtSeconds } from '@/lib/faf/buildpower';
+import { BuildTime } from '@/components/BuildTime';
 import { roleOf } from '@/lib/faf/roles';
 import { describe, hasThinDescription } from '@/lib/faf/describe';
 import { buildsOf } from '@/lib/faf/builds';
@@ -147,6 +149,29 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
   // the CZAR, the naval carriers and the Megalith, which are factories in
   // everything but name.
   const builds = buildsOf(unit, [...units, ...hidden]);
+  /**
+   * Build power, and who can build this.
+   *
+   * Both halves of the same division. A unit's own build power is what it
+   * contributes to something else; the builders list is what divides into this
+   * unit's cost to give a time. A player asked for the first and it turned out
+   * the second is where it pays off, because the game's own "build time" is
+   * only true for whichever builder you happened to have selected.
+   */
+  const power = isBuilder(unit, [...units, ...hidden]) ? buildPowerOf(unit) : 0;
+  const builders = buildersOf(unit, [...units, ...hidden]);
+  const points = buildPointsOf(unit);
+  /**
+   * A yardstick for the build power figure.
+   *
+   * "10 bp/s" means nothing on its own. The T1 land factory is the one building
+   * every player has put down in the first thirty seconds of every game they
+   * have played, so timing it is the shortest way to say what a build power is
+   * worth. Same faction, so the number is the one they would actually see.
+   */
+  const landFactory = units.find(
+    (u) => u.faction === unit.faction && u.Id.toUpperCase().endsWith('B0101')
+  );
   const kindLabel = unit.kind === 'Base' ? 'Structures' : unit.kind;
 
   const stat = (name: string, value: number | string | null | undefined, unitCode?: string) =>
@@ -187,7 +212,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
               stat('Tech level', unit.techLabel),
               stat('Mass cost', unit.mass),
               stat('Energy cost', unit.energy),
-              stat('Build time', unit.buildTime),
+              stat('Build points', unit.buildTime),
               stat('Health', unit.health),
               stat('Health per mass', Number(fmtRatio(unit.hpPerMass))),
               unit.directDps ? stat('Direct-fire DPS', Number(fmtRatio(unit.directDps, 1))) : null,
@@ -289,7 +314,12 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
           <span className={styles.costDivider} />
           <Cost label="Energy" value={fmtNum(unit.energy)} mark={<EnergyMark size={15} />} />
           <span className={styles.costDivider} />
-          <Cost label="Build time" value={fmtNum(unit.buildTime)} mark={<TimeMark size={15} />} />
+          {/* Build points, not seconds. The blueprint field is called BuildTime
+              and the game's own notes call it build time, but 260 is a cost that
+              build power divides into, and this page now carries a Build time
+              section giving the seconds. Two things called the same thing, one
+              of them wrong, is worse than diverging from the patch notes. */}
+          <Cost label="Build points" value={fmtNum(unit.buildTime)} mark={<TimeMark size={15} />} />
         </div>
       </header>
 
@@ -506,6 +536,21 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                 </>
               ) : (
                 <>
+              {power > 0 && (
+                <Glance
+                  label="Build power"
+                  icon="hammer"
+                  figure={fmtNum(power)}
+                  unit="bp/s"
+                  foot={
+                    <span className={styles.glanceFoot}>
+                      {landFactory
+                        ? `Builds a T1 land factory in ${fmtSeconds(buildSeconds(landFactory, power))}`
+                        : 'Build points contributed per second'}
+                    </span>
+                  }
+                />
+              )}
               <Glance
                 label="Health"
                 mark={<HealthMark size={12} />}
@@ -625,6 +670,19 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                   </div>
                 ))}
               </div>
+            </section>
+          )}
+
+          {builders.length > 0 && points > 0 && (
+            <section className={styles.secBuildTime}>
+              <SectionHead label="Build time" note={`${points.toLocaleString()} bp`} />
+              <BuildTime
+                builders={builders}
+                points={points}
+                mass={unit.mass}
+                energy={unit.energy}
+                faction={unit.faction}
+              />
             </section>
           )}
 

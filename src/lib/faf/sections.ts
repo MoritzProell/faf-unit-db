@@ -11,16 +11,25 @@
  * box with no edit here.
  */
 
-/** Display order of the section boxes. */
+/**
+ * Display order of the section boxes.
+ *
+ * The structures follow the game's own id ranges rather than the order it
+ * lists its build tabs in: factories are 0xxx, economy 1xxx, defence 2xxx and
+ * intel 3xxx. Economy sitting fourth put mass extractors and power generators
+ * behind two screens of turrets, and those are the buildings whose numbers
+ * anyone actually looks up. Reported by a player, and the id ranges settle what
+ * would otherwise be a matter of taste.
+ */
 export const SECTION_ORDER: string[] = [
   'Land',
   'Air',
   'Naval',
   'Experimental',
   'Structures - Construction',
+  'Structures - Economy',
   'Structures - Defence',
   'Structures - Intelligence',
-  'Structures - Economy',
   'Structures - Strategic',
   'Structures - Other',
 ];

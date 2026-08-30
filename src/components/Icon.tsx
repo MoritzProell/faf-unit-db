@@ -51,6 +51,14 @@ const PATHS = {
   transport: <><path d="M2.6 5.4h7.6v5.2H2.6z" /><path d="M10.2 7.4h1.9l1.3 1.6v1.6h-3.2z" /></>,
   pulses: <><circle cx="3.4" cy="8" r="1.3" /><circle cx="8" cy="8" r="1.3" /><circle cx="12.6" cy="8" r="1.3" /></>,
   check: <path d="M3.4 8.4 L6.4 11.3 L12.6 4.8" />,
+  /* Build power. A hammer, because the stat it labels is how fast a unit puts
+     things up, and the set has no other glyph for making something. */
+  hammer: (
+    <>
+      <path d="M2.8 13.2 L8.1 7.9" />
+      <path d="M6.6 5.1 L10.9 9.4 L12.9 7.4 A3 3 0 0 0 8.6 3.1 Z" />
+    </>
+  ),
   /* Stealth: the vision eye, struck through. */
   stealth: (
     <>

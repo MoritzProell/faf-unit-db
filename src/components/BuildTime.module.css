@@ -1,0 +1,108 @@
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+.controlLabel { font-size: 10px; color: var(--text-3); }
+
+.presets { display: flex; gap: 4px; flex-wrap: wrap; }
+.preset {
+  font: inherit;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 3px 9px;
+  cursor: pointer;
+}
+.preset:hover { border-color: var(--line-2); color: var(--text); }
+.preset[data-on='true'] {
+  color: var(--fac);
+  border-color: color-mix(in srgb, var(--fac) 55%, transparent);
+  background: color-mix(in srgb, var(--fac) 12%, transparent);
+}
+
+.custom {
+  display: flex; align-items: center; gap: 4px;
+  margin-left: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 2px 7px 2px 4px;
+  background: var(--panel-2);
+}
+.custom input {
+  width: 54px;
+  font: inherit; font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text);
+  background: none; border: none; outline: none;
+  /* The spinners are 16px of chrome on a field that already has presets next
+     to it, and they push the number off centre in Firefox. */
+  -moz-appearance: textfield;
+}
+.custom input::-webkit-outer-spin-button,
+.custom input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.customUnit { font-size: 9.5px; color: var(--text-3); }
+
+.rows { display: flex; flex-direction: column; }
+
+.head, .row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92px 74px 96px;
+  align-items: center;
+  gap: 8px;
+}
+.head {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--line);
+}
+.row {
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--line);
+}
+.row:last-child { border-bottom: none; }
+
+.who { display: flex; align-items: center; gap: 8px; min-width: 0; color: inherit; text-decoration: none; }
+.who:hover .whoName { color: var(--fac); }
+.whoText { display: flex; flex-direction: column; min-width: 0; }
+.whoName {
+  font-size: 12px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.whoKind { font-size: 9.5px; color: var(--text-3); }
+
+.num { text-align: right; font-size: 12px; font-variant-numeric: tabular-nums; }
+.plus { color: var(--fac); font-size: 10.5px; }
+.time { font-weight: 600; }
+
+/* Mass and energy in the site's own two colours, so the pair reads without a
+   second header saying which is which. */
+.drain { white-space: nowrap; }
+.mass { color: var(--mass); }
+.energy { color: var(--energy); }
+.sep { color: var(--text-3); padding: 0 3px; }
+
+.note { font-size: 10.5px; line-height: 1.5; color: var(--text-3); margin: 0; }
+
+@media (max-width: 640px) {
+  .head, .row { grid-template-columns: minmax(0, 1fr) 58px 62px 80px; gap: 6px; }
+  .custom { margin-left: 0; }
+}
