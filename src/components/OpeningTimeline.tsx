@@ -159,8 +159,8 @@ export function OpeningTimeline({ openings, runs }: { openings: Opening[]; runs:
                     imageSize={32}
                     pip={false}
                   />
+                  {item.count > 1 && <span className={`m ${styles.count}`}>{item.count}&times;</span>}
                   <span className={`t ${styles.name}`}>{item.name}</span>
-                  {item.count > 1 && <span className={`m ${styles.count}`}>&times;{item.count}</span>}
                 </Link>
               ) : (
                 <span className={styles.action}>{item.name}</span>
@@ -177,8 +177,9 @@ export function OpeningTimeline({ openings, runs }: { openings: Opening[]; runs:
             <span className={`m ${styles.num}`}>
               <Pair mass={Math.round(item.incomeMass)} energy={Math.round(item.incomeEnergy)} />
             </span>
-            <span className={`m ${styles.num}`}>
-              <Pair mass={item.storedMass} energy={item.storedEnergy} />
+            <span className={styles.bank}>
+              <Bar value={item.storedMass} max={run.startMass} kind="mass" />
+              <Bar value={item.storedEnergy} max={run.startEnergy} kind="energy" />
             </span>
 
             {(item.note || item.stalledEnergy >= 0.5 || item.stalledMass >= 0.5) && (
@@ -242,6 +243,28 @@ export function OpeningTimeline({ openings, runs }: { openings: Opening[]; runs:
         {opening.caveat && ` ${opening.caveat}`}
       </p>
     </div>
+  );
+}
+
+/**
+ * One resource's reserve, drawn the way the game draws it.
+ *
+ * The bank was two numbers, and a number that goes down reads as a loss even
+ * when nothing is wrong: spending your starting mass on a factory is the
+ * opening working, not the opening failing. In game you never read it as a
+ * number, you read a bar filling and emptying against its cap, and empty is the
+ * only state that means anything bad. Same two colours as the ecobar, mass
+ * above energy, so the shape is already familiar.
+ */
+function Bar({ value, max, kind }: { value: number; max: number; kind: 'mass' | 'energy' }) {
+  const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
+  return (
+    <span className={styles.bar} data-kind={kind} data-empty={pct < 1}>
+      <span className={styles.track}>
+        <span className={styles.fill} style={{ width: `${pct}%` }} />
+      </span>
+      <span className={`m ${styles.barValue}`}>{value}</span>
+    </span>
   );
 }
 

@@ -55,7 +55,7 @@
 }
 .headRow, .row {
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) 108px 58px 78px 78px 92px;
+  grid-template-columns: 46px minmax(0, 1fr) 104px 54px 74px 74px 116px;
   align-items: center;
   column-gap: 12px;
 }
@@ -76,11 +76,14 @@
 .what { min-width: 0; }
 .link { display: flex; align-items: center; gap: 9px; color: inherit; text-decoration: none; min-width: 0; }
 .link:hover .name { color: var(--primary); }
-/* The two things a player reads first: what, and how many of it. */
+/* The two things a player reads first: how many, and of what. The count leads,
+   because that is the order a build order is said out loud -- three engineers,
+   two extractors -- and reading it off the end of a truncated name was the
+   wrong way round. */
 .name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .count {
   font-size: 14px; font-weight: 700; color: var(--primary);
-  flex-shrink: 0;
+  flex-shrink: 0; margin-right: -3px;
 }
 .action { font-size: 13px; color: var(--text-2); font-style: italic; }
 
@@ -90,6 +93,31 @@
 .mass { color: var(--mass); }
 .energy { color: var(--energy); }
 .slash { color: var(--text-3); padding: 0 2px; }
+
+/* The bank, as the game's own ecobar: mass over energy, filling against the
+   storage cap rather than counting down from it. */
+.bank { display: flex; flex-direction: column; gap: 3px; justify-self: end; width: 100%; }
+.bar { display: flex; align-items: center; gap: 6px; }
+.track {
+  flex: 1;
+  height: 6px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--line) 70%, transparent);
+  overflow: hidden;
+}
+.fill { display: block; height: 100%; border-radius: 2px; transition: width 140ms ease; }
+.bar[data-kind='mass'] .fill { background: var(--mass); }
+.bar[data-kind='energy'] .fill { background: var(--energy); }
+/* Empty is the only state that means something is wrong, so it is the only one
+   that gets a colour of its own. */
+.bar[data-empty='true'] .track { background: color-mix(in srgb, var(--dmg, #e07a63) 30%, transparent); }
+.barValue {
+  width: 34px; text-align: right; flex-shrink: 0;
+  font-size: 10.5px; font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+.bar[data-kind='mass'] .barValue { color: color-mix(in srgb, var(--mass) 70%, var(--text-3)); }
+.bar[data-kind='energy'] .barValue { color: color-mix(in srgb, var(--energy) 70%, var(--text-3)); }
 
 .foot {
   grid-column: 2 / -1;
@@ -124,6 +152,7 @@
   .row { grid-template-columns: 44px minmax(0, 1fr) auto; row-gap: 3px; }
   .byCol { grid-column: 3; font-size: 10.5px; color: var(--text-3); text-align: right; }
   .num { grid-column: 2 / -1; text-align: left; }
+  .bank { grid-column: 2 / -1; }
   .num::before { content: attr(data-label) ' '; font-size: 9px; color: var(--text-3); text-transform: uppercase; }
   .takes { grid-column: 2 / -1; }
   .foot { grid-column: 2 / -1; }
