@@ -86,6 +86,8 @@ export interface Opening {
   summary: string;
   /** The map this is written for, or 'Generic'. Drives the first pick. */
   map: string;
+  /** Only makes sense on the largest maps, and is only offered there. */
+  only20x20?: boolean;
   /** Which branch of the picker leads here. */
   secondFactory: 'land' | 'air';
   /**
@@ -463,6 +465,67 @@ export const OPENINGS: Opening[] = [
       },
     ],
     factoryQueue: FACTORY_QUEUE,
+  },
+  {
+    id: 'transport',
+    title: 'Assisted second air transport',
+    map: 'Generic',
+    only20x20: true,
+    summary:
+      'The 20x20 opening. On a big or water-heavy map you cannot walk to enough mass in time, so the whole build is bent toward getting a transport up and dropping engineers onto the ground you could not otherwise reach.',
+    secondFactory: 'air',
+    hydro: false,
+    source: HEAVEN_GENERIC,
+    acu: [
+      { unit: 'B0101' },
+      {
+        unit: 'B1101',
+        count: 3,
+        note: 'Three rather than two. The first engineer is off building extractors instead of waiting, so it starts drawing power sooner than usual and the third generator has to be there before it does.',
+      },
+      { unit: 'B1103', count: 2, note: 'Only two from the ACU. On a map with the core mass spread out, walking to all four costs more than it returns.' },
+      { unit: 'B1101' },
+      { unit: 'B0102' },
+      {
+        unit: 'B1101',
+        count: 8,
+        note: 'Twelve generators in total. A transport draws more power than any other T1 air unit, and it is slow enough that you want engineers assisting it, which costs power again. Nine to twelve is the range; the exact figure depends on how much assist you put on it.',
+      },
+      { action: 'Leave the base' },
+    ],
+    lanes: [
+      { key: 'factory', label: 'First factory', timed: true, steps: [{ unit: 'L0105', count: 6 }] },
+      {
+        key: 'engie1',
+        label: '1st engineer',
+        timed: true,
+        steps: [{ unit: 'B1103', count: 2, note: 'The other two core extractors, the ones the ACU would have had to walk to.' }],
+      },
+      {
+        key: 'airfactory',
+        label: 'Air factory',
+        timed: true,
+        after: 'B0102',
+        steps: [{ unit: 'A0107', note: 'The transport. 800 build points, so it is slow on its own, which is what the assisting engineers are for.' }],
+      },
+      { key: 'engie5', label: '5th engineer', timed: true, steps: [{ action: 'Assist the air factory', assist: 'airfactory' }] },
+      { key: 'engie6', label: '6th engineer', timed: true, steps: [{ action: 'Assist the air factory', assist: 'airfactory' }] },
+      {
+        key: 'engineers',
+        label: 'Where the engineers go',
+        timed: false,
+        steps: [],
+        advice: [
+          'The first four expand. Spread them across separate routes and keep each route linear rather than criss-crossing, so no engineer spends its early minutes walking; pick up reclaim along the way and queue something for them to do when the expansion runs out.',
+          'Every engineer after the fourth assists the air factory. Two are simulated above; more is faster, and more is also why the generator count is what it is.',
+          'If you start to power stall, take engineers off the factory until it is stable rather than letting everything slow down at once. Park them where the transport can pick them up.',
+          'The transport drops its engineers in separate places so several extractors go up at once. The ACU stays behind and keeps building generators.',
+        ],
+      },
+    ],
+    factoryQueue: FACTORY_QUEUE,
+    caveat:
+      'Written for a 20x20 naval map, where an island is the expansion. It is the same idea on a big land map, and the pgen count is the part to adjust: more assist on the transport means more power.',
   },
   {
     id: 'setons-beach',

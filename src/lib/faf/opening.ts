@@ -273,18 +273,22 @@ export function runOpening(
 
   const FACTORY_LANE = factoryLane ? 1 : -1;
   /**
-   * Which lanes are engineers, by index and in order.
+   * Which engineer each engineer lane belongs to, by the number in its key.
    *
-   * Held as a list rather than derived from a start offset. It used to be
-   * "everything from index 2", which was true until a production lane was added
-   * after the engineer lanes: the air factory then sat at index 2, and the
-   * first engineer off the line released it, so the air factory started
-   * producing scouts at 0:43 on a build that has no air factory until 2:20.
+   * 'engie1' waits for the first engineer off the line, 'engie5' for the fifth.
+   * Read from the key rather than from position in the array for two reasons.
+   * Position was already wrong once — a production lane added after the
+   * engineer lanes inherited an engineer's index, and an air factory started
+   * making scouts on a build that had no air factory yet — and an opening can
+   * legitimately name the fifth and sixth engineers without naming the four
+   * before them, which a positional scheme cannot express.
    */
-  const engieLaneIdx = lanes
-    .map((l, i) => ({ l, i }))
-    .filter(({ l }) => l.jobs[0]?.lane.startsWith('engie'))
-    .map(({ i }) => i);
+  const engieLaneFor = new Map<number, number>();
+  lanes.forEach((l, i) => {
+    const key = l.jobs[0]?.lane ?? '';
+    const m = /^engie(\d+)$/.exec(key);
+    if (m) engieLaneFor.set(Number(m[1]), i);
+  });
 
   let t = 0;
   let stalledMassTotal = 0;
@@ -467,9 +471,9 @@ export function runOpening(
         // The first engineer off the line is also who starts picking up rocks.
         if (li === FACTORY_LANE) reclaimOn = true;
 
-        // An engineer coming off the factory releases the next engineer lane.
+        // An engineer coming off the factory releases the lane written for it.
         if (li === FACTORY_LANE) {
-          const idx = engieLaneIdx[lane.done - 1];
+          const idx = engieLaneFor.get(lane.done);
           if (idx !== undefined) {
             for (const j of lanes[idx].jobs) j.readyAt = Math.min(j.readyAt, t);
           }

@@ -14,44 +14,62 @@ const MAP_SIZES: MapSize[] = ['5x5', '10x10', '20x20'];
 export type Runs = Record<string, Record<string, OpeningRun & { slugs: Record<string, string> }>>;
 
 export function OpeningTimeline({ openings, runs }: { openings: Opening[]; runs: Runs }) {
-  const [map, setMap] = useState('Generic');
-  const [second, setSecond] = useState<'land' | 'air'>('land');
-  const [hydro, setHydro] = useState(false);
+  const [openingId, setOpeningId] = useState(openings[0].id);
   const [reclaim, setReclaim] = useState<string>('none');
   const [mapSize, setMapSize] = useState<MapSize>('10x10');
 
-  const maps = ['Generic', ...new Set(openings.filter((o) => o.map !== 'Generic').map((o) => o.map))];
-  const generic = map === 'Generic';
-
   /**
-   * A map build answers the land-or-air and hydro questions itself, so those
-   * two pickers only appear for the generic openings. Offering them alongside a
-   * build written for one slot of one map would imply a choice that is not
-   * there.
+   * The build is the state, and the option chips are a second way of reaching
+   * it rather than the only way.
    *
-   * Within the generic set, land plus hydro has no transcribed order behind it,
-   * so choosing land settles the hydro question rather than pretending it is
-   * open.
+   * Narrowing by land-or-air and hydro is how you find an opening when you know
+   * your situation and not its name. It is a poor way to get to one you already
+   * know the name of, and it cannot express a build that is not a point in that
+   * grid at all, which the transport opening is. So the openings are listed by
+   * name, the chips select among them, and both directions stay in step because
+   * the chips read their state off whichever build is selected.
    */
-  const pool = openings.filter((o) => o.map === map);
-  const hydroAvailable = pool.some((o) => o.secondFactory === second && o.hydro);
-  const wantHydro = hydro && hydroAvailable;
-
-  /**
-   * High reclaim picks a different build, not just a bigger number.
-   *
-   * The mass has to buy something, and what it buys is engineers standing on
-   * the ACU rather than walking off to expand, plus the extra generators that
-   * the added build power needs. Where no such variant is written down the
-   * standard build stands, and the reclaim still feeds the economy.
-   */
-  const branch = pool.filter((o) => !generic || (o.secondFactory === second && o.hydro === wantHydro));
-  const opening =
-    (reclaim === 'high' ? branch.find((o) => o.forReclaim === 'high') : undefined) ??
-    branch.find((o) => !o.forReclaim) ??
-    branch[0] ??
-    pool[0];
+  const visible = openings.filter((o) => !o.only20x20 || mapSize === '20x20');
+  const opening = visible.find((o) => o.id === openingId) ?? visible[0];
+  const generic = opening.map === 'Generic';
   const variant = opening.forReclaim === 'high';
+
+  /** The nearest build to what is selected now, with one thing changed. */
+  const choose = (
+    next: Partial<{ map: string; second: 'land' | 'air'; hydro: boolean; high: boolean }>
+  ) => {
+    const want = {
+      map: next.map ?? opening.map,
+      second: next.second ?? opening.secondFactory,
+      hydro: next.hydro ?? opening.hydro,
+      high: next.high ?? variant,
+    };
+    const pool = visible.filter((o) => o.map === want.map);
+    const best = pool
+      .map((o) => ({
+        o,
+        // Whichever axis the click named has to hold; the rest are preferences,
+        // so a click always lands somewhere rather than doing nothing.
+        score:
+          (o.secondFactory === want.second ? 4 : 0) +
+          (o.hydro === want.hydro ? 2 : 0) +
+          ((o.forReclaim === 'high') === want.high ? 1 : 0),
+      }))
+      .sort((a, b) => b.score - a.score)[0];
+    if (best) setOpeningId(best.o.id);
+  };
+
+  const pickReclaim = (key: string) => {
+    setReclaim(key);
+    if (generic) choose({ high: key === 'high' });
+  };
+
+  const pickOpening = (o: Opening) => {
+    setOpeningId(o.id);
+    if (o.only20x20) setMapSize('20x20');
+    if (o.forReclaim === 'high' && reclaim !== 'high') setReclaim('high');
+  };
+
   const run = runs[opening.id]?.[reclaim];
   if (!run) return null;
 
@@ -62,41 +80,60 @@ export function OpeningTimeline({ openings, runs }: { openings: Opening[]; runs:
   return (
     <div className={styles.wrap}>
       <div className={styles.picker}>
+        <Choice label="Opening">
+          {visible.map((o) => (
+            <button
+              key={o.id}
+              type="button"
+              className={styles.opt}
+              data-on={o.id === opening.id}
+              onClick={() => pickOpening(o)}
+            >
+              {o.title}
+            </button>
+          ))}
+        </Choice>
+      </div>
+
+      <div className={styles.picker}>
         <Choice label="Map">
-          {maps.map((m) => (
-            <button key={m} type="button" className={styles.opt} data-on={map === m} onClick={() => setMap(m)}>
+          {['Generic', ...new Set(openings.filter((o) => o.map !== 'Generic').map((o) => o.map))].map((m) => (
+            <button key={m} type="button" className={styles.opt} data-on={opening.map === m} onClick={() => choose({ map: m })}>
               {m}
             </button>
           ))}
         </Choice>
 
-        {generic && (
-        <Choice label="Second factory">
-          {(['land', 'air'] as const).map((v) => (
-            <button key={v} type="button" className={styles.opt} data-on={second === v} onClick={() => setSecond(v)}>
-              {v === 'land' ? 'Land' : 'Air'}
-            </button>
-          ))}
-        </Choice>
-
+        {generic && !opening.only20x20 && (
+          <Choice label="Second factory">
+            {(['land', 'air'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                className={styles.opt}
+                data-on={opening.secondFactory === v}
+                onClick={() => choose({ second: v })}
+              >
+                {v === 'land' ? 'Land' : 'Air'}
+              </button>
+            ))}
+          </Choice>
         )}
 
-        {generic && (
-        <Choice label="Hydrocarbon nearby">
-          {([false, true] as const).map((v) => (
-            <button
-              key={String(v)}
-              type="button"
-              className={styles.opt}
-              data-on={wantHydro === v}
-              disabled={v && !hydroAvailable}
-              title={v && !hydroAvailable ? 'No transcribed hydro order for a second land factory' : undefined}
-              onClick={() => setHydro(v)}
-            >
-              {v ? 'Yes' : 'No'}
-            </button>
-          ))}
-        </Choice>
+        {generic && !opening.only20x20 && (
+          <Choice label="Hydrocarbon nearby">
+            {([false, true] as const).map((v) => (
+              <button
+                key={String(v)}
+                type="button"
+                className={styles.opt}
+                data-on={opening.hydro === v}
+                onClick={() => choose({ hydro: v })}
+              >
+                {v ? 'Yes' : 'No'}
+              </button>
+            ))}
+          </Choice>
         )}
 
         <Choice label="Reclaim near your base">
@@ -106,7 +143,7 @@ export function OpeningTimeline({ openings, runs }: { openings: Opening[]; runs:
               type="button"
               className={styles.opt}
               data-on={reclaim === l.key}
-              onClick={() => setReclaim(l.key)}
+              onClick={() => pickReclaim(l.key)}
             >
               {l.label}
               {l.perSecond > 0 && <span className={styles.optSub}>+{l.perSecond}</span>}
@@ -115,13 +152,13 @@ export function OpeningTimeline({ openings, runs }: { openings: Opening[]; runs:
         </Choice>
 
         {generic && (
-        <Choice label="Map size">
-          {MAP_SIZES.map((v) => (
-            <button key={v} type="button" className={styles.opt} data-on={mapSize === v} onClick={() => setMapSize(v)}>
-              {v}
-            </button>
-          ))}
-        </Choice>
+          <Choice label="Map size">
+            {MAP_SIZES.map((v) => (
+              <button key={v} type="button" className={styles.opt} data-on={mapSize === v} onClick={() => setMapSize(v)}>
+                {v}
+              </button>
+            ))}
+          </Choice>
         )}
       </div>
 
