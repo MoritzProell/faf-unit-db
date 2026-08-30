@@ -1,10 +1,11 @@
-.wrap { display: flex; flex-direction: column; gap: 14px; }
+/* Capped, not stretched. The table is seven columns of short numbers; run
+   across a 27-inch screen the eye has to travel half a metre from the unit
+   name to its reserves, and the gap between "Build" and "By" becomes a void.
+   A reading measure fixes both. */
+.wrap { display: flex; flex-direction: column; gap: 14px; max-width: 1120px; }
 
-/* The picker. Two questions that matter and two that colour the answer, laid
-   out as one row of chip groups rather than a tree, because a tree with three
-   leaves is a list wearing a costume. */
 .picker {
-  display: flex; flex-wrap: wrap; gap: 8px 22px;
+  display: flex; flex-wrap: wrap; gap: 10px 24px;
   padding: 12px 14px;
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
 }
@@ -12,113 +13,118 @@
 .choiceLabel { font-size: 9px; color: var(--text-3); }
 .opts { display: flex; gap: 4px; }
 .opt {
-  display: flex; align-items: center; gap: 5px;
-  font: inherit; font-size: 11.5px;
+  display: flex; align-items: baseline; gap: 5px;
+  font: inherit; font-size: 12.5px;
   color: var(--text-2);
   background: var(--panel-2);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 4px 10px;
+  padding: 5px 11px;
   cursor: pointer;
 }
 .opt:hover:not(:disabled) { border-color: var(--line-2); color: var(--text); }
 .opt[data-on='true'] {
-  color: var(--fac, var(--primary));
-  border-color: color-mix(in srgb, var(--fac, var(--primary)) 55%, transparent);
-  background: color-mix(in srgb, var(--fac, var(--primary)) 12%, transparent);
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 55%, transparent);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
 }
 .opt:disabled { opacity: 0.35; cursor: not-allowed; }
+.optSub { font-size: 10px; opacity: 0.75; font-variant-numeric: tabular-nums; }
 
 .head {
-  display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap;
-  padding: 13px 15px;
+  display: flex; align-items: flex-start; gap: 24px; flex-wrap: wrap;
+  padding: 14px 16px;
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
-  background-image: linear-gradient(180deg, color-mix(in srgb, var(--fac) 8%, transparent), transparent 90px);
 }
-.headMain { flex: 1 1 320px; min-width: 0; }
-.title { font-size: 16px; font-weight: 650; margin: 0 0 4px; }
-.summary { font-size: 12px; line-height: 1.55; color: var(--text-2); margin: 0; max-width: 62ch; }
+.headMain { flex: 1 1 340px; min-width: 0; }
+.title { font-size: 17px; font-weight: 650; margin: 0 0 5px; }
+.summary { font-size: 12.5px; line-height: 1.55; color: var(--text-2); margin: 0; max-width: 62ch; }
 
-.totals { display: flex; gap: 20px; margin: 0; }
-.total { display: flex; flex-direction: column; gap: 2px; }
-.totalLabel { font-size: 9px; color: var(--text-3); }
-.totalValue { font-size: 17px; margin: 0; display: flex; align-items: baseline; gap: 6px; }
+.totals { display: flex; gap: 22px; margin: 0; }
+.total { display: flex; flex-direction: column; gap: 3px; }
+.totalLabel { font-size: 9px; color: var(--text-3); white-space: nowrap; }
+.totalValue { font-size: 21px; margin: 0; display: flex; align-items: baseline; gap: 5px; }
 .total[data-tone='warn'] .totalValue { color: var(--dmg, #e07a63); }
-.totalSub { font-size: 11px; color: var(--text-3); }
+.totalUnit { font-size: 11px; color: var(--text-3); }
+.totalSub { font-size: 12px; color: var(--text-3); }
 
-/* The timeline. Time down the left, a rail, then what happens. */
-.timeline { list-style: none; margin: 0; padding: 0; }
-.step { display: grid; grid-template-columns: 46px 13px minmax(0, 1fr); align-items: stretch; }
-.time {
-  font-size: 11.5px; color: var(--text-3);
-  padding: 9px 8px 0 0; text-align: right;
+/* The table. Seven columns and a full-width note under any row that has one. */
+.table {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  padding: 4px 14px 8px;
 }
-.rail { position: relative; }
-/* The line runs the full height of the row and the dot sits on it, so the
-   sequence reads as continuous rather than as separate cards. */
-.rail::before {
-  content: ''; position: absolute; left: 5px; top: 0; bottom: 0; width: 1px;
-  background: var(--line);
+.headRow, .row {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 108px 58px 78px 78px 92px;
+  align-items: center;
+  column-gap: 12px;
 }
-.step:first-child .rail::before { top: 12px; }
-.step:last-child .rail::before { bottom: calc(100% - 12px); }
-.rail::after {
-  content: ''; position: absolute; left: 2px; top: 9px;
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--fac); border: 1px solid var(--bg, #0b0d10);
-}
-.step[data-action='true'] .rail::after { background: var(--text-3); width: 5px; height: 5px; left: 3px; top: 11px; }
-
-.body { padding: 5px 0 11px 6px; min-width: 0; }
-.line { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
-.what { display: flex; align-items: center; gap: 8px; color: inherit; text-decoration: none; min-width: 0; }
-.what:hover .name { color: var(--fac); }
-.name { font-size: 13px; font-weight: 600; }
-.count { font-size: 11.5px; color: var(--text-3); margin-left: 5px; }
-.action { font-size: 12.5px; color: var(--text-2); font-style: italic; }
-.lane {
-  font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase;
+.headRow {
+  font-size: 9px; letter-spacing: 0.07em; text-transform: uppercase;
   color: var(--text-3);
-  border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px;
+  padding: 7px 0 6px;
+  border-bottom: 1px solid var(--line);
 }
-.dur { font-size: 11px; color: var(--text-3); margin-left: auto; }
+.row {
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--line);
+}
+.row:last-child { border-bottom: none; }
 
-.econ { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 4px; padding-left: 38px; }
-.econItem { display: flex; align-items: baseline; gap: 4px; font-size: 11px; }
-.econLabel { font-size: 9px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; }
+.time { font-size: 13px; color: var(--text-2); }
+
+.what { min-width: 0; }
+.link { display: flex; align-items: center; gap: 9px; color: inherit; text-decoration: none; min-width: 0; }
+.link:hover .name { color: var(--primary); }
+/* The two things a player reads first: what, and how many of it. */
+.name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.count {
+  font-size: 14px; font-weight: 700; color: var(--primary);
+  flex-shrink: 0;
+}
+.action { font-size: 13px; color: var(--text-2); font-style: italic; }
+
+.byCol { font-size: 12px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.num { text-align: right; font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.takes { color: var(--text-2); }
 .mass { color: var(--mass); }
 .energy { color: var(--energy); }
-.slash { color: var(--text-3); }
+.slash { color: var(--text-3); padding: 0 2px; }
+
+.foot {
+  grid-column: 2 / -1;
+  font-size: 11px; line-height: 1.5; color: var(--text-3);
+  padding-top: 3px;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px;
+}
 .stall {
   font-size: 10px; color: var(--dmg, #e07a63);
   border: 1px solid color-mix(in srgb, var(--dmg, #e07a63) 40%, transparent);
   border-radius: 3px; padding: 0 5px;
 }
 
-.note {
-  font-size: 11px; line-height: 1.5; color: var(--text-3);
-  margin: 5px 0 0; padding-left: 38px; max-width: 74ch;
-}
-.step[data-action='true'] .note { padding-left: 0; }
-
 .after { display: flex; flex-wrap: wrap; gap: 10px; }
 .card {
-  flex: 1 1 280px;
+  flex: 1 1 300px;
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
   padding: 11px 13px;
 }
 .cardLabel { font-size: 9px; color: var(--text-3); display: block; margin-bottom: 5px; }
 .cardBody { font-size: 12px; line-height: 1.55; color: var(--text-2); margin: 0; }
 .adviceList { margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.6; color: var(--text-2); }
+.adviceList li + li { margin-top: 5px; }
 
-.provenance {
-  font-size: 10.5px; line-height: 1.6; color: var(--text-3);
-  margin: 0; max-width: 92ch;
-}
+.provenance { font-size: 10.5px; line-height: 1.65; color: var(--text-3); margin: 0; }
 .provenance a { color: var(--text-2); }
 
-@media (max-width: 640px) {
-  .step { grid-template-columns: 38px 13px minmax(0, 1fr); }
-  .econ, .note { padding-left: 0; }
-  .totals { gap: 14px; }
+/* Under this the seven columns stop fitting, so the numbers move to their own
+   line under the unit rather than being squeezed to two characters. */
+@media (max-width: 860px) {
+  .headRow { display: none; }
+  .row { grid-template-columns: 44px minmax(0, 1fr) auto; row-gap: 3px; }
+  .byCol { grid-column: 3; font-size: 10.5px; color: var(--text-3); text-align: right; }
+  .num { grid-column: 2 / -1; text-align: left; }
+  .num::before { content: attr(data-label) ' '; font-size: 9px; color: var(--text-3); text-transform: uppercase; }
+  .takes { grid-column: 2 / -1; }
+  .foot { grid-column: 2 / -1; }
 }

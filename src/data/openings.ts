@@ -11,11 +11,38 @@
  *
  * Units are named by the last four characters of their blueprint id, which is
  * the same across all four factions: B0101 is the land factory whether you are
- * UEF or Seraphim. So an order is written once and resolved against whichever
- * faction the reader picked, and it picks up a new patch's numbers for free.
+ * UEF or Seraphim. So an order is written once and it picks up a new patch's
+ * numbers for free.
+ *
+ * There is no faction to pick. Every building an opening touches — land, air
+ * and naval factories, power generator, hydrocarbon plant, extractor, engineer,
+ * ACU — is identical in all four factions down to the last build point, so a
+ * faction selector was four buttons that changed the artwork and nothing else.
+ * Checked, not assumed; if a patch ever splits them this needs revisiting.
  */
 
 export type MapSize = '5x5' | '10x10' | '20x20';
+
+/**
+ * Reclaim, as three assumptions rather than three measurements.
+ *
+ * What a map's rocks and wrecks are worth is a property of the map, and map
+ * props are not in the unit blueprints, so there is nothing here to derive a
+ * figure from. Publishing "high reclaim is 15 mass a second" as a fact would be
+ * inventing one. What the model can honestly do is take the number and show
+ * what it buys, so these are round, labelled as assumptions on the page, and
+ * the reader dials them to the map in front of them.
+ *
+ * Lives here rather than beside the component that draws the buttons because
+ * the page runs the simulation on the server: exported from a 'use client'
+ * module, the server import resolves to a client reference and the build fails
+ * on trying to iterate it.
+ */
+export const RECLAIM_LEVELS = [
+  { key: 'none', label: 'None', perSecond: 0 },
+  { key: 'low', label: 'Low', perSecond: 5 },
+  { key: 'high', label: 'High', perSecond: 15 },
+] as const;
 
 export interface OpeningStep {
   /** Blueprint id suffix, e.g. 'B0101'. Omitted for steps that build nothing. */
@@ -48,10 +75,14 @@ export interface Opening {
   id: string;
   title: string;
   summary: string;
+  /** The map this is written for, or 'Generic'. Drives the first pick. */
+  map: string;
   /** Which branch of the picker leads here. */
   secondFactory: 'land' | 'air';
   hydro: boolean;
   source: { label: string; url: string; edited?: string };
+  /** A second guide teaching the same opening, for a reader who wants it in prose. */
+  alsoSee?: { label: string; url: string; edited?: string };
   acu: OpeningStep[];
   lanes: OpeningLane[];
   /** What the first factory should be making, by map size. */
@@ -64,6 +95,72 @@ const WIKI_BEGINNER = {
   url: 'https://wiki.faforever.com/en/Play/Learning-SupCom/Beginners-Guide-to-Forged-Alliance',
   edited: '2025-04-24',
 };
+
+/**
+ * Heaven's tutorials, transcribed from the videos themselves.
+ *
+ * These are the most-watched build order guides in the game and they give
+ * sequences the wiki does not: where the wiki says "2 pgens, 4 mexes, 3 pgens",
+ * the video interleaves them and says why. Only the sequence is taken — what to
+ * build and in what order, which is a fact about the game — and every timing on
+ * the page is computed here rather than repeated from the video.
+ *
+ * One of his claims is a direct check on this simulator. He says a land factory
+ * takes one engineer 60 seconds and two engineers 30; the blueprint is 300
+ * build points and a T1 engineer is 5 build power, so 60 and 30 is what the
+ * arithmetic gives. A power generator at 25 seconds from one engineer is 125
+ * over 5. The model and the guide agree without either being fitted to the
+ * other.
+ */
+const HEAVEN_GENERIC = {
+  label: 'Heaven, Generic Build Orders (FAF Tutorial 1)',
+  url: 'https://www.youtube.com/watch?v=_6uE1-xS2uk',
+  edited: '2018',
+};
+
+/**
+ * A guide that walks through a top player's game on one slot of one map.
+ *
+ * Most Seton's material is live commentary, which cannot be transcribed into a
+ * sequence without inventing the parts the player never says out loud. This one
+ * states its build outright and tells you to memorise it, which is the bar for
+ * appearing here.
+ */
+const SETONS_BEACH = {
+  label: 'Supcom FA: how to play Setons, beach spot build order',
+  url: 'https://www.youtube.com/watch?v=_gxnEqorJ94',
+};
+
+const HEAVEN_HYDRO = {
+  label: 'Heaven, Modified Hydro Rush (FAF Tutorial 3)',
+  url: 'https://www.youtube.com/watch?v=FjWL8iXg6uM',
+  edited: '2018',
+};
+
+/**
+ * The opening every non-hydro build in the video shares.
+ *
+ * One land factory, four power generators and four extractors, but interleaved
+ * rather than grouped: two generators, two extractors, a generator, two
+ * extractors, a generator. The video is explicit that the order matters,
+ * because it keeps the economy balanced and spends the starting resources well
+ * rather than sinking them into one kind of thing first. The reserve column on
+ * the page is where you can watch that happen.
+ */
+const HEAVEN_OPENING: OpeningStep[] = [
+  { unit: 'B0101', note: 'The first factory. Land or air; land is the default.' },
+  { unit: 'B1101', count: 2, note: 'Adjacent to the factory for the adjacency bonus.' },
+  { unit: 'B1103', count: 2 },
+  { unit: 'B1101' },
+  { unit: 'B1103', count: 2, note: 'Four extractors in total, on the mass points closest to your spawn.' },
+  { unit: 'B1101', note: 'Four generators in total. This is what runs the factory and the first engineers.' },
+];
+
+/** Engineer roles the video gives for the generic builds. */
+const HEAVEN_ENGINEERS = [
+  'Two engineers on factories, one on power generators. A land factory is 60 seconds for one engineer and 30 for two; a generator is 25 seconds for one. So the pair finishing a factory and the single finishing a generator land together, and the economy stays balanced on its own.',
+  'Expand along linear routes rather than jumping between mass points, picking up reclaim on the way, and queue something for the engineer to do when it runs out of expansion.',
+];
 
 /**
  * What the first factory builds, by map size.
@@ -84,22 +181,24 @@ const FACTORY_QUEUE: Record<MapSize, string> = {
 
 export const OPENINGS: Opening[] = [
   {
-    id: 'second-land',
-    title: 'Second land',
+    id: 'triple-land',
+    title: 'Triple land',
+    map: 'Generic',
     summary:
-      'Two land factories. The straightforward opening: everything the ACU builds goes toward putting more tanks on the ground sooner.',
+      'Three land factories before the ACU leaves the base. The straightforward opening: everything goes into putting tanks on the ground and taking your half of the map.',
     secondFactory: 'land',
     hydro: false,
-    source: WIKI_BEGINNER,
+    source: HEAVEN_GENERIC,
+    alsoSee: WIKI_BEGINNER,
     acu: [
-      { unit: 'B0101', note: 'The first factory is always land or air, and land is the safe default.' },
-      { unit: 'B1101', count: 2, note: 'Two power generators adjacent to the factory for the adjacency bonus.' },
-      { unit: 'B1103', count: 4, note: 'The four mass points closest to your spawn.' },
-      { unit: 'B1101', count: 3 },
+      ...HEAVEN_OPENING,
+      { unit: 'B1101', note: 'One extra generator for each extra land factory. A land factory draws about 25 energy a second and a T1 generator makes 20, so it is close to one for one.' },
+      { unit: 'B0101' },
+      { unit: 'B1101' },
       { unit: 'B0101' },
       {
-        action: 'Move out',
-        note: 'To the front line, or stay and help produce factories. The wiki prefers the front line.',
+        action: 'Leave the base',
+        note: 'The ACU is worth about twenty T1 tanks in the field and about two engineers in the base. That is not really a choice.',
       },
     ],
     lanes: [
@@ -107,41 +206,35 @@ export const OPENINGS: Opening[] = [
         key: 'factory',
         label: 'First factory',
         timed: true,
-        steps: [{ unit: 'L0105', count: 3, note: 'Engineers first, before any combat units.' }],
+        steps: [{ unit: 'L0105', count: 3, note: 'Engineers before any combat units.' }],
       },
-      {
-        key: 'engineers',
-        label: 'The first three engineers',
-        timed: false,
-        steps: [],
-        advice: [
-          '1st: expands, reclaims, or assists the ACU.',
-          '2nd: expands, reclaims.',
-          '3rd: assists the ACU, then takes over base production so the ACU can move toward the front line.',
-        ],
-      },
+      { key: 'engineers', label: 'What the engineers do', timed: false, steps: [], advice: HEAVEN_ENGINEERS },
     ],
     factoryQueue: FACTORY_QUEUE,
+    caveat:
+      'The wiki teaches a two-factory version of the same shape, which is a gentler place to start. Everything below the second factory is identical.',
   },
   {
-    id: 'second-air',
-    title: 'Second air',
+    id: 'third-air',
+    title: 'Third air',
+    map: 'Generic',
     summary:
-      'Land factory, then air. Common at higher levels, because it buys bombers, interceptors and above all scouts to find out what your opponent is doing.',
+      'Land, land, then air. The air factory is the third factory, which buys bombers, interceptors and above all the scouts that tell you what your opponent is doing.',
     secondFactory: 'air',
     hydro: false,
-    source: WIKI_BEGINNER,
+    source: HEAVEN_GENERIC,
+    alsoSee: WIKI_BEGINNER,
     acu: [
+      ...HEAVEN_OPENING,
+      { unit: 'B1101', note: 'The generator that runs the second land factory.' },
       { unit: 'B0101' },
-      { unit: 'B1101', count: 2, note: 'Adjacent to the factory.' },
-      { unit: 'B1103', count: 4 },
+      { unit: 'B0102' },
       {
         unit: 'B1101',
-        count: 5,
-        note: 'The wiki says four to six here. Five is the middle; air costs energy rather than mass, so this is what pays for it.',
+        count: 4,
+        note: 'Four generators per air factory. Three is enough if it will only ever make bombers, but scouts and interceptors need the fourth.',
       },
-      { unit: 'B0102' },
-      { action: 'Move out', note: 'Front line, or help produce more factories.' },
+      { action: 'Leave the base' },
     ],
     lanes: [
       {
@@ -150,39 +243,29 @@ export const OPENINGS: Opening[] = [
         timed: true,
         steps: [{ unit: 'L0105', count: 3 }],
       },
-      {
-        key: 'engineers',
-        label: 'The first three engineers',
-        timed: false,
-        steps: [],
-        advice: [
-          '1st: expands, reclaims, or assists the ACU.',
-          '2nd: expands, reclaims.',
-          '3rd: assists the ACU, then takes over base production.',
-        ],
-      },
+      { key: 'engineers', label: 'What the engineers do', timed: false, steps: [], advice: HEAVEN_ENGINEERS },
     ],
     factoryQueue: FACTORY_QUEUE,
-    caveat:
-      'The source gives four to six power generators before the air factory. Five is simulated here; the picker cannot ask you how much energy your map wants.',
   },
   {
-    id: 'second-air-hydro',
-    title: 'Second air, hydrocarbon',
+    id: 'hydro-rush',
+    title: 'Hydro rush',
+    map: 'Generic',
     summary:
-      'Use this one whenever there is a hydrocarbon plant to take. It is far more energy per mass than power generators, so the ACU can skip them entirely and spend on mass instead.',
+      'Take the hydrocarbon plant whenever there is one. It is far more energy per mass than generators, so the ACU can skip them almost entirely and spend on extractors instead.',
     secondFactory: 'air',
     hydro: true,
-    source: WIKI_BEGINNER,
+    source: HEAVEN_HYDRO,
+    alsoSee: WIKI_BEGINNER,
     acu: [
       { unit: 'B0101' },
-      { unit: 'B1103', count: 4, note: 'No power generators at all: the hydro covers it.' },
+      { unit: 'B1103', count: 4, note: 'No power generators at all. The hydro covers it.' },
       {
-        action: 'Assist the first engineer',
+        action: 'Assist the hydrocarbon plant',
         assist: 'engie1',
-        note: 'On the hydrocarbon plant. One T1 engineer alone takes 80 seconds on it, which is why it gets help.',
+        note: 'One T1 engineer alone is 80 seconds on a hydro. This is why it gets help, and it is the whole reason the opening works.',
       },
-      { action: 'Move out' },
+      { action: 'Leave the base' },
     ],
     lanes: [
       {
@@ -196,9 +279,9 @@ export const OPENINGS: Opening[] = [
         label: '1st engineer',
         timed: true,
         steps: [
-          { unit: 'B1102', note: 'The hydrocarbon plant, with the ACU and the 2nd engineer assisting.' },
-          { unit: 'B1101', count: 2, note: 'The wiki says one to two.' },
-          { unit: 'B0102', note: 'Placed next to the hydro for the adjacency bonus.' },
+          { unit: 'B1102', note: 'Straight to the hydrocarbon plant.' },
+          { unit: 'B1101', count: 2 },
+          { unit: 'B0102', note: 'Air factory, placed against the hydro for the adjacency bonus.' },
         ],
       },
       {
@@ -209,12 +292,74 @@ export const OPENINGS: Opening[] = [
       },
       {
         key: 'engineers',
-        label: '3rd engineer',
+        label: 'If the hydro is far away',
         timed: false,
         steps: [],
-        advice: ['Expands, reclaims, or assists the ACU in factory production.'],
+        advice: [
+          'The standard version power stalls when the deposit is a long walk. Build one generator and three extractors with the ACU instead, and let the first engineer take the fourth extractor on its way to the hydro.',
+          'If the ACU has to leave early, it can build the four extractors and go: the first engineer starts the hydro alone and the second and third assist it immediately.',
+          'A hydro near your spawn is not always worth rushing. On an exposed spot it dies, and heavy nearby reclaim can be the better thing to build around.',
+        ],
       },
     ],
     factoryQueue: FACTORY_QUEUE,
+  },
+  {
+    id: 'setons-beach',
+    title: "Seton's Clutch, beach",
+    map: "Seton's Clutch",
+    summary:
+      'The beach slot, second air off the hydro. An exposed spot that gets its navy going earlier than the rock does, so the build is about being up and running before anyone can punish you for standing there.',
+    secondFactory: 'air',
+    hydro: true,
+    source: SETONS_BEACH,
+    acu: [
+      { unit: 'B0101', note: 'Factory first, always.' },
+      {
+        unit: 'B1101',
+        count: 3,
+        note: 'Three, or four if you want the air factory sooner. The guide gives both.',
+      },
+      { unit: 'B1103', count: 2 },
+      {
+        action: 'Walk to the hydro and assist',
+        assist: 'engie1',
+        note: 'The ACU goes over and helps rather than building it itself.',
+      },
+      { unit: 'B0102', note: 'The air factory, once the hydro is up.' },
+      { unit: 'B1101', count: 4 },
+    ],
+    lanes: [
+      { key: 'factory', label: 'First factory', timed: true, steps: [{ unit: 'L0105', count: 4 }] },
+      {
+        key: 'engie1',
+        label: '1st engineer',
+        timed: true,
+        steps: [
+          { action: 'Assist the ACU', assist: 'acu', note: 'On the generators, until they are done.' },
+          { unit: 'B1102', note: 'Then straight to the hydrocarbon plant.' },
+        ],
+      },
+      {
+        key: 'engineers',
+        label: 'Where the other engineers go',
+        timed: false,
+        steps: [],
+        advice: [
+          '2nd: up to the three exposed mass points, then a factory and a radar there. Getting a factory into that spot is most of what makes the slot safe; arriving late without one is what makes it dangerous.',
+          '3rd and 4th: the remaining extractors.',
+          'The rest: patrol on the trees. Tree reclaim is what pays for this slot, which is why the generator count stays low.',
+          'Place your fourth, fifth and sixth buildings near where the first engineer comes out of the factory, so it can start helping the moment it appears instead of walking across the base.',
+        ],
+      },
+    ],
+    factoryQueue: {
+      '5x5': 'Not a 5x5 build.',
+      '10x10': 'Not a 10x10 build.',
+      '20x20':
+        'Engineers, and plenty of them. The beach wants bodies on the mass points and on the trees before it wants an army.',
+    },
+    caveat:
+      'Transcribed from a guide analysing one top player\u2019s game, so it is one player\u2019s build rather than a canonical one. The generator count in particular is given as three or four depending on how fast you want air.',
   },
 ];

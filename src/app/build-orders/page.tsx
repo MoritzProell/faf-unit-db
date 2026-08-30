@@ -5,11 +5,10 @@ import { SiteFooter } from '@/components/SiteFooter';
 import { Icon } from '@/components/Icon';
 import { getUnitData } from '@/lib/faf/data';
 import { BUILD_ORDERS } from '@/data/build-orders';
-import { OPENINGS } from '@/data/openings';
+import { OPENINGS, RECLAIM_LEVELS } from '@/data/openings';
 import { runOpening } from '@/lib/faf/opening';
 import { OpeningTimeline, type Runs } from '@/components/OpeningTimeline';
 import { BuildOrdersClient } from './BuildOrdersClient';
-import type { Faction } from '@/lib/faf/types';
 import styles from './build-orders.module.css';
 
 export const revalidate = 21600;
@@ -20,28 +19,26 @@ export const metadata: Metadata = {
     'Every build order guide for Supreme Commander: Forged Alliance Forever worth finding, in one place — generic openings and map-specific ones, tagged by focus and level.',
 };
 
-const FACTIONS: Faction[] = ['UEF', 'Cybran', 'Aeon', 'Seraphim'];
-
 export default async function BuildOrdersPage() {
   const { units, hidden, version } = await getUnitData();
   const maps = new Set(BUILD_ORDERS.filter((o) => o.scope !== 'Generic').map((o) => o.scope));
 
   /**
-   * Every opening, for every faction, run at build time.
+   * Every opening at every reclaim level, run at build time.
    *
-   * Twelve runs of a few thousand ticks each, which is nothing once and would
-   * be waste on every page view. Running them here also means the timings are
-   * in the HTML rather than appearing after hydration, which matters because
-   * they are the reason to read the page.
+   * Nine runs of a few thousand ticks each, which is nothing once and would be
+   * waste on every page view. Running them here also puts the timings in the
+   * HTML rather than after hydration, which matters because they are the reason
+   * to read the page.
    */
   const all = [...units, ...hidden];
   const slugs = Object.fromEntries(all.map((u) => [u.Id, u.slug]));
   const runs: Runs = {};
   for (const opening of OPENINGS) {
     runs[opening.id] = {};
-    for (const faction of FACTIONS) {
-      const run = runOpening(opening, faction, all);
-      runs[opening.id][faction] = {
+    for (const level of RECLAIM_LEVELS) {
+      const run = runOpening(opening, all, { reclaim: level.perSecond });
+      runs[opening.id][level.key] = {
         ...run,
         slugs: Object.fromEntries(
           run.items.filter((i) => i.id).map((i) => [i.id!, slugs[i.id!] ?? ''])
@@ -76,10 +73,12 @@ export default async function BuildOrdersPage() {
         <div className={styles.sectionHead}>
           <h2 className={`t ${styles.sectionTitle}`}>The first five minutes</h2>
           <p className={styles.sectionLede}>
-            The generic openings, played out against the current patch. Pick your faction and what
-            you are opening into, and every timing below is computed from the blueprints rather
-            than quoted: build points divided by build power, with the economy stepped forward so
-            you can see what each step drains and where it would stall.
+            The generic openings, transcribed from the guides that teach them and then played out
+            against the current patch. Pick what you are opening into and every number below is
+            computed rather than quoted: build points divided by build power, with the economy
+            stepped forward tick by tick so you can watch the reserves drain and see where the
+            build would stall. There is no faction to pick, because every building an opening
+            touches costs exactly the same in all four.
           </p>
         </div>
         <OpeningTimeline openings={OPENINGS} runs={runs} />

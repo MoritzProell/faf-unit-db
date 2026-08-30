@@ -37,6 +37,13 @@ const MAX_SECONDS = 900;
 export interface TimelineItem {
   /** Blueprint id of what was built, or null for a step that builds nothing. */
   id: string | null;
+  /**
+   * The generic name — "Mass Extractor", not "Mass Pump 1".
+   *
+   * With no faction to pick, the faction-specific UnitName would be one
+   * faction's word for a building all four have. The blueprint's Description
+   * field is the generic one and is what players say out loud.
+   */
   name: string;
   techLabel: string;
   count: number;
@@ -57,6 +64,9 @@ export interface TimelineItem {
   /** Seconds of this step's duration spent short of a resource. */
   stalledMass: number;
   stalledEnergy: number;
+  /** What is left in the bank the moment this step completes. */
+  storedMass: number;
+  storedEnergy: number;
   note?: string;
   action?: string;
 }
@@ -73,8 +83,11 @@ export interface OpeningRun {
   /** Seconds spent stalled on each resource across the whole run. */
   stalledMass: number;
   stalledEnergy: number;
-  /** Steps whose unit could not be resolved for this faction. */
+  /** Steps whose unit could not be resolved. */
   unresolved: string[];
+  /** Mass per second assumed from reclaim, and when it starts. */
+  reclaim: number;
+  reclaimFrom: number;
 }
 
 interface Econ {
@@ -133,9 +146,34 @@ interface Job {
  * interesting sequence is on an engineer that does not exist until the factory
  * has produced it.
  */
-export function runOpening(opening: Opening, faction: Faction, all: Unit[]): OpeningRun {
+export function runOpening(
+  opening: Opening,
+  all: Unit[],
+  opts: { reclaim?: number } = {}
+): OpeningRun {
   const unresolved: string[] = [];
+  /**
+   * Reclaim, as an assumption the reader sets rather than a number invented
+   * here.
+   *
+   * How much a map's rocks and wrecks are worth is a property of the map, and
+   * map props are not in the unit blueprints, so there is nothing to derive it
+   * from and no honest way to publish "high reclaim = N mass a second" as a
+   * fact. What the model can do is take the number and show what it buys, which
+   * is the useful half: the shape of the answer is exact even when the input is
+   * a guess. It starts when the first engineer exists, because that is who does
+   * the reclaiming while it expands.
+   */
+  const reclaim = Math.max(0, opts.reclaim ?? 0);
+  let reclaimOn = false;
 
+  /**
+   * Every building an opening touches costs exactly the same in all four
+   * factions, checked field by field, so one of them stands for all of them and
+   * there is nothing for a reader to pick. Only the artwork and the names
+   * differ, and the page uses the generic names.
+   */
+  const faction: Faction = 'UEF';
   const acuUnit = all.find((u) => u.faction === faction && /L0001$/i.test(u.Id));
   const acuEcon = acuUnit ? econOf(acuUnit) : null;
   const acuPower = ((acuUnit?.Economy ?? {}) as { BuildRate?: number }).BuildRate ?? 10;
@@ -284,6 +322,8 @@ export function runOpening(opening: Opening, faction: Faction, all: Unit[]): Ope
           incomeEnergy: energyPerSecond - upkeep,
           stalledMass: 0,
           stalledEnergy: 0,
+          storedMass: Math.max(0, Math.round(storedMass)),
+          storedEnergy: Math.max(0, Math.round(storedEnergy)),
           note: job.step.note,
           action: job.step.action,
         });
@@ -318,7 +358,8 @@ export function runOpening(opening: Opening, faction: Faction, all: Unit[]): Ope
       wantEnergy += (e.energy / seconds) * TICK;
     }
 
-    const haveMass = storedMass + massPerSecond * TICK;
+    const income = massPerSecond + (reclaimOn ? reclaim : 0);
+    const haveMass = storedMass + income * TICK;
     const haveEnergy = storedEnergy + (energyPerSecond - upkeep) * TICK;
     const ratioMass = wantMass > 0 ? Math.min(1, haveMass / wantMass) : 1;
     const ratioEnergy = wantEnergy > 0 ? Math.min(1, haveEnergy / wantEnergy) : 1;
@@ -340,7 +381,7 @@ export function runOpening(opening: Opening, faction: Faction, all: Unit[]): Ope
       if (lane.progress === 0 && lane.done === 0 && !openItems.has(key)) {
         openItems.set(key, {
           id: job.unit!.Id,
-          name: job.unit!.name,
+          name: job.unit!.role || job.unit!.name,
           techLabel: job.unit!.techLabel,
           count: job.count,
           lane: job.lane,
@@ -355,6 +396,8 @@ export function runOpening(opening: Opening, faction: Faction, all: Unit[]): Ope
           incomeEnergy: 0,
           stalledMass: 0,
           stalledEnergy: 0,
+          storedMass: 0,
+          storedEnergy: 0,
           note: job.step.note,
         });
         itemStall.set(key, { mass: 0, energy: 0 });
@@ -379,6 +422,9 @@ export function runOpening(opening: Opening, faction: Faction, all: Unit[]): Ope
         if (FACTORY_LANE >= 0 && factoryUnit && job.unit!.Id === factoryUnit.Id) {
           for (const j of lanes[FACTORY_LANE].jobs) j.readyAt = Math.min(j.readyAt, t);
         }
+
+        // The first engineer off the line is also who starts picking up rocks.
+        if (li === FACTORY_LANE) reclaimOn = true;
 
         // An engineer coming off the factory releases the next engineer lane.
         if (li === FACTORY_LANE) {
@@ -410,6 +456,8 @@ export function runOpening(opening: Opening, faction: Faction, all: Unit[]): Ope
                 incomeEnergy: energyPerSecond - upkeep,
                 stalledMass: 0,
                 stalledEnergy: 0,
+                storedMass: Math.max(0, Math.round(storedMass)),
+                storedEnergy: Math.max(0, Math.round(storedEnergy)),
                 note: aItem?.step.note,
                 action: aItem?.step.action ?? 'Assist',
               });
@@ -438,6 +486,8 @@ export function runOpening(opening: Opening, faction: Faction, all: Unit[]): Ope
           item.incomeEnergy = energyPerSecond - upkeep;
           item.stalledMass = Math.round(stall.mass * 10) / 10;
           item.stalledEnergy = Math.round(stall.energy * 10) / 10;
+          item.storedMass = Math.max(0, Math.round(storedMass));
+          item.storedEnergy = Math.max(0, Math.round(storedEnergy));
           items.push(item);
           openItems.delete(key);
           lane.at++;
@@ -463,6 +513,8 @@ export function runOpening(opening: Opening, faction: Faction, all: Unit[]): Ope
     stalledMass: Math.round(stalledMassTotal * 10) / 10,
     stalledEnergy: Math.round(stalledEnergyTotal * 10) / 10,
     unresolved: [...new Set(unresolved)],
+    reclaim,
+    reclaimFrom: 0,
   };
 }
 
