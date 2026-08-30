@@ -217,6 +217,10 @@ export function runOpening(
 
   // Lane 3+: engineer lanes, each held until that engineer has been produced.
   const engieLanes = opening.lanes.filter((l) => l.timed && l.key.startsWith('engie'));
+  /** Timed production lanes that are not the first factory and not engineers. */
+  const extraLanes = opening.lanes.filter(
+    (l) => l.timed && l.key !== 'factory' && !l.key.startsWith('engie')
+  );
   const engieUnit = resolve('L0105', faction, all);
   const engiePower = ((engieUnit?.Economy ?? {}) as { BuildRate?: number }).BuildRate ?? 5;
 
@@ -231,6 +235,8 @@ export function runOpening(
     started: number | null;
     assistTarget?: number;
     assistFrom?: number;
+    /** Blueprint id suffix whose completion releases this lane. */
+    after?: string;
   }[] = [{ jobs: acuJobs, at: 0, progress: 0, done: 0, started: 0 }];
   if (factoryLane) {
     lanes.push({
@@ -248,11 +254,37 @@ export function runOpening(
       progress: 0,
       done: 0,
       started: null,
+      after: l.after,
+    });
+  }
+  for (const l of extraLanes) {
+    // A production lane runs at the build power of the building that owns it.
+    const owner = l.after ? resolve(l.after, faction, all) : undefined;
+    const power = ((owner?.Economy ?? {}) as { BuildRate?: number }).BuildRate ?? 20;
+    lanes.push({
+      jobs: l.steps.map((s) => build(s, l.key, l.label, power, Infinity)),
+      at: 0,
+      progress: 0,
+      done: 0,
+      started: null,
+      after: l.after,
     });
   }
 
   const FACTORY_LANE = factoryLane ? 1 : -1;
-  const ENGIE_START = factoryLane ? 2 : 1;
+  /**
+   * Which lanes are engineers, by index and in order.
+   *
+   * Held as a list rather than derived from a start offset. It used to be
+   * "everything from index 2", which was true until a production lane was added
+   * after the engineer lanes: the air factory then sat at index 2, and the
+   * first engineer off the line released it, so the air factory started
+   * producing scouts at 0:43 on a build that has no air factory until 2:20.
+   */
+  const engieLaneIdx = lanes
+    .map((l, i) => ({ l, i }))
+    .filter(({ l }) => l.jobs[0]?.lane.startsWith('engie'))
+    .map(({ i }) => i);
 
   let t = 0;
   let stalledMassTotal = 0;
@@ -417,8 +449,17 @@ export function runOpening(
         energyPerSecond += e.energyPerSecond;
         upkeep += e.energyUpkeep;
 
-        // The factory cannot start producing until the ACU has finished
-        // building it, which is the whole reason the lanes share a clock.
+        /**
+         * A building that just went up releases whatever lane was waiting on
+         * it. The first factory cannot produce before the ACU has built it, and
+         * an air factory finished at 2:30 starts making things at 2:30.
+         */
+        const finishedId = job.unit!.Id.toUpperCase();
+        for (const other of lanes) {
+          if (!other.after) continue;
+          if (!finishedId.endsWith(other.after.toUpperCase())) continue;
+          for (const j of other.jobs) j.readyAt = Math.min(j.readyAt, t);
+        }
         if (FACTORY_LANE >= 0 && factoryUnit && job.unit!.Id === factoryUnit.Id) {
           for (const j of lanes[FACTORY_LANE].jobs) j.readyAt = Math.min(j.readyAt, t);
         }
@@ -428,8 +469,8 @@ export function runOpening(
 
         // An engineer coming off the factory releases the next engineer lane.
         if (li === FACTORY_LANE) {
-          const idx = ENGIE_START + lane.done - 1;
-          if (idx < lanes.length && lanes[idx].jobs.length) {
+          const idx = engieLaneIdx[lane.done - 1];
+          if (idx !== undefined) {
             for (const j of lanes[idx].jobs) j.readyAt = Math.min(j.readyAt, t);
           }
         }

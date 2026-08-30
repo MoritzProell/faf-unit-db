@@ -62,6 +62,15 @@ export interface OpeningLane {
   key: string;
   label: string;
   /**
+   * Blueprint id suffix whose completion starts this lane.
+   *
+   * A factory cannot produce anything until it exists, and an air factory built
+   * two minutes in starts two minutes in. Naming the building rather than
+   * hardcoding "the first factory" is what lets an opening have more than one
+   * production line.
+   */
+  after?: string;
+  /**
    * Simulated against the shared economy when true. Only lanes whose source
    * gives an actual sequence are; the rest are guidance and say so.
    */
@@ -79,6 +88,14 @@ export interface Opening {
   map: string;
   /** Which branch of the picker leads here. */
   secondFactory: 'land' | 'air';
+  /**
+   * Only offered when reclaim is set to high.
+   *
+   * Heavy reclaim does not merely make the same build faster, it changes what
+   * the build is: the mass pays for engineers to stand on the ACU instead of
+   * walking off to expand, and for the extra generators that assist needs.
+   */
+  forReclaim?: 'high';
   hydro: boolean;
   source: { label: string; url: string; edited?: string };
   /** A second guide teaching the same opening, for a reader who wants it in prose. */
@@ -126,6 +143,21 @@ const HEAVEN_GENERIC = {
  * states its build outright and tells you to memorise it, which is the bar for
  * appearing here.
  */
+/**
+ * The reclaim-heavy builds, where engineers assist rather than expand.
+ *
+ * The map-specific build in this one is not transcribed — it is written for a
+ * single map by a single player — but the principle it states is general and is
+ * what the high-reclaim variants below are built on: two engineers assisting
+ * the ACU is a dual assist, and a dual assist wants one extra power generator
+ * for each engineer doing the assisting, which the reclaim is what pays for.
+ */
+const HEAVEN_MASS = {
+  label: 'Heaven, Mass-Boosted Builds (FAF Tutorial 5)',
+  url: 'https://www.youtube.com/watch?v=vzmgmtBqkb8',
+  edited: '2018',
+};
+
 const SETONS_BEACH = {
   label: 'Supcom FA: how to play Setons, beach spot build order',
   url: 'https://www.youtube.com/watch?v=_gxnEqorJ94',
@@ -156,8 +188,38 @@ const HEAVEN_OPENING: OpeningStep[] = [
   { unit: 'B1101', note: 'Four generators in total. This is what runs the factory and the first engineers.' },
 ];
 
+/**
+ * What comes off the air factory, and when.
+ *
+ * Worth simulating precisely because T1 air is the one part of the roster where
+ * all four factions cost exactly the same: scout 40 mass, interceptor 50,
+ * bomber 90, and 500 build points for either of the last two. T1 land is not —
+ * scouts and tanks differ by faction — so the land factory's combat output is
+ * given as guidance rather than a clock.
+ */
+const AIR_OUTPUT: OpeningLane = {
+  key: 'airfactory',
+  label: 'Air factory',
+  timed: true,
+  after: 'B0102',
+  steps: [
+    {
+      unit: 'A0101',
+      note: 'The scout first. Knowing what your opponent is building is most of what an early air factory is for.',
+    },
+    {
+      unit: 'A0102',
+      note: 'An interceptor if you expect enemy air, a bomber if you would rather be the one attacking. Both are 500 build points, so whichever you pick arrives at this same moment; only the cost differs, 50 mass against 90.',
+    },
+  ],
+};
+
 /** Engineer roles the video gives for the generic builds. */
+const LAND_OUTPUT =
+  'One scout, then tanks. This is the one place the factions genuinely differ: T1 land scouts and tanks are not the same cost in each, so the factory has no single clock the way the air factory does.';
+
 const HEAVEN_ENGINEERS = [
+  LAND_OUTPUT,
   'Two engineers on factories, one on power generators. A land factory is 60 seconds for one engineer and 30 for two; a generator is 25 seconds for one. So the pair finishing a factory and the single finishing a generator land together, and the economy stays balanced on its own.',
   'Expand along linear routes rather than jumping between mass points, picking up reclaim on the way, and queue something for the engineer to do when it runs out of expansion.',
 ];
@@ -243,6 +305,7 @@ export const OPENINGS: Opening[] = [
         timed: true,
         steps: [{ unit: 'L0105', count: 3 }],
       },
+      AIR_OUTPUT,
       { key: 'engineers', label: 'What the engineers do', timed: false, steps: [], advice: HEAVEN_ENGINEERS },
     ],
     factoryQueue: FACTORY_QUEUE,
@@ -290,6 +353,7 @@ export const OPENINGS: Opening[] = [
         timed: true,
         steps: [{ action: 'Assist the hydrocarbon plant', assist: 'engie1' }],
       },
+      AIR_OUTPUT,
       {
         key: 'engineers',
         label: 'If the hydro is far away',
@@ -299,6 +363,102 @@ export const OPENINGS: Opening[] = [
           'The standard version power stalls when the deposit is a long walk. Build one generator and three extractors with the ACU instead, and let the first engineer take the fourth extractor on its way to the hydro.',
           'If the ACU has to leave early, it can build the four extractors and go: the first engineer starts the hydro alone and the second and third assist it immediately.',
           'A hydro near your spawn is not always worth rushing. On an exposed spot it dies, and heavy nearby reclaim can be the better thing to build around.',
+        ],
+      },
+    ],
+    factoryQueue: FACTORY_QUEUE,
+  },
+  {
+    id: 'triple-land-assist',
+    title: 'Triple land, dual assist',
+    map: 'Generic',
+    forReclaim: 'high',
+    summary:
+      'The same three factories, but two engineers stand on the ACU instead of walking off to expand. Reclaim is what makes it work: the mass has to come from somewhere, and rocks and wrecks near your spawn are it.',
+    secondFactory: 'land',
+    hydro: false,
+    source: HEAVEN_MASS,
+    acu: [
+      ...HEAVEN_OPENING,
+      { unit: 'B1101', note: 'One generator per extra land factory, as usual.' },
+      { unit: 'B0101' },
+      { unit: 'B1101' },
+      { unit: 'B0101' },
+      {
+        unit: 'B1101',
+        count: 2,
+        note: 'And one more for each engineer assisting. Two assistants means two extra generators: build power you have added has to be paid for in energy as well as mass.',
+      },
+      { action: 'Leave the base' },
+    ],
+    lanes: [
+      { key: 'factory', label: 'First factory', timed: true, steps: [{ unit: 'L0105', count: 4 }] },
+      {
+        key: 'engie2',
+        label: '2nd engineer',
+        timed: true,
+        steps: [{ action: 'Assist the ACU', assist: 'acu' }],
+      },
+      {
+        key: 'engie4',
+        label: '4th engineer',
+        timed: true,
+        steps: [{ action: 'Assist the ACU', assist: 'acu' }],
+      },
+      {
+        key: 'engineers',
+        label: 'The other engineers',
+        timed: false,
+        steps: [],
+        advice: [
+          LAND_OUTPUT,
+          '1st and 3rd: out to the reclaim. Rocks and any wreckage near your spawn, picked up on the way to a mass point rather than as a trip of its own.',
+          'The pattern is alternating: one engineer reclaims, the next assists, and so on. The reclaimers pay for the assistants.',
+          'Everything after that expands, escorted. An unescorted engineer on an expansion is a gift.',
+        ],
+      },
+    ],
+    factoryQueue: FACTORY_QUEUE,
+    caveat:
+      'The source builds this on one map where the reclaim is unusually safe to take. The dual-assist principle is stated generally; how much reclaim your map actually has is the thing to check before committing to it.',
+  },
+  {
+    id: 'third-air-assist',
+    title: 'Third air, dual assist',
+    map: 'Generic',
+    forReclaim: 'high',
+    summary:
+      'Land, land, air, with two engineers assisting the ACU throughout. The air factory lands considerably earlier than it does off the standard build, which is the point.',
+    secondFactory: 'air',
+    hydro: false,
+    source: HEAVEN_MASS,
+    acu: [
+      ...HEAVEN_OPENING,
+      { unit: 'B1101' },
+      { unit: 'B0101' },
+      { unit: 'B0102' },
+      {
+        unit: 'B1101',
+        count: 6,
+        note: 'Four for the air factory, and one each for the two assisting engineers.',
+      },
+      { action: 'Leave the base' },
+    ],
+    lanes: [
+      { key: 'factory', label: 'First factory', timed: true, steps: [{ unit: 'L0105', count: 4 }] },
+      { key: 'engie2', label: '2nd engineer', timed: true, steps: [{ action: 'Assist the ACU', assist: 'acu' }] },
+      { key: 'engie4', label: '4th engineer', timed: true, steps: [{ action: 'Assist the ACU', assist: 'acu' }] },
+      AIR_OUTPUT,
+      {
+        key: 'engineers',
+        label: 'The other engineers',
+        timed: false,
+        steps: [],
+        advice: [
+          LAND_OUTPUT,
+          '1st and 3rd: out to the reclaim, picked up on the way to a mass point.',
+          'One reclaims, the next assists, alternating. The reclaimers pay for the assistants.',
+          'Everything after that expands, escorted.',
         ],
       },
     ],
@@ -340,6 +500,7 @@ export const OPENINGS: Opening[] = [
           { unit: 'B1102', note: 'Then straight to the hydrocarbon plant.' },
         ],
       },
+      AIR_OUTPUT,
       {
         key: 'engineers',
         label: 'Where the other engineers go',

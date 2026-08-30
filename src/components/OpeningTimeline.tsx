@@ -36,9 +36,22 @@ export function OpeningTimeline({ openings, runs }: { openings: Opening[]; runs:
   const pool = openings.filter((o) => o.map === map);
   const hydroAvailable = pool.some((o) => o.secondFactory === second && o.hydro);
   const wantHydro = hydro && hydroAvailable;
-  const opening = generic
-    ? pool.find((o) => o.secondFactory === second && o.hydro === wantHydro) ?? pool[0]
-    : pool[0];
+
+  /**
+   * High reclaim picks a different build, not just a bigger number.
+   *
+   * The mass has to buy something, and what it buys is engineers standing on
+   * the ACU rather than walking off to expand, plus the extra generators that
+   * the added build power needs. Where no such variant is written down the
+   * standard build stands, and the reclaim still feeds the economy.
+   */
+  const branch = pool.filter((o) => !generic || (o.secondFactory === second && o.hydro === wantHydro));
+  const opening =
+    (reclaim === 'high' ? branch.find((o) => o.forReclaim === 'high') : undefined) ??
+    branch.find((o) => !o.forReclaim) ??
+    branch[0] ??
+    pool[0];
+  const variant = opening.forReclaim === 'high';
   const run = runs[opening.id]?.[reclaim];
   if (!run) return null;
 
@@ -114,7 +127,10 @@ export function OpeningTimeline({ openings, runs }: { openings: Opening[]; runs:
 
       <div className={styles.head}>
         <div className={styles.headMain}>
-          <h3 className={`t ${styles.title}`}>{opening.title}</h3>
+          <h3 className={`t ${styles.title}`}>
+            {opening.title}
+            {variant && <span className={styles.swap}>swapped in for high reclaim</span>}
+          </h3>
           <p className={styles.summary}>{opening.summary}</p>
         </div>
         <dl className={styles.totals}>
@@ -151,6 +167,7 @@ export function OpeningTimeline({ openings, runs }: { openings: Opening[]; runs:
             <span className={styles.what}>
               {item.id ? (
                 <Link href={`/unit/${run.slugs[item.id] ?? ''}`} className={styles.link}>
+                  {item.count > 1 && <span className={`m ${styles.count}`}>{item.count}&times;</span>}
                   <UnitWell
                     id={item.id}
                     faction="UEF"
@@ -159,7 +176,6 @@ export function OpeningTimeline({ openings, runs }: { openings: Opening[]; runs:
                     imageSize={32}
                     pip={false}
                   />
-                  {item.count > 1 && <span className={`m ${styles.count}`}>{item.count}&times;</span>}
                   <span className={`t ${styles.name}`}>{item.name}</span>
                 </Link>
               ) : (

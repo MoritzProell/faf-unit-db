@@ -37,7 +37,15 @@
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
 }
 .headMain { flex: 1 1 340px; min-width: 0; }
-.title { font-size: 17px; font-weight: 650; margin: 0 0 5px; }
+.title { font-size: 17px; font-weight: 650; margin: 0 0 5px; display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+/* The picker changed the build, not just the numbers. Saying so beats leaving
+   the reader to notice the title moved. */
+.swap {
+  font-size: 9.5px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--primary);
+  border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
+  border-radius: 3px; padding: 2px 6px;
+}
 .summary { font-size: 12.5px; line-height: 1.55; color: var(--text-2); margin: 0; max-width: 62ch; }
 
 .totals { display: flex; gap: 22px; margin: 0; }
@@ -79,12 +87,17 @@
 /* The two things a player reads first: how many, and of what. The count leads,
    because that is the order a build order is said out loud -- three engineers,
    two extractors -- and reading it off the end of a truncated name was the
-   wrong way round. */
+   wrong way round. It sits outside the icon, in a fixed column, so the icons
+   line up down the table whether or not a row has a count. */
 .name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .count {
   font-size: 14px; font-weight: 700; color: var(--primary);
-  flex-shrink: 0; margin-right: -3px;
+  flex-shrink: 0;
+  width: 22px; text-align: right;
+  margin-left: -26px;
 }
+/* Leave room for the count so the icons align whether a row has one or not. */
+.link { padding-left: 26px; }
 .action { font-size: 13px; color: var(--text-2); font-style: italic; }
 
 .byCol { font-size: 12px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
