@@ -7,8 +7,6 @@ import { getUnitData } from '@/lib/faf/data';
 import { LEARN, type LearnLink } from '@/data/learn';
 import styles from './learn.module.css';
 
-export const revalidate = 21600;
-
 export const metadata: Metadata = {
   title: 'Learn',
   description:

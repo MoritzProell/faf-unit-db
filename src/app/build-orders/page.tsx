@@ -11,8 +11,6 @@ import { OpeningTimeline, type Runs } from '@/components/OpeningTimeline';
 import { BuildOrdersClient } from './BuildOrdersClient';
 import styles from './build-orders.module.css';
 
-export const revalidate = 21600;
-
 export const metadata: Metadata = {
   title: 'Build orders',
   description:

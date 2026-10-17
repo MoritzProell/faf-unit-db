@@ -8,8 +8,6 @@ import { enhancementsOf } from '@/lib/faf/enhancements';
 import { UpgradesClient, type HostRow } from './UpgradesClient';
 import styles from './upgrades.module.css';
 
-export const revalidate = 21600;
-
 export const metadata: Metadata = {
   title: 'Commander upgrades',
   description:

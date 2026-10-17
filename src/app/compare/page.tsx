@@ -7,8 +7,6 @@ import { buildCompare } from '@/lib/faf/compare';
 import { CompareTable, type CompareUnit } from './CompareTable';
 import styles from './compare.module.css';
 
-export const revalidate = 21600;
-
 export const metadata: Metadata = {
   title: 'Compare units',
   description: 'Compare Supreme Commander: Forged Alliance Forever units side by side, with the winner marked on every stat.',

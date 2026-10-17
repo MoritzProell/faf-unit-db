@@ -32,8 +32,6 @@ import { FieldPill } from '@/app/changelog/page';
 import type { DecoratedWeapon, Faction, Unit } from '@/lib/faf/types';
 import styles from './detail.module.css';
 
-export const revalidate = 21600;
-
 export async function generateStaticParams() {
   const { units } = await getUnitData();
   return units.map((u) => ({ slug: u.slug }));

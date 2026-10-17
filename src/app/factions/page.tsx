@@ -8,8 +8,6 @@ import { buildSlots } from '@/lib/faf/slots';
 import { FactionsClient, type SlotLite } from './FactionsClient';
 import styles from './factions.module.css';
 
-export const revalidate = 21600;
-
 export const metadata: Metadata = {
   title: 'Faction comparison',
   description:

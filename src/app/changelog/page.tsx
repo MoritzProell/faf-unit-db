@@ -10,8 +10,6 @@ import type { FieldChange, UnitChange } from '@/lib/faf/diff';
 import type { Faction } from '@/lib/faf/types';
 import styles from './changelog.module.css';
 
-export const revalidate = 21600;
-
 export const metadata: Metadata = {
   title: 'Patch changes',
   description:

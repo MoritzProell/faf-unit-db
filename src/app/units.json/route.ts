@@ -17,8 +17,12 @@ import { getPatches } from '@/lib/faf/changelog';
  * The second is that it lets the site describe itself honestly as a dataset in
  * its structured data, with a distribution that actually resolves. A Dataset
  * record whose downloadUrl 404s is worse than no record at all.
+ *
+ * Built once per deploy. The file can only change in a deploy (the daily data
+ * update commits it), so a timed revalidate would only rewrite the same 2 MB.
+ * GET handlers are dynamic by default, hence force-static rather than nothing.
  */
-export const revalidate = 21600;
+export const dynamic = 'force-static';
 
 export async function GET() {
   const [raw, patches] = await Promise.all([
