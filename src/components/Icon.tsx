@@ -77,6 +77,10 @@ const PATHS = {
   // The game's mass glyph: a ring around a filled dot. MassMark draws the
   // coloured version for the cost strip; this is the line version for labels.
   mass: <><circle cx="8" cy="8" r="5.6" /><circle cx="8" cy="8" r="2.1" fill="currentColor" stroke="none" /></>,
+  // Leaves the site: an arrow out of a box, for links that open another site.
+  external: <path d="M9.6 2.6h3.8v3.8M13.4 2.6 L7.6 8.4M11.6 9.4v4H2.6v-9h4" />,
+  // A play triangle in a frame, for the replay viewer.
+  play: <><rect x="2.4" y="3" width="11.2" height="10" rx="1.2" /><path d="M6.6 5.9v4.2L10 8z" /></>,
 } as const;
 
 export type IconName = keyof typeof PATHS;

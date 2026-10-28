@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { TopBar } from '@/components/TopBar';
 import { SiteFooter } from '@/components/SiteFooter';
 import { UnitWell } from '@/components/UnitWell';
@@ -37,11 +37,35 @@ export async function generateStaticParams() {
   return units.map((u) => ({ slug: u.slug }));
 }
 
+/**
+ * Blueprint ids are seven characters, three letters then four letters or
+ * digits (UEL0201, XSB2108, DALK003). A canonical slug always carries a name
+ * before the id, so a bare id can never collide with one.
+ */
+const BLUEPRINT_ID = /^[a-z]{3}[a-z0-9]{4}$/i;
+
+/**
+ * `/unit/uel0201` (any case) permanently redirects to the canonical
+ * `/unit/ma12-striker-uel0201`, so other sites, the replay viewer among them,
+ * can link by blueprint id without knowing the slug. An unknown id falls
+ * through to the ordinary 404. These are rendered on demand rather than
+ * prerendered: 510 extra redirect pages would double the build for links that
+ * are rarely followed.
+ */
+function redirectBlueprintId(slug: string, byId: Map<string, Unit>): void {
+  if (!BLUEPRINT_ID.test(slug)) return;
+  const unit = byId.get(slug.toUpperCase());
+  if (unit) permanentRedirect(`/unit/${unit.slug}`);
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const { bySlug, version } = await getUnitData();
+  const { bySlug, byId, version } = await getUnitData();
   const unit = bySlug.get(slug);
-  if (!unit) return { title: 'Unit not found' };
+  if (!unit) {
+    redirectBlueprintId(slug, byId);
+    return { title: 'Unit not found' };
+  }
   const dps = unit.directDps ? `, ${fmtRatio(unit.directDps, 1)} DPS` : '';
   // Lead with the unit name and the words people type: "percival stats faf".
   // Absolute, so it does not inherit the "· FAF Unit DB" suffix. A unit page's
@@ -79,9 +103,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function UnitPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const { bySlug, units, hidden, version, descriptions } = await getUnitData();
+  const { bySlug, byId, units, hidden, version, descriptions } = await getUnitData();
   const unit = bySlug.get(slug);
-  if (!unit) notFound();
+  if (!unit) {
+    redirectBlueprintId(slug, byId);
+    notFound();
+  }
 
   const cohort = buildCohort(unit, units);
   const history = await getUnitHistory(unit.Id);

@@ -1,3 +1,4 @@
+import { REPLAY_VIEWER_URL } from '@/lib/site';
 import styles from './SiteFooter.module.css';
 
 /**
@@ -38,6 +39,13 @@ export function SiteFooter({ version }: { version: string }) {
             carries the full name. */}
         <span className={`lbl ${styles.label}`}>Built by</span>
         <span className={styles.strong}>Moritz/RhyZ1ne</span>
+      </div>
+
+      <div className={styles.block}>
+        <span className={`lbl ${styles.label}`}>Also</span>
+        <a href={REPLAY_VIEWER_URL} target="_blank" rel="noopener" title="Watch FAF replays in the browser">
+          Replay viewer
+        </a>
       </div>
 
       <span className={styles.spacer} />

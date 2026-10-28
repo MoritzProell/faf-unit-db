@@ -177,7 +177,9 @@
 .main[data-view='onepage'] .resultsBar,
 .main[data-view='compact'] .resultsBar { gap: 6px; }
 /* The footer keeps its attribution, which is not optional, but it says it on
-   one tight line here rather than taking 120px of the roster's height. */
+   one tight line here rather than taking 120px of the roster's height.
+   Children 2-5 are the byline, the replay viewer link, the spacer and the
+   patch; the roster's rail already carries the replay viewer link. */
 .shell[data-view='onepage'] footer,
 .shell[data-view='compact'] footer {
   padding: 6px 22px 7px;
@@ -186,8 +188,8 @@
   gap: 2px 14px;
   flex-shrink: 0;
 }
-.shell[data-view='onepage'] footer > :nth-child(n + 2):nth-child(-n + 4),
-.shell[data-view='compact'] footer > :nth-child(n + 2):nth-child(-n + 4) { display: none; }
+.shell[data-view='onepage'] footer > :nth-child(n + 2):nth-child(-n + 5),
+.shell[data-view='compact'] footer > :nth-child(n + 2):nth-child(-n + 5) { display: none; }
 .main[data-view='onepage'] > :last-child,
 .main[data-view='compact'] > :last-child { flex: 1; min-height: 0; }
 /* The roster scrolls inside itself here, not the page: the army stays a fixed
@@ -216,5 +218,5 @@
      desktop size with 22px of padding. The sources belong on the repo page;
      what has to stay here is the attribution. */
   .shell footer { padding: 10px 14px 14px; font-size: 10.5px; line-height: 1.45; gap: 4px 10px; }
-  .shell footer > :nth-child(n + 2):nth-child(-n + 4) { display: none; }
+  .shell footer > :nth-child(n + 2):nth-child(-n + 5) { display: none; }
 }

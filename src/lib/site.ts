@@ -13,3 +13,10 @@ export const SITE_URL = (
 ).replace(/\/$/, '');
 
 export const SITE_NAME = 'FAF Unit DB';
+
+/**
+ * The owner's FAF replay viewer: watch a match in the browser, no game install.
+ * It links its unit names back here by blueprint id (`/unit/uel0201`), which
+ * the unit route redirects to the canonical page.
+ */
+export const REPLAY_VIEWER_URL = 'https://faf-replay-debrief.vercel.app';
