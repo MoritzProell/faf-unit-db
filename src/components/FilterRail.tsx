@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FactionMark } from './FactionMark';
 import { Icon } from './Icon';
 import { ROLE_KEYS, ROLE_LABEL } from '@/lib/faf/browse';
+import { REPLAY_VIEWER_URL } from '@/lib/site';
 import type { Faction, Kind, Tech } from '@/lib/faf/types';
 import styles from './FilterRail.module.css';
 
@@ -58,6 +59,13 @@ export function SectionNav({ layout = 'rail' }: { layout?: 'rail' | 'strip' }) {
         <span>Commander upgrades</span>
         <Icon name="chevronRight" size={12} />
       </Link>
+      {/* The one link that leaves the site, so it says so with its icon and
+          opens a new tab rather than replacing the roster. */}
+      <a href={REPLAY_VIEWER_URL} className={styles.railLink} target="_blank" rel="noopener">
+        <Icon name="play" size={13} />
+        <span>Replay viewer</span>
+        <Icon name="external" size={12} />
+      </a>
     </nav>
   );
 }
