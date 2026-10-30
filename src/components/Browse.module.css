@@ -46,12 +46,12 @@
 .groupCount { font-size: 11px; color: var(--text-3); }
 
 /* Cards widen with the screen instead of multiplying: a 3440 fitted fifteen
-   196px cards across with the same 60px render a laptop gets. Past 1960px the
+   196px cards across with the same 60px render a laptop gets. Past 1780px the
    minimum grows with the viewport, and the render with it. */
 .grid {
   display: grid; gap: 12px;
-  grid-template-columns: repeat(auto-fill, minmax(clamp(196px, 10vw, 260px), 1fr));
-  --tile-well: clamp(60px, 2.6vw, 76px);
+  grid-template-columns: repeat(auto-fill, minmax(clamp(196px, 11vw, 270px), 1fr));
+  --tile-well: clamp(60px, 3.5vw, 84px);
 }
 .cardSection { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
 
@@ -117,14 +117,16 @@
 .filtersBtn { display: none; }
 .backdrop { display: none; }
 
-/* The rail is a drawer below 1800px, not only on phones.
+/* The rail is a drawer below 2048px, not only on phones.
 
    Measured, the roster is width-bound on every laptop and on a 1920 at 125%
    scaling: at 1512 wide the chips came out at 33px with 44px of height to
    spare, because the rail held 212px of a 1300px main. Behind the Filters
    button it costs nothing until it is wanted, and the active filters still
-   show as chips above the roster. On a 1920 and up the rail stays put. */
-@media (max-width: 1799px) {
+   show as chips above the roster. A 1920, the commonest FAF screen, was
+   width-bound the same way: 47.7px chips with 58px of height to spare.
+   On a 2560 and up the rail stays put. */
+@media (max-width: 2047px) {
   .filtersBtn {
     display: flex; align-items: center; gap: 7px; height: 32px; padding: 0 11px;
     background: var(--panel-2); border: 1px solid var(--line-2); border-radius: var(--radius);

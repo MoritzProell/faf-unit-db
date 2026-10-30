@@ -89,7 +89,9 @@ export function OnePage({
    * included. It is only offered above 2000px because the role columns are
    * sparse — a column exists even where one faction fills it — so the nine
    * sections together need 55 chip-widths, and below that the chips come out
-   * at eight pixels.
+   * at eight pixels. Nothing passes it at present: One page now uses columns
+   * by faction at every width, which came out at twice the chip on a 2560
+   * (see BrowseClient). It and solveBands can go if that sticks.
    */
   mode?: 'roster' | 'screen';
 }) {
