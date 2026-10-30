@@ -1,7 +1,14 @@
-.shell { display: flex; flex-direction: column; min-height: 100vh; }
+.shell {
+  display: flex; flex-direction: column; min-height: 100vh;
+  /* The measure the page stops growing at. On a 3440 the old page ran its
+     health bar 3000px across; past this the spare width goes either side. */
+  --page-max: 1720px;
+  --gutter: 20px;
+  --edge: max(var(--gutter), calc((100% - var(--page-max)) / 2));
+}
 
 .contextBar {
-  display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 22px;
+  display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 6px var(--edge);
   border-bottom: 1px solid var(--line); flex-shrink: 0; flex-wrap: wrap;
 }
 .back { display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: var(--text-2); }
@@ -17,21 +24,33 @@
 }
 .ghostBtn:hover { border-color: var(--primary); }
 
-.hero {
-  position: relative; display: flex; align-items: center; gap: 18px;
-  min-height: 132px; padding: 14px 20px;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--fac) 15%, transparent), color-mix(in srgb, var(--fac) 3%, transparent) 44%, transparent 74%);
-  border-bottom: 1px solid var(--line); overflow: hidden; flex-shrink: 0; flex-wrap: wrap;
+/* Profile card on the left, details flowing beside it. */
+.page {
+  display: grid; align-items: start; gap: 16px;
+  grid-template-columns: clamp(340px, 25vw, 420px) minmax(0, 1fr);
+  padding: 16px var(--edge) 24px;
 }
-.heroMark { position: absolute; right: -26px; top: -26px; pointer-events: none; color: var(--fac); }
-.heroBody { position: relative; min-width: 0; }
-.heroTitleRow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.heroName { font-size: 34px; font-weight: 700; letter-spacing: -0.015em; line-height: 1; }
-.heroRole { font-size: 14.5px; color: var(--text-2); margin-top: 6px; }
-.blurb {
-  font-size: 12.5px; line-height: 1.5; color: var(--text-2);
-  margin-top: 7px; max-width: 78ch;
+
+/* ---- The profile card: everything a player reaches for, in one place. ---- */
+.summary {
+  position: relative; display: flex; flex-direction: column; min-width: 0;
+  background: var(--panel); border-radius: var(--radius-lg); overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--fac) 30%, var(--line));
 }
+.sumHead {
+  position: relative; display: flex; align-items: flex-start; gap: 14px; padding: 14px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--fac) 17%, transparent), color-mix(in srgb, var(--fac) 3%, transparent) 62%, transparent);
+  border-bottom: 1px solid var(--line); overflow: hidden;
+}
+/* The faction's mark, faint, in the corner of the card. It used to sit at the
+   top right of a full-width hero, behind the cost figures. */
+.heroMark { position: absolute; right: -24px; top: -24px; pointer-events: none; color: var(--fac); }
+.heroWell { position: relative; }
+.sumTitle { position: relative; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.heroTitleRow { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.heroName { margin: 0; font-size: 27px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.05; }
+.heroRole { font-size: 13px; color: var(--text-2); }
+.badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 3px; }
 .badge {
   display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px;
   border-radius: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
@@ -45,25 +64,78 @@
   border-color: color-mix(in srgb, var(--fac) 42%, transparent);
   color: var(--fac);
 }
-.costs { position: relative; display: flex; align-items: center; margin-left: auto; }
-.costCell { display: flex; flex-direction: column; gap: 6px; padding: 0 18px; }
-.costValue { display: flex; align-items: center; gap: 8px; }
-.costFigure { font-size: 22px; font-weight: 500; }
-.costDivider { width: 1px; height: 38px; background: var(--line-2); }
 
-.layout { display: flex; gap: 18px; padding: 18px; align-items: flex-start; }
-.mainCol { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 15px; }
-.aside { width: 344px; flex-shrink: 0; display: flex; flex-direction: column; gap: 15px; }
+.costs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }
+.costCell { display: flex; flex-direction: column; gap: 5px; padding: 10px 14px; border-right: 1px solid var(--line); min-width: 0; }
+.costCell:last-child { border-right: none; }
+.costValue { display: flex; align-items: center; gap: 7px; }
+.costFigure { font-size: 19px; font-weight: 500; white-space: nowrap; }
+
+/* Blocks below the glance share one head style. The glance cells carry the
+   rule above the first of them. */
+.sumBlock + .sumBlock { border-top: 1px solid var(--line); }
+.sumBlockHead { display: flex; align-items: baseline; gap: 8px; padding: 10px 14px 4px; }
+.sumBlockNote { margin-left: auto; font-size: 11px; color: var(--dmg); }
+
+.weaponTable { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.weaponTable thead th {
+  padding: 2px 14px 5px; text-align: right;
+  font-family: var(--font-title), 'Helvetica Neue', Helvetica, sans-serif;
+  font-size: 8.5px; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-3);
+}
+.weaponTable thead th:first-child { text-align: left; }
+.weaponTable tbody th, .weaponTable td { padding: 6px 14px; border-top: 1px solid var(--line); vertical-align: baseline; }
+.weaponTable tbody th { text-align: left; font-weight: 400; }
+.weaponTable td { text-align: right; white-space: nowrap; color: var(--text); }
+.weaponTable td[data-tone='damage'] { color: var(--dmg); }
+.weaponTable td + td { padding-left: 0; }
+.wtName { font-weight: 600; color: var(--text); }
+.wtCount { margin-left: 6px; font-size: 11px; color: var(--text-3); }
+.wtCat { display: block; margin-top: 1px; font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
+
+.sumFields { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); border-top: 1px solid var(--line); margin-top: 6px; }
+.sumFields .fieldLabel { white-space: normal; }
+
+.sumAbout { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 8px; }
+.blurb { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--text-2); }
+/* AbilityChips fits one line on a tile; in the card there is room to wrap. */
+.sumAbilities > div { flex-wrap: wrap; overflow: visible; margin-top: 0; }
+
+/* ---- Details: as many readable columns as fit, filled top to bottom. ---- */
+.details { min-width: 0; columns: 2 400px; column-gap: 16px; }
+.details > * { break-inside: avoid; margin-bottom: 16px; }
+/* A long armament may run on into the next column, a card at a time. */
+.details > .secWeapons { break-inside: auto; }
+.weaponList > * { break-inside: avoid; }
+.sectionHead { break-after: avoid; }
 
 .sectionHead { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .sectionLabel { font-size: 10.5px; color: var(--text-2); }
 .sectionNote { font-size: 11px; color: var(--text-3); }
+.historyFields { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
 
-.glanceGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
-.glance {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 7px;
-  padding: 10px 12px; display: flex; flex-direction: column; gap: 7px;
+.cats { display: flex; flex-wrap: wrap; gap: 5px; padding: 10px 12px; }
+.cat {
+  display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 3px;
+  background: rgba(255, 255, 255, 0.045); border: 1px solid var(--line); font-size: 10px; color: var(--text-2);
 }
+.catsPanel > summary { cursor: pointer; list-style: none; border-bottom: none; }
+.catsPanel > summary::-webkit-details-marker { display: none; }
+.catsPanel[open] > summary { border-bottom: 1px solid var(--line); }
+.catsPanel > summary:hover .panelTitle { color: var(--text); }
+.catsChevron { color: var(--text-3); transition: transform 0.12s; }
+.catsPanel[open] .catsChevron { transform: rotate(180deg); }
+
+/* The glance, as cells of the card rather than cards of their own. */
+.glanceGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.glance {
+  padding: 11px 14px; display: flex; flex-direction: column; gap: 7px; min-width: 0;
+  border-bottom: 1px solid var(--line);
+}
+.glanceGrid > .glance:nth-child(odd) { border-right: 1px solid var(--line); }
+/* An odd card out takes the whole row rather than leaving half of one empty. */
+.glanceGrid > .glance:last-child:nth-child(odd) { grid-column: 1 / -1; border-right: none; }
+
 /* Shields are blue in the game and blue here, so a shield card reads as a
    shield card before the label is read. */
 .glance[data-tone='shield'] {
@@ -200,103 +272,13 @@ a.historyVersion:hover { color: var(--text); text-decoration: underline; text-un
   background: rgba(255, 255, 255, 0.045); border: 1px solid var(--line); font-size: 10px; color: var(--text-2);
 }
 
-@media (max-width: 1100px) {
-  .layout { flex-direction: column; }
-  .aside { width: 100%; }
-}
-@media (max-width: 700px) {
-  .hero { gap: 14px; }
-  .heroName { font-size: 26px; }
-  .costs { margin-left: 0; width: 100%; }
-  .costCell:first-child { padding-left: 0; }
-}
-
-/* ---------------------------------------------------------------------------
-   Dense mode: every stat for a unit on one screen, no scrolling.
-   Two columns for the main body, tighter rhythm throughout. The roomy default
-   is unchanged.
-   --------------------------------------------------------------------------- */
-:global(html[data-density='dense']) .hero { min-height: 96px; padding: 10px 16px; gap: 13px; }
-:global(html[data-density='dense']) .heroName { font-size: 26px; }
-:global(html[data-density='dense']) .heroRole { font-size: 12.5px; margin-top: 4px; }
-:global(html[data-density='dense']) .costFigure { font-size: 18px; }
-:global(html[data-density='dense']) .costCell { padding: 0 13px; gap: 4px; }
-
-:global(html[data-density='dense']) .layout { padding: 11px 15px; gap: 11px; }
-:global(html[data-density='dense']) .aside { width: 300px; gap: 11px; }
-
-:global(html[data-density='dense']) .mainCol {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  align-items: start;
-  gap: 11px;
-}
-:global(html[data-density='dense']) .secGlance { grid-column: 1 / -1; }
-:global(html[data-density='dense']) .secWeapons { grid-column: 1; }
-:global(html[data-density='dense']) .secSurvive { grid-column: 2; }
-:global(html[data-density='dense']) .secMobility { grid-column: 2; }
-:global(html[data-density='dense']) .secEnhance { grid-column: 1 / -1; }
-:global(html[data-density='dense']) .enhRow { padding: 6px 10px; }
-
-:global(html[data-density='dense']) .sectionHead { margin-bottom: 5px; }
-:global(html[data-density='dense']) .glance { padding: 7px 10px; gap: 5px; }
-:global(html[data-density='dense']) .glanceFigure { font-size: 20px; }
-:global(html[data-density='dense']) .glanceGrid { gap: 7px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-:global(html[data-density='dense']) .field { padding: 5px 10px; gap: 3px; }
-:global(html[data-density='dense']) .fieldValue { font-size: 12.5px; }
-:global(html[data-density='dense']) .weaponHead { padding: 6px 10px; gap: 7px; }
-:global(html[data-density='dense']) .weaponName { font-size: 13.5px; }
-:global(html[data-density='dense']) .cycle { padding: 6px 10px; }
-:global(html[data-density='dense']) .hpBarRow { padding: 8px 10px; }
-:global(html[data-density='dense']) .subHead { padding: 5px 10px; }
-:global(html[data-density='dense']) .peerRow { padding: 6px 10px; gap: 9px; }
-:global(html[data-density='dense']) .cats { padding: 7px 9px; gap: 3px; }
-:global(html[data-density='dense']) .fieldGrid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
-
-@media (max-width: 1240px) {
-  :global(html[data-density='dense']) .mainCol { display: flex; flex-direction: column; }
-}
-
-:global(html[data-density='dense']) .panelHead { padding: 6px 10px; }
-:global(html[data-density='dense']) .historyRow { padding: 6px 10px; }
-:global(html[data-density='dense']) .glanceFoot,
-:global(html[data-density='dense']) .peerRole { font-size: 10px; }
-
-/* UnitWell sizes itself with an inline style; !important is the only lever. */
-:global(html[data-density='dense']) .heroWell { width: 100px !important; height: 100px !important; }
-:global(html[data-density='dense']) .heroWell img { width: 94px !important; height: 94px !important; }
-
-/* One screen, honestly: a unit with two or more weapons stacks them taller than
-   the viewport in a single column. Give it the full width and pair the panels
-   up instead, then sit survivability and mobility side by side underneath. */
-:global(html[data-density='dense']) .secWeapons[data-multi='true'] { grid-column: 1 / -1; }
-:global(html[data-density='dense']) .secWeapons[data-multi='true'] .weaponList {
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start; gap: 11px;
-}
-:global(html[data-density='dense']) .secWeapons[data-multi='true'] ~ .secSurvive { grid-column: 1; }
-:global(html[data-density='dense']) .secWeapons[data-multi='true'] ~ .secMobility { grid-column: 2; }
-:global(html[data-density='dense']) .weaponList { gap: 11px; }
-
-@media (max-width: 1240px) {
-  :global(html[data-density='dense']) .secWeapons[data-multi='true'] .weaponList { grid-template-columns: minmax(0, 1fr); }
-}
-
-:global(html[data-density='dense']) .blurb { font-size: 11.5px; margin-top: 5px; max-width: 92ch; }
-
 /* Targeting: what the blueprints prove about who can shoot whom. */
-
-
 
 /* The one curated part of the site, kept visually distinct from the rest. */
 .playPanel { border-left: 2px solid var(--fac); }
 .playText { font-size: 13px; line-height: 1.55; color: var(--text); padding: 11px 13px; }
 .playMeta { font-size: 10.5px; color: var(--text-3); padding: 0 13px 10px; }
 .playMeta a { color: var(--text-2); text-decoration: underline; text-underline-offset: 2px; }
-
-:global(html[data-density='dense']) .secStandout { grid-column: 1 / -1; }
-:global(html[data-density='dense']) .secPlay { grid-column: 1 / -1; }
-:global(html[data-density='dense']) .playText { font-size: 12px; padding: 9px 11px; }
 
 /* Worth knowing: uniqueness, superlatives and the mechanics that never show up
    as a number. */
@@ -311,7 +293,6 @@ a.historyVersion:hover { color: var(--text); text-decoration: underline; text-un
 .standoutRow[data-kind='unique'] { color: var(--fac); background: color-mix(in srgb, var(--fac) 8%, transparent); }
 .standoutRow[data-kind='best'] { color: var(--best); }
 .standoutRow[data-kind='warn'] { color: var(--worse); }
-:global(html[data-density='dense']) .standoutRow { padding: 6px 10px; }
 
 /* Marks a description this site derived because the game ships none. */
 .derivedTag {
@@ -356,3 +337,27 @@ a.historyVersion:hover { color: var(--text); text-decoration: underline; text-un
   border-bottom: 1px dotted var(--line-2);
 }
 .historyNotes:hover { color: var(--text); border-bottom-color: var(--primary); }
+
+/* Stacked: the card on top, then the details, still in columns where they fit.
+   The glance spreads across instead of holding to two cells. */
+@media (max-width: 1100px) {
+  .page { grid-template-columns: minmax(0, 1fr); }
+  .glanceGrid { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+  .glanceGrid > .glance:nth-child(odd) { border-right: none; }
+  .glanceGrid > .glance { border-right: 1px solid var(--line); }
+  .glanceGrid > .glance:last-child:nth-child(odd) { grid-column: auto; }
+}
+@media (max-width: 700px) {
+  .shell { --gutter: 12px; }
+  .page { padding-top: 12px; gap: 12px; }
+  .details > * { margin-bottom: 12px; }
+  .sumHead { gap: 12px; padding: 12px; }
+  .heroName { font-size: 23px; }
+  .costCell { padding: 9px 12px; }
+  .costFigure { font-size: 16px; }
+  .glanceGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .glanceGrid > .glance:nth-child(even) { border-right: none; }
+  .glance { padding: 10px 12px; }
+  .glanceFigure { font-size: 20px; }
+}
+.sumBlock + .sumAbout { border-top: 1px solid var(--line); }
