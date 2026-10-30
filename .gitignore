@@ -42,3 +42,6 @@ next-env.d.ts
 
 # scratch
 /tmp-*
+
+# local perf/screenshot runs (never committed)
+/.perf/

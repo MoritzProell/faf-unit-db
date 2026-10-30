@@ -8,7 +8,7 @@ import { FactionMark } from '@/components/FactionMark';
 import { EnhancementIcon } from '@/components/EnhancementIcon';
 import { Icon, type IconName } from '@/components/Icon';
 import { AbilityChips } from '@/components/AbilityChips';
-import { AddToCompareButton, DensityToggle } from '@/components/UnitActions';
+import { AddToCompareButton } from '@/components/UnitActions';
 import { MassMark, EnergyMark, TimeMark, HealthMark, ShieldMark } from '@/components/Marks';
 import { combatDps, isAirCrash } from '@/lib/faf/dps';
 import { getUnitData } from '@/lib/faf/data';
@@ -30,6 +30,7 @@ import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { JsonLd } from '@/components/JsonLd';
 import { FieldPill } from '@/app/changelog/page';
 import type { DecoratedWeapon, Faction, Unit } from '@/lib/faf/types';
+import { UnitLink } from '@/components/UnitLink';
 import styles from './detail.module.css';
 
 export async function generateStaticParams() {
@@ -199,6 +200,38 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
   );
   const kindLabel = unit.kind === 'Base' ? 'Structures' : unit.kind;
 
+  /**
+   * The card's weapon table: one row per distinct mount. A Fatboy's four
+   * Gauss Cannons differ only in turret yaw, which the Weapons section still
+   * shows card by card; here they are one row marked ×4.
+   */
+  const weaponRows: Array<{
+    key: string; name: string; category: string; dps: number | null;
+    damage: number; range: number | null; count: number;
+  }> = [];
+  for (const w of shownWeapons) {
+    const name = w.DisplayName ?? w.Label ?? 'Weapon';
+    const key = [name, w.category, w.dps, w.fullDamage, w.MaxRadius].join('|');
+    const row = weaponRows.find((r) => r.key === key);
+    if (row) row.count++;
+    else weaponRows.push({ key, name, category: w.category, dps: w.dps, damage: w.fullDamage, range: w.MaxRadius ?? null, count: 1 });
+  }
+  /** The game's own sum over the weapons it fires as built (dps.ts). */
+  const armedDps = combatDps(unit.weapons);
+
+  const mobilityFields = [
+    unit.Physics?.MaxSpeed !== undefined && <Field key="speed" label="Speed" value={String(unit.Physics.MaxSpeed)} icon="speed" />,
+    unit.Physics?.TurnRate !== undefined && <Field key="turn" label="Turn rate" value={String(unit.Physics.TurnRate)} icon="yaw" />,
+    unit.Intel?.VisionRadius !== undefined && <Field key="vision" label="Vision" value={String(unit.Intel.VisionRadius)} icon="vision" />,
+    unit.Intel?.WaterVisionRadius !== undefined && <Field key="wvision" label="Water vision" value={String(unit.Intel.WaterVisionRadius)} icon="vision" />,
+    unit.Intel?.RadarRadius !== undefined && <Field key="radar" label="Radar" value={String(unit.Intel.RadarRadius)} icon="radar" />,
+    unit.Intel?.SonarRadius !== undefined && <Field key="sonar" label="Sonar" value={String(unit.Intel.SonarRadius)} icon="sonar" />,
+    unit.Transport?.TransportClass !== undefined && <Field key="tclass" label="Transport class" value={String(unit.Transport.TransportClass)} icon="transport" />,
+    unit.Transport?.CanFireFromTransport !== undefined && (
+      <Field key="tfire" label="Fire from transport" value={unit.Transport.CanFireFromTransport ? 'Yes' : 'No'} />
+    ),
+  ].filter(Boolean);
+
   const stat = (name: string, value: number | string | null | undefined, unitCode?: string) =>
     value === null || value === undefined
       ? null
@@ -262,406 +295,471 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
           <span>{unit.faction}</span>
         </nav>
         <span className={styles.spacer} />
-        <DensityToggle />
         <AddToCompareButton id={unit.Id} name={unit.name} />
       </div>
 
-      <header className={styles.hero}>
-        <div className={styles.heroMark} aria-hidden="true">
-          <FactionMark faction={unit.faction} size={192} opacity={0.055} />
-        </div>
-        <UnitWell id={unit.Id} faction={unit.faction} techLabel={unit.techLabel} size={132} imageSize={124} pip={false} priority hires hasRender={unit.hasRender} className={styles.heroWell} />
-        <div className={styles.heroBody}>
-          <div className={styles.heroTitleRow}>
-            {/* The strategic icon, which is what a player actually reads on the
-                battlefield: at any real zoom the render is a smudge and the
-                icon is the unit. Sits with the name because it identifies the
-                unit as much as the name does. */}
-            {unit.StrategicIconName && iconDims && (
-              // Its own dimensions doubled, never a square box. These icons are
-              // 16x16 but also 12x16, 16x12, 20x16 and 16x20, and forcing them
-              // square stretched half of them. A whole multiple keeps the pixel
-              // grid intact as well.
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={`/strategic/${unit.StrategicIconName}.png`}
-                alt=""
-                width={iconDims[0] * 2}
-                height={iconDims[1] * 2}
-                className={styles.heroIcon}
-                title={unit.StrategicIconName}
-              />
-            )}
-            <h1 className={`t ${styles.heroName}`}>{unit.name}</h1>
-            {/* The faction and tier are the two facets a reader is most likely
-                to want next, so they filter the roster rather than sitting
-                there as labels. The blueprint id is not a facet; it stays
-                plain, and it is the string you paste into a search. */}
-            <Link
-              href={`/?f=${encodeURIComponent(unit.faction)}`}
-              className={`${styles.badge} ${styles.badgeFaction} ${styles.badgeLink}`}
-              title={`Every ${unit.faction} unit`}
-            >
-              <FactionMark faction={unit.faction} size={12} /> {unit.faction}
-            </Link>
-            <Link
-              href={`/?t=${unit.tech}`}
-              className={`${styles.badge} ${styles.badgeLink}`}
-              title={`Every ${unit.techLabel} unit`}
-            >
-              {unit.techLabel === 'T4' ? 'T4 EXPERIMENTAL' : unit.techLabel}
-            </Link>
-            <span className={`m ${styles.badge}`}>{unit.Id}</span>
-            {lastChange && (
-              <Link href={`/changelog#patch-${lastChange.version}`} className={styles.changedBadge}>
-                <Icon name="up" size={11} strokeWidth={2.2} />
-                Changed in {lastChange.version}
-              </Link>
-            )}
+      {/* The page is two things: a profile card with every number a player
+          reaches for, and the long-form sections beside it. It used to be a
+          full-width hero with the costs 1400px from the name on a 1920, a
+          glance row that spent two cards on "None" and "–" for anything
+          unarmed, and a body stretched across whatever width the screen had.
+          Now the card holds the answer in one place, the details flow into
+          as many readable columns as fit, and the whole thing stops growing
+          at a measure the eye can cross. */}
+      <div className={styles.page}>
+        <aside className={styles.summary} aria-label={`${unit.name} at a glance`}>
+          <header className={styles.sumHead}>
+            <div className={styles.heroMark} aria-hidden="true">
+              <FactionMark faction={unit.faction} size={150} opacity={0.06} />
+            </div>
+            <UnitWell id={unit.Id} faction={unit.faction} techLabel={unit.techLabel} size={104} imageSize={98} pip={false} priority hires hasRender={unit.hasRender} className={styles.heroWell} />
+            <div className={styles.sumTitle}>
+              <div className={styles.heroTitleRow}>
+                {/* The strategic icon, which is what a player actually reads on the
+                    battlefield: at any real zoom the render is a smudge and the
+                    icon is the unit. Sits with the name because it identifies the
+                    unit as much as the name does. */}
+                {unit.StrategicIconName && iconDims && (
+                  // Its own dimensions doubled, never a square box. These icons are
+                  // 16x16 but also 12x16, 16x12, 20x16 and 16x20, and forcing them
+                  // square stretched half of them. A whole multiple keeps the pixel
+                  // grid intact as well.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={`/strategic/${unit.StrategicIconName}.png`}
+                    alt=""
+                    width={iconDims[0] * 2}
+                    height={iconDims[1] * 2}
+                    className={styles.heroIcon}
+                    title={unit.StrategicIconName}
+                  />
+                )}
+                <h1 className={`t ${styles.heroName}`}>{unit.name}</h1>
+              </div>
+              {unit.name !== unit.role && <div className={styles.heroRole}>{unit.role}</div>}
+              <div className={styles.badges}>
+                {/* The faction and tier are the two facets a reader is most likely
+                    to want next, so they filter the roster rather than sitting
+                    there as labels. The blueprint id is not a facet; it stays
+                    plain, and it is the string you paste into a search. */}
+                <Link
+                  href={`/?f=${encodeURIComponent(unit.faction)}`}
+                  className={`${styles.badge} ${styles.badgeFaction} ${styles.badgeLink}`}
+                  title={`Every ${unit.faction} unit`}
+                >
+                  <FactionMark faction={unit.faction} size={12} /> {unit.faction}
+                </Link>
+                <Link
+                  href={`/?t=${unit.tech}`}
+                  className={`${styles.badge} ${styles.badgeLink}`}
+                  title={`Every ${unit.techLabel} unit`}
+                >
+                  {unit.techLabel === 'T4' ? 'T4 EXPERIMENTAL' : unit.techLabel}
+                </Link>
+                <span className={`m ${styles.badge}`}>{unit.Id}</span>
+                {lastChange && (
+                  <Link href={`/changelog#patch-${lastChange.version}`} className={styles.changedBadge}>
+                    <Icon name="up" size={11} strokeWidth={2.2} />
+                    Changed in {lastChange.version}
+                  </Link>
+                )}
+              </div>
+            </div>
+          </header>
+
+          {/* What it costs, directly under what it is. */}
+          <div className={styles.costs}>
+            <Cost label="Mass" value={fmtNum(unit.mass)} mark={<MassMark size={14} />} />
+            <Cost label="Energy" value={fmtNum(unit.energy)} mark={<EnergyMark size={14} />} />
+            {/* Build points, not seconds. The blueprint field is called BuildTime
+                and the game's own notes call it build time, but 260 is a cost that
+                build power divides into, and the Build time section gives the
+                seconds. Two things called the same thing, one of them wrong, is
+                worse than diverging from the patch notes. */}
+            <Cost label="Build points" value={fmtNum(unit.buildTime)} mark={<TimeMark size={14} />} />
           </div>
-          {unit.name !== unit.role && <div className={styles.heroRole}>{unit.role}</div>}
-          {unit.blurb && !thinDescription && <p className={styles.blurb}>{unit.blurb}</p>}
-          {/* Forty units have no usable text of their own — thirty of them
-              Nomads, which never wrote unitdescription.lua entries. Rather
-              than leave those pages blank or put words in the game's mouth,
-              the line is derived from the unit's own blueprint and says so. */}
-          {thinDescription && (
-            <p className={styles.blurb}>
-              {describe(unit)}{' '}
-              <span className={styles.derivedTag}>derived: the game ships no description</span>
-            </p>
-          )}
-          <AbilityChips abilities={unit.abilities} cap={4} avail={420} linked />
-        </div>
 
-        <div className={styles.costs}>
-          <Cost label="Mass" value={fmtNum(unit.mass)} mark={<MassMark size={15} />} />
-          <span className={styles.costDivider} />
-          <Cost label="Energy" value={fmtNum(unit.energy)} mark={<EnergyMark size={15} />} />
-          <span className={styles.costDivider} />
-          {/* Build points, not seconds. The blueprint field is called BuildTime
-              and the game's own notes call it build time, but 260 is a cost that
-              build power divides into, and this page now carries a Build time
-              section giving the seconds. Two things called the same thing, one
-              of them wrong, is worse than diverging from the patch notes. */}
-          <Cost label="Build points" value={fmtNum(unit.buildTime)} mark={<TimeMark size={15} />} />
-        </div>
-      </header>
-
-      <div className={styles.layout}>
-        <div className={styles.mainCol}>
-          <section className={styles.secGlance}>
-            <SectionHead label="At a glance" />
-            <div className={styles.glanceGrid}>
-              {shield ? (
-                <>
-                  <Glance
-                    label="Shield health"
-                    mark={<ShieldMark size={12} />}
-                    tone="shield"
-                    figure={fmtNum(shield.hp)}
-                    unit="hp"
-                    foot={
-                      <span className={styles.glanceFoot}>
-                        Regenerates {fmtNum(shield.regen)} hp/s, {fmtNum(shield.recharge)}s to
-                        restart once broken
-                      </span>
-                    }
-                  />
-                  <Glance
-                    label="Shield per 1k energy"
-                    icon="bolt"
-                    tone="shield"
-                    figure={shield.per1kEnergy ? fmtNum(Math.round(shield.per1kEnergy)) : '–'}
-                    foot={
-                      <span className={styles.glanceFoot}>
-                        {shield.upkeep > 0
-                          ? `Then ${fmtNum(shield.upkeep)} e/s to hold it up`
-                          : 'No upkeep'}
-                      </span>
-                    }
-                  />
-                  <Glance
-                    label="Shield per mass"
-                    mark={<ShieldMark size={12} />}
-                    tone="shield"
-                    figure={shield.perMass ? fmtRatio(shield.perMass, 2) : '–'}
-                    foot={
-                      <span className={styles.glanceFoot}>
-                        {fmtNum(unit.health)} hp of structure underneath it
-                      </span>
-                    }
-                  />
-                  <Glance
-                    label="Radius"
-                    icon="radius"
-                    tone="shield"
-                    figure={shield.radius ? fmtNum(shield.radius) : '–'}
-                    foot={
-                      <span className={styles.glanceFoot}>
-                        {shield.upkeepPaybackSeconds
-                          ? `Holding it for ${fmtDuration(shield.upkeepPaybackSeconds)} costs what building it did`
-                          : 'What it covers'}
-                      </span>
-                    }
-                  />
-                </>
-              ) : massEcon ? (
-                <>
-                  <Glance
-                    label="Pays for itself in"
-                    icon="mass"
-                    figure={massEcon.paybackSeconds ? fmtDuration(massEcon.paybackSeconds) : '–'}
-                    foot={
-                      <span className={styles.glanceFoot}>
-                        {fmtNum(unit.mass)} mass to build, back at {fmtRatio(massEcon.perSecond, 2)}{' '}
-                        mass/s
-                      </span>
-                    }
-                  />
-                  <Glance
-                    label="Mass per second"
-                    icon="mass"
-                    figure={fmtRatio(massEcon.perSecond, 2)}
-                    foot={
-                      <span className={styles.glanceFoot}>
-                        {massEcon.fabricator
-                          ? 'Made out of energy, not out of a deposit'
-                          : 'Needs a mass deposit to stand on'}
-                      </span>
-                    }
-                  />
-                  <Glance
-                    label={massEcon.energyPerMass ? 'Energy per mass' : 'Upkeep'}
-                    icon="bolt"
-                    figure={
-                      massEcon.energyPerMass ? fmtNum(Math.round(massEcon.energyPerMass)) : 'None'
-                    }
-                    foot={
-                      <span className={styles.glanceFoot}>
-                        {massEcon.upkeep > 0
-                          ? `Draws ${fmtNum(massEcon.upkeep)} e/s while it runs`
-                          : 'Runs for free'}
-                      </span>
-                    }
-                  />
-                  <Glance
-                    label="Health"
-                    mark={<HealthMark size={12} />}
-                    figure={fmtNum(unit.health)}
-                    unit="hp"
-                    foot={
-                      <Rank
-                        percent={cohort.healthPercent}
-                        text={`${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label}`}
-                      />
-                    }
-                  />
-                </>
-              ) : intelEcon ? (
-                <>
-                  <Glance
-                    label={intelEcon.kind === 'stealth' ? 'Stealth radius' : 'Radius'}
-                    icon="radius"
-                    figure={fmtNum(intelEcon.radius)}
-                    foot={
-                      <span className={styles.glanceFoot}>
-                        {intelEcon.sonarRadius
-                          ? `${fmtNum(intelEcon.sonarRadius)} against sonar`
-                          : intelEcon.kind === 'stealth'
-                            ? 'Hides from radar and sonar alike'
-                            : 'What it can see'}
-                      </span>
-                    }
-                  />
-                  <Glance
-                    label="Radius per 1k energy"
-                    icon="bolt"
-                    figure={
-                      intelEcon.per1kEnergy ? fmtRatio(intelEcon.per1kEnergy, 2) : '\u2013'
-                    }
-                    foot={
-                      <span className={styles.glanceFoot}>
-                        {intelEcon.upkeep > 0
-                          ? `Then ${fmtNum(intelEcon.upkeep)} e/s to keep it running`
-                          : 'No upkeep'}
-                      </span>
-                    }
-                  />
-                  <Glance
-                    label="Radius per mass"
-                    mark={<MassMark size={12} />}
-                    figure={intelEcon.perMass ? fmtRatio(intelEcon.perMass, 3) : '\u2013'}
-                    foot={
-                      <span className={styles.glanceFoot}>
-                        {fmtNum(unit.mass)} mass to build
-                      </span>
-                    }
-                  />
-                  <Glance
-                    label="Health"
-                    mark={<HealthMark size={12} />}
-                    figure={fmtNum(unit.health)}
-                    unit="hp"
-                    foot={
-                      <Rank
-                        percent={cohort.healthPercent}
-                        text={`${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label}`}
-                      />
-                    }
-                  />
-                </>
-              ) : powerEcon ? (
-                <>
-                  <Glance
-                    label="Energy per second"
-                    icon="bolt"
-                    figure={fmtNum(powerEcon.perSecond)}
-                    foot={
-                      <span className={styles.glanceFoot}>
-                        {powerEcon.paybackSeconds
-                          ? `Makes back its own energy cost in ${fmtDuration(powerEcon.paybackSeconds)}`
-                          : 'Continuous output'}
-                      </span>
-                    }
-                  />
-                  <Glance
-                    label="Energy per mass"
-                    icon="mass"
-                    figure={powerEcon.perMass ? fmtRatio(powerEcon.perMass, 2) : '–'}
-                    foot={
-                      <span className={styles.glanceFoot}>
-                        e/s bought per point of mass. The efficiency comparison.
-                      </span>
-                    }
-                  />
-                  <Glance
-                    label="Health"
-                    mark={<HealthMark size={12} />}
-                    figure={fmtNum(unit.health)}
-                    unit="hp"
-                    foot={
-                      <Rank
-                        percent={cohort.healthPercent}
-                        text={`${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label}`}
-                      />
-                    }
-                  />
-                  <Glance
-                    label="HP per mass"
-                    mark={<HealthMark size={12} />}
-                    figure={fmtRatio(unit.hpPerMass)}
-                    foot={
-                      <Rank
-                        percent={cohort.hpPerMassPercent}
-                        text={`${ordinal(cohort.hpPerMassRank)} of ${cohort.size} in ${cohort.label}`}
-                      />
-                    }
-                  />
-                </>
-              ) : (
-                <>
-              {power > 0 && (
+          <div className={styles.glanceGrid}>
+            {shield ? (
+              <>
                 <Glance
-                  label="Build power"
-                  icon="hammer"
-                  figure={fmtNum(power)}
-                  unit="bp/s"
+                  label="Shield health"
+                  mark={<ShieldMark size={12} />}
+                  tone="shield"
+                  figure={fmtNum(shield.hp)}
+                  unit="hp"
                   foot={
                     <span className={styles.glanceFoot}>
-                      {landFactory
-                        ? `Builds a T1 land factory in ${fmtSeconds(buildSeconds(landFactory, power))}`
-                        : 'Build points contributed per second'}
+                      Regenerates {fmtNum(shield.regen)} hp/s, {fmtNum(shield.recharge)}s to
+                      restart once broken
                     </span>
                   }
                 />
-              )}
-              <Glance
-                label="Health"
-                mark={<HealthMark size={12} />}
-                figure={fmtNum(unit.health)}
-                unit="hp"
-                extra={
-                  personalShield && (
-                    <span className={`m ${styles.glanceShieldAdd}`}>
-                      +{fmtNum(personalShield.hp)} shield
-                    </span>
-                  )
-                }
-                foot={
-                  <Rank
-                    percent={cohort.healthPercent}
-                    text={
-                      personalShield
-                        ? `${fmtNum(unit.health + personalShield.hp)} with the shield up · ${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label} on health alone`
-                        : `${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label}`
-                    }
-                  />
-                }
-              />
-              <Glance
-                label="HP per mass"
-                mark={<HealthMark size={12} />}
-                figure={fmtRatio(unit.hpPerMass)}
-                foot={
-                  <Rank
-                    percent={cohort.hpPerMassPercent}
-                    text={`${ordinal(cohort.hpPerMassRank)} of ${cohort.size} in ${cohort.label}`}
-                  />
-                }
-              />
-              <Glance
-                label={primary ? `${primary.category} DPS` : payload ? 'Payload' : 'Weapons'}
-                icon="damage"
-                tone={primary || payload ? 'damage' : undefined}
-                figure={
-                  primary?.dps
-                    ? fmtRatio(primary.dps, 1)
-                    : payload
-                      ? fmtNum(payload.fullDamage)
-                      : 'None'
-                }
-                foot={
-                  primary && cohort.dpsRank > 0 ? (
-                    <Rank
-                      percent={cohort.dpsPercent}
-                      text={`${ordinal(cohort.dpsRank)} of ${cohort.dpsCohortSize} armed in ${cohort.label}`}
-                    />
-                  ) : (
+                <Glance
+                  label="Shield per 1k energy"
+                  icon="bolt"
+                  tone="shield"
+                  figure={shield.per1kEnergy ? fmtNum(Math.round(shield.per1kEnergy)) : '–'}
+                  foot={
                     <span className={styles.glanceFoot}>
-                      {primary?.cycleText ??
-                        (payload
-                          ? 'Delivered once, on detonation. It has no rate of fire, so no DPS.'
-                          : 'This unit is unarmed.')}
+                      {shield.upkeep > 0
+                        ? `Then ${fmtNum(shield.upkeep)} e/s to hold it up`
+                        : 'No upkeep'}
                     </span>
-                  )
-                }
-              />
+                  }
+                />
+                <Glance
+                  label="Shield per mass"
+                  mark={<ShieldMark size={12} />}
+                  tone="shield"
+                  figure={shield.perMass ? fmtRatio(shield.perMass, 2) : '–'}
+                  foot={
+                    <span className={styles.glanceFoot}>
+                      {fmtNum(unit.health)} hp of structure underneath it
+                    </span>
+                  }
+                />
+                <Glance
+                  label="Radius"
+                  icon="radius"
+                  tone="shield"
+                  figure={shield.radius ? fmtNum(shield.radius) : '–'}
+                  foot={
+                    <span className={styles.glanceFoot}>
+                      {shield.upkeepPaybackSeconds
+                        ? `Holding it for ${fmtDuration(shield.upkeepPaybackSeconds)} costs what building it did`
+                        : 'What it covers'}
+                    </span>
+                  }
+                />
+              </>
+            ) : massEcon ? (
+              <>
+                <Glance
+                  label="Pays for itself in"
+                  icon="mass"
+                  figure={massEcon.paybackSeconds ? fmtDuration(massEcon.paybackSeconds) : '–'}
+                  foot={
+                    <span className={styles.glanceFoot}>
+                      {fmtNum(unit.mass)} mass to build, back at {fmtRatio(massEcon.perSecond, 2)}{' '}
+                      mass/s
+                    </span>
+                  }
+                />
+                <Glance
+                  label="Mass per second"
+                  icon="mass"
+                  figure={fmtRatio(massEcon.perSecond, 2)}
+                  foot={
+                    <span className={styles.glanceFoot}>
+                      {massEcon.fabricator
+                        ? 'Made out of energy, not out of a deposit'
+                        : 'Needs a mass deposit to stand on'}
+                    </span>
+                  }
+                />
+                <Glance
+                  label={massEcon.energyPerMass ? 'Energy per mass' : 'Upkeep'}
+                  icon="bolt"
+                  figure={
+                    massEcon.energyPerMass ? fmtNum(Math.round(massEcon.energyPerMass)) : 'None'
+                  }
+                  foot={
+                    <span className={styles.glanceFoot}>
+                      {massEcon.upkeep > 0
+                        ? `Draws ${fmtNum(massEcon.upkeep)} e/s while it runs`
+                        : 'Runs for free'}
+                    </span>
+                  }
+                />
+                <Glance
+                  label="Health"
+                  mark={<HealthMark size={12} />}
+                  figure={fmtNum(unit.health)}
+                  unit="hp"
+                  foot={
+                    <Rank
+                      percent={cohort.healthPercent}
+                      text={`${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label}`}
+                    />
+                  }
+                />
+              </>
+            ) : intelEcon ? (
+              <>
+                <Glance
+                  label={intelEcon.kind === 'stealth' ? 'Stealth radius' : 'Radius'}
+                  icon="radius"
+                  figure={fmtNum(intelEcon.radius)}
+                  foot={
+                    <span className={styles.glanceFoot}>
+                      {intelEcon.sonarRadius
+                        ? `${fmtNum(intelEcon.sonarRadius)} against sonar`
+                        : intelEcon.kind === 'stealth'
+                          ? 'Hides from radar and sonar alike'
+                          : 'What it can see'}
+                    </span>
+                  }
+                />
+                <Glance
+                  label="Radius per 1k energy"
+                  icon="bolt"
+                  figure={
+                    intelEcon.per1kEnergy ? fmtRatio(intelEcon.per1kEnergy, 2) : '\u2013'
+                  }
+                  foot={
+                    <span className={styles.glanceFoot}>
+                      {intelEcon.upkeep > 0
+                        ? `Then ${fmtNum(intelEcon.upkeep)} e/s to keep it running`
+                        : 'No upkeep'}
+                    </span>
+                  }
+                />
+                <Glance
+                  label="Radius per mass"
+                  mark={<MassMark size={12} />}
+                  figure={intelEcon.perMass ? fmtRatio(intelEcon.perMass, 3) : '\u2013'}
+                  foot={
+                    <span className={styles.glanceFoot}>
+                      {fmtNum(unit.mass)} mass to build
+                    </span>
+                  }
+                />
+                <Glance
+                  label="Health"
+                  mark={<HealthMark size={12} />}
+                  figure={fmtNum(unit.health)}
+                  unit="hp"
+                  foot={
+                    <Rank
+                      percent={cohort.healthPercent}
+                      text={`${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label}`}
+                    />
+                  }
+                />
+              </>
+            ) : powerEcon ? (
+              <>
+                <Glance
+                  label="Energy per second"
+                  icon="bolt"
+                  figure={fmtNum(powerEcon.perSecond)}
+                  foot={
+                    <span className={styles.glanceFoot}>
+                      {powerEcon.paybackSeconds
+                        ? `Makes back its own energy cost in ${fmtDuration(powerEcon.paybackSeconds)}`
+                        : 'Continuous output'}
+                    </span>
+                  }
+                />
+                <Glance
+                  label="Energy per mass"
+                  icon="mass"
+                  figure={powerEcon.perMass ? fmtRatio(powerEcon.perMass, 2) : '–'}
+                  foot={
+                    <span className={styles.glanceFoot}>
+                      e/s bought per point of mass. The efficiency comparison.
+                    </span>
+                  }
+                />
+                <Glance
+                  label="Health"
+                  mark={<HealthMark size={12} />}
+                  figure={fmtNum(unit.health)}
+                  unit="hp"
+                  foot={
+                    <Rank
+                      percent={cohort.healthPercent}
+                      text={`${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label}`}
+                    />
+                  }
+                />
+                <Glance
+                  label="HP per mass"
+                  mark={<HealthMark size={12} />}
+                  figure={fmtRatio(unit.hpPerMass)}
+                  foot={
+                    <Rank
+                      percent={cohort.hpPerMassPercent}
+                      text={`${ordinal(cohort.hpPerMassRank)} of ${cohort.size} in ${cohort.label}`}
+                    />
+                  }
+                />
+              </>
+            ) : (
+              <>
+            {power > 0 && (
               <Glance
-                label={payload && !primary ? 'Blast radius' : 'Range'}
-                icon="range"
-                figure={
-                  primary?.MaxRadius
-                    ? fmtNum(primary.MaxRadius)
-                    : payload?.DamageRadius
-                      ? fmtNum(payload.DamageRadius)
-                      : '–'
-                }
+                label="Build power"
+                icon="hammer"
+                figure={fmtNum(power)}
+                unit="bp/s"
                 foot={
                   <span className={styles.glanceFoot}>
-                    {primary?.MuzzleVelocity
-                      ? `Muzzle velocity ${primary.MuzzleVelocity}`
-                      : payload
-                        ? 'Everything inside the radius takes it'
-                        : 'No ranged weapon'}
+                    {landFactory
+                      ? `Builds a T1 land factory in ${fmtSeconds(buildSeconds(landFactory, power))}`
+                      : 'Build points contributed per second'}
                   </span>
                 }
               />
-                </>
-              )}
-            </div>
-          </section>
+            )}
+            <Glance
+              label="Health"
+              mark={<HealthMark size={12} />}
+              figure={fmtNum(unit.health)}
+              unit="hp"
+              extra={
+                personalShield && (
+                  <span className={`m ${styles.glanceShieldAdd}`}>
+                    +{fmtNum(personalShield.hp)} shield
+                  </span>
+                )
+              }
+              foot={
+                <Rank
+                  percent={cohort.healthPercent}
+                  text={
+                    personalShield
+                      ? `${fmtNum(unit.health + personalShield.hp)} with the shield up · ${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label} on health alone`
+                      : `${ordinal(cohort.healthRank)} of ${cohort.size} in ${cohort.label}`
+                  }
+                />
+              }
+            />
+            <Glance
+              label="HP per mass"
+              mark={<HealthMark size={12} />}
+              figure={fmtRatio(unit.hpPerMass)}
+              foot={
+                <Rank
+                  percent={cohort.hpPerMassPercent}
+                  text={`${ordinal(cohort.hpPerMassRank)} of ${cohort.size} in ${cohort.label}`}
+                />
+              }
+            />
+            {/* An unarmed unit gets no "Weapons: None" and "Range: –" cards:
+                on a factory those two empty cards were a row of their own. */}
+            {(primary || payload) && (
+              <>
+                <Glance
+                  label={primary ? `${primary.category} DPS` : 'Payload'}
+                  icon="damage"
+                  tone="damage"
+                  figure={primary?.dps ? fmtRatio(primary.dps, 1) : fmtNum(payload?.fullDamage ?? 0)}
+                  foot={
+                    primary && cohort.dpsRank > 0 ? (
+                      <Rank
+                        percent={cohort.dpsPercent}
+                        text={`${ordinal(cohort.dpsRank)} of ${cohort.dpsCohortSize} armed in ${cohort.label}`}
+                      />
+                    ) : (
+                      <span className={styles.glanceFoot}>
+                        {primary?.cycleText ??
+                          'Delivered once, on detonation. It has no rate of fire, so no DPS.'}
+                      </span>
+                    )
+                  }
+                />
+                <Glance
+                  label={payload && !primary ? 'Blast radius' : 'Range'}
+                  icon="range"
+                  figure={
+                    primary?.MaxRadius
+                      ? fmtNum(primary.MaxRadius)
+                      : payload?.DamageRadius
+                        ? fmtNum(payload.DamageRadius)
+                        : '–'
+                  }
+                  foot={
+                    <span className={styles.glanceFoot}>
+                      {primary?.MuzzleVelocity
+                        ? `Muzzle velocity ${primary.MuzzleVelocity}`
+                        : payload
+                          ? 'Everything inside the radius takes it'
+                          : 'No ranged weapon'}
+                    </span>
+                  }
+                />
+              </>
+            )}
+              </>
+            )}
+          </div>
 
+          {/* Every weapon in one table, so a ten-gun experimental's armament
+              reads in one look rather than across ten cards. Identical mounts
+              are counted once. The cards with every figure are in Weapons. */}
+          {weaponRows.length > 1 && (
+            <div className={styles.sumBlock}>
+              <div className={styles.sumBlockHead}>
+                <span className="lbl">Weapons</span>
+                {armedDps > 0 && (
+                  <span className={`m ${styles.sumBlockNote}`}>
+                    {fmtRatio(armedDps, 1)} DPS as built
+                  </span>
+                )}
+              </div>
+              <table className={styles.weaponTable}>
+                <thead>
+                  <tr>
+                    <th scope="col">Weapon</th>
+                    <th scope="col">DPS</th>
+                    <th scope="col">Range</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {weaponRows.map((r) => (
+                    <tr key={r.key}>
+                      <th scope="row">
+                        <span className={styles.wtName}>{r.name}</span>
+                        {r.count > 1 && <span className={`m ${styles.wtCount}`}>×{r.count}</span>}
+                        <span className={styles.wtCat}>{r.category}</span>
+                      </th>
+                      <td className="m" data-tone={r.dps ? 'damage' : undefined}>
+                        {r.dps ? fmtRatio(r.dps, 1) : `${fmtNum(r.damage)} dmg`}
+                      </td>
+                      <td className="m">{r.range !== null ? fmtNum(r.range) : '–'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Mobility and intel used to be a section of its own further down;
+              they are short numbers a player wants beside health, so they live
+              in the card. */}
+          {mobilityFields.length > 0 && (
+            <div className={styles.sumBlock}>
+              <div className={styles.sumBlockHead}>
+                <span className="lbl">Mobility &amp; intel</span>
+              </div>
+              <div className={styles.sumFields}>{mobilityFields}</div>
+            </div>
+          )}
+
+          {(unit.abilities.length > 0 || unit.blurb || thinDescription) && (
+            <div className={styles.sumAbout}>
+              {unit.blurb && !thinDescription && <p className={styles.blurb}>{unit.blurb}</p>}
+              {/* Forty units have no usable text of their own — thirty of them
+                  Nomads, which never wrote unitdescription.lua entries. Rather
+                  than leave those pages blank or put words in the game's mouth,
+                  the line is derived from the unit's own blueprint and says so. */}
+              {thinDescription && (
+                <p className={styles.blurb}>
+                  {describe(unit)}{' '}
+                  <span className={styles.derivedTag}>derived: the game ships no description</span>
+                </p>
+              )}
+              {/* All of them, wrapping. The hero used to show four and a "+4". */}
+              <div className={styles.sumAbilities}>
+                <AbilityChips abilities={unit.abilities} cap={unit.abilities.length} avail={Infinity} linked />
+              </div>
+            </div>
+          )}
+        </aside>
+
+        <div className={styles.details}>
           {shownWeapons.length > 0 && (
             <section className={styles.secWeapons} data-multi={shownWeapons.length > 1}>
               <SectionHead label="Weapons" note={String(shownWeapons.length)} />
@@ -717,7 +815,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
               <div className={styles.panel}>
                 <div className={styles.buildGrid}>
                   {builds.map((b) => (
-                    <Link key={b.id} href={`/unit/${b.slug}`} className={styles.buildItem}>
+                    <UnitLink key={b.id} href={`/unit/${b.slug}`} className={styles.buildItem}>
                       <UnitWell
                         id={b.id}
                         faction={unit.faction}
@@ -731,7 +829,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                         <span className={`t ${styles.buildName}`}>{b.name}</span>
                         <span className={styles.buildRole}>{b.role}</span>
                       </span>
-                    </Link>
+                    </UnitLink>
                   ))}
                 </div>
               </div>
@@ -854,24 +952,6 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
             </div>
           </section>
 
-          <section className={styles.secMobility}>
-            <SectionHead label="Mobility & intel" />
-            <div className={styles.panel}>
-              <div className={styles.fieldGrid}>
-                {unit.Physics?.MaxSpeed !== undefined && <Field label="Speed" value={String(unit.Physics.MaxSpeed)} icon="speed" />}
-                {unit.Physics?.TurnRate !== undefined && <Field label="Turn rate" value={String(unit.Physics.TurnRate)} icon="yaw" />}
-                {unit.Intel?.VisionRadius !== undefined && <Field label="Vision radius" value={String(unit.Intel.VisionRadius)} icon="vision" />}
-                {unit.Intel?.WaterVisionRadius !== undefined && <Field label="Water vision" value={String(unit.Intel.WaterVisionRadius)} icon="vision" />}
-                {unit.Intel?.RadarRadius !== undefined && <Field label="Radar radius" value={String(unit.Intel.RadarRadius)} icon="radar" />}
-                {unit.Intel?.SonarRadius !== undefined && <Field label="Sonar radius" value={String(unit.Intel.SonarRadius)} icon="sonar" />}
-                {unit.Transport?.TransportClass !== undefined && <Field label="Transport class" value={String(unit.Transport.TransportClass)} icon="transport" />}
-                {unit.Transport?.CanFireFromTransport !== undefined && (
-                  <Field label="Fire from transport" value={unit.Transport.CanFireFromTransport ? 'Yes' : 'No'} />
-                )}
-              </div>
-            </div>
-          </section>
-
           {(cohort.unique || cohort.superlatives.length > 0 || notables.length > 0 || !engagement.reaches.includes('Air')) && (
             <section className={styles.secStandout}>
               <SectionHead label="Worth knowing" note="from blueprints" />
@@ -932,9 +1012,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
               </div>
             </section>
           )}
-        </div>
 
-        <aside className={styles.aside}>
           {history.length > 0 && (
             <div className={styles.panel}>
               <div className={styles.panelHead}>
@@ -990,18 +1068,23 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
             </div>
           )}
 
-          <div className={styles.panel}>
-            <div className={styles.panelHead}>
-              <span className={`lbl ${styles.panelTitle}`}>Categories</span>
+          {/* The raw blueprint categories are for modders and for searching;
+              as a wall of tags they were mostly noise beside the stats, so
+              they are one click away rather than gone. */}
+          <details className={`${styles.panel} ${styles.catsPanel}`}>
+            <summary className={styles.panelHead}>
+              <span className={`lbl ${styles.panelTitle}`}>Blueprint categories</span>
               <span className={`m ${styles.sectionNote}`}>{unit.Categories?.length ?? 0}</span>
-            </div>
+              <span style={{ flex: 1 }} />
+              <Icon name="chevronDown" size={12} strokeWidth={1.9} className={styles.catsChevron} />
+            </summary>
             <div className={styles.cats}>
               {(unit.Categories ?? []).map((c) => (
                 <span key={c} className={`m ${styles.cat}`}>{c}</span>
               ))}
             </div>
-          </div>
-        </aside>
+          </details>
+        </div>
       </div>
 
       <SiteFooter version={version} />
@@ -1224,7 +1307,7 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
   const peerShield = bothShields ? shieldEconomy(peer) : null;
   if (baseShield && peerShield) {
     return (
-      <Link href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
+      <UnitLink href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
         <UnitWell id={peer.Id} faction={peer.faction} techLabel={peer.techLabel} size={38} imageSize={34} pip={false} hasRender={peer.hasRender} />
         <div className={styles.peerBody}>
           <div className={`t ${styles.peerName}`}>{peer.name}</div>
@@ -1234,7 +1317,7 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
           <Delta n={peerShield.hp - baseShield.hp} format={fmtNum} unit="shield" />
           <Delta n={peerShield.radius - baseShield.radius} format={(v) => fmtRatio(v, 1)} unit="radius" />
         </div>
-      </Link>
+      </UnitLink>
     );
   }
 
@@ -1246,7 +1329,7 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
   const peerIntel = roleOf(peer) === baseRole ? intelEconomy(peer, baseRole) : null;
   if (baseIntel && peerIntel) {
     return (
-      <Link href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
+      <UnitLink href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
         <UnitWell id={peer.Id} faction={peer.faction} techLabel={peer.techLabel} size={38} imageSize={34} pip={false} hasRender={peer.hasRender} />
         <div className={styles.peerBody}>
           <div className={`t ${styles.peerName}`}>{peer.name}</div>
@@ -1256,7 +1339,7 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
           <Delta n={peerIntel.radius - baseIntel.radius} format={(v) => fmtRatio(v, 1)} unit="radius" />
           <Delta n={peer.mass - base.mass} format={fmtNum} unit="mass" invert />
         </div>
-      </Link>
+      </UnitLink>
     );
   }
 
@@ -1268,7 +1351,7 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
   const baseDps = totalDps(base);
   const dpsDelta = peerDps > 0 || baseDps > 0 ? peerDps - baseDps : null;
   return (
-    <Link href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
+    <UnitLink href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
       <UnitWell id={peer.Id} faction={peer.faction} techLabel={peer.techLabel} size={38} imageSize={34} pip={false} hasRender={peer.hasRender} />
       <div className={styles.peerBody}>
         <div className={`t ${styles.peerName}`}>{peer.name}</div>
@@ -1278,6 +1361,6 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
         <Delta n={hpDelta} format={fmtNum} unit="hp" />
         {dpsDelta !== null && <Delta n={dpsDelta} format={(v) => fmtRatio(v, 1)} unit="dps" />}
       </div>
-    </Link>
+    </UnitLink>
   );
 }

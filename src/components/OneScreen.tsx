@@ -23,7 +23,7 @@ const TIER_HEAD = 13;
 /** The divider between a tier's mobile units and its buildings, inline. */
 const SPLIT_W = 9;
 const MIN_CHIP = 9;
-const MAX_CHIP = 52;
+const MAX_CHIP = 80;
 
 /**
  * Everything, on one screen, with nothing below the fold.

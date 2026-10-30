@@ -43,9 +43,12 @@ export function SiteFooter({ version }: { version: string }) {
 
       <div className={styles.block}>
         <span className={`lbl ${styles.label}`}>Also</span>
-        <a href={REPLAY_VIEWER_URL} target="_blank" rel="noopener" title="Watch FAF replays in the browser">
-          Replay viewer
-        </a>
+        <span>
+          <a href={REPLAY_VIEWER_URL} target="_blank" rel="noopener">
+            Replay viewer
+          </a>
+          , FAF replays in your browser
+        </span>
       </div>
 
       <span className={styles.spacer} />

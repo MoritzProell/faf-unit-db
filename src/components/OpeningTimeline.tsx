@@ -1,8 +1,8 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import Link from 'next/link';
 import { UnitWell } from './UnitWell';
+import { UnitLink } from '@/components/UnitLink';
 import { Icon } from './Icon';
 import { Segmented } from './Segmented';
 import { clock } from '@/lib/faf/opening';
@@ -195,7 +195,7 @@ export function OpeningTimeline({ openings, runs }: { openings: Opening[]; runs:
 
                     <span className={styles.what}>
                       {item.id ? (
-                        <Link href={`/unit/${run.slugs[item.id] ?? ''}`} className={styles.link}>
+                        <UnitLink href={`/unit/${run.slugs[item.id] ?? ''}`} className={styles.link}>
                           {item.count > 1 && <span className={`m ${styles.count}`}>{item.count}&times;</span>}
                           <UnitWell
                             id={item.id}
@@ -206,7 +206,7 @@ export function OpeningTimeline({ openings, runs }: { openings: Opening[]; runs:
                             pip={false}
                           />
                           <span className={`t ${styles.name}`}>{item.name}</span>
-                        </Link>
+                        </UnitLink>
                       ) : (
                         <span className={styles.action}>{item.name}</span>
                       )}

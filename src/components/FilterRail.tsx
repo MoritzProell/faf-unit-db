@@ -1,10 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { FactionMark } from './FactionMark';
 import { Icon } from './Icon';
 import { ROLE_KEYS, ROLE_LABEL } from '@/lib/faf/browse';
-import { REPLAY_VIEWER_URL } from '@/lib/site';
 import type { Faction, Kind, Tech } from '@/lib/faf/types';
 import styles from './FilterRail.module.css';
 
@@ -29,47 +27,6 @@ export interface FilterState {
 const KIND_LABEL: Record<string, string> = { Land: 'Land', Air: 'Air', Naval: 'Naval', Base: 'Structure' };
 const TECH_LABEL: Record<string, string> = { T1: 'T1', T2: 'T2', T3: 'T3', EXP: 'T4' };
 
-/**
- * The other places to go. Lives in the rail on a wide screen, and is rendered
- * again above the roster on a narrow one: on mobile the rail is a drawer
- * behind the Filters button, which meant Learn, Build orders and the rest were
- * only reachable by opening a filter panel to look for something that is not a
- * filter.
- */
-export function SectionNav({ layout = 'rail' }: { layout?: 'rail' | 'strip' }) {
-  return (
-    <nav className={layout === 'strip' ? styles.browseStrip : styles.browse} aria-label="Sections">
-      <Link href="/learn" className={styles.railLink}>
-        <Icon name="target" size={13} />
-        <span>Learn</span>
-        <Icon name="chevronRight" size={12} />
-      </Link>
-      <Link href="/build-orders" className={styles.railLink}>
-        <Icon name="rows" size={13} />
-        <span>Build orders</span>
-        <Icon name="chevronRight" size={12} />
-      </Link>
-      <Link href="/factions" className={styles.railLink}>
-        <Icon name="layers" size={13} />
-        <span>Faction comparison</span>
-        <Icon name="chevronRight" size={12} />
-      </Link>
-      <Link href="/upgrades" className={styles.railLink}>
-        <Icon name="gear" size={13} />
-        <span>Commander upgrades</span>
-        <Icon name="chevronRight" size={12} />
-      </Link>
-      {/* The one link that leaves the site, so it says so with its icon and
-          opens a new tab rather than replacing the roster. */}
-      <a href={REPLAY_VIEWER_URL} className={styles.railLink} target="_blank" rel="noopener">
-        <Icon name="play" size={13} />
-        <span>Replay viewer</span>
-        <Icon name="external" size={12} />
-      </a>
-    </nav>
-  );
-}
-
 export function FilterRail({
   facets,
   state,
@@ -85,12 +42,6 @@ export function FilterRail({
 }) {
   return (
     <aside className={styles.rail} aria-label="Filters">
-      {/* Above the filters, not below them. These are the other places to go,
-          and a reader looking for them should not have to scroll past every
-          facet to find out they exist. Kept out of the FILTERS heading because
-          they are not filters. */}
-      <SectionNav />
-
       <div className={styles.head}>
         <Icon name="sliders" size={15} />
         <span className={`t ${styles.headTitle}`}>FILTERS</span>

@@ -12,4 +12,6 @@
 .footer a { color: var(--text-2); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(153, 160, 167, 0.45); }
 .footer a:hover { color: var(--text); text-decoration-color: currentColor; }
 .spacer { flex: 1 1 auto; }
-.fine { flex-basis: 100%; font-size: 11px; color: var(--text-3); }
+/* A <p>, so it carried the browser's 1em margins: 22px of nothing in a footer
+   whose gap already spaces it. */
+.fine { flex-basis: 100%; margin: 0; font-size: 11px; color: var(--text-3); }

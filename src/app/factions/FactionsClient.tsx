@@ -1,11 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
 import { UnitWell } from '@/components/UnitWell';
 import { Icon } from '@/components/Icon';
 import { FactionMark } from '@/components/FactionMark';
 import type { Faction } from '@/lib/faf/types';
+import { UnitLink } from '@/components/UnitLink';
 import styles from './factions.module.css';
 
 export interface SlotRowLite {
@@ -214,7 +214,7 @@ function SlotCard({ slot }: { slot: SlotLite }) {
             {slot.rows.map((r) => (
               <tr key={r.id} data-faction={r.faction}>
                 <td className={styles.tdUnit}>
-                  <Link href={`/unit/${r.slug}`} className={styles.unitLink}>
+                  <UnitLink href={`/unit/${r.slug}`} className={styles.unitLink}>
                     <UnitWell id={r.id} faction={r.faction} techLabel={r.techLabel}
                       size={28} imageSize={26} pip={false} hasRender={r.hasRender} />
                     <span className={styles.unitBody}>
@@ -223,7 +223,7 @@ function SlotCard({ slot }: { slot: SlotLite }) {
                         <FactionMark faction={r.faction} size={10} /> {r.faction}
                       </span>
                     </span>
-                  </Link>
+                  </UnitLink>
                 </td>
                 {r.values.map((v) => (
                   <td key={v.key} className={`m ${styles.num}`} data-best={v.best}>{v.text}</td>

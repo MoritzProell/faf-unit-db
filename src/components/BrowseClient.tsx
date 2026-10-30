@@ -3,14 +3,14 @@
 import Link from 'next/link';
 import { useCallback, useMemo, useState } from 'react';
 import { TopBar } from './TopBar';
-import { FilterRail, SectionNav, FACTIONS, TECHS, KINDS, type Facets, type FilterState } from './FilterRail';
+import { FilterRail, FACTIONS, TECHS, KINDS, type Facets, type FilterState } from './FilterRail';
 import { UnitTile } from './UnitTile';
 import { OnePage } from './OnePage';
 import { OneScreen } from './OneScreen';
-import { useMediaQuery } from '@/lib/useMediaQuery';
 import { SECTION_ORDER } from '@/lib/faf/sections';
 import { CompareTray } from './CompareTray';
 import { SiteFooter } from './SiteFooter';
+import { ReplayPromo } from './ReplayLink';
 import { Icon, type IconName } from './Icon';
 import { useCompareSelection, MAX_COMPARE } from '@/lib/useCompareSelection';
 import { useViewPreference } from '@/lib/useViewPreference';
@@ -53,18 +53,6 @@ export function BrowseClient({
   const [viewPreference, setViewPreference] = useViewPreference();
   const [railOpen, setRailOpen] = useState(false);
   const [pickMode, setPickMode] = useState(false);
-  /**
-   * One page has two layouts and the screen decides which.
-   *
-   * The roster's own arrangement needs 55 chip-widths across, because a role
-   * column exists even where a single faction fills it. Solved against the real
-   * furniture that comes out at a 9px chip on a 1440 and a 30px chip on a 2560,
-   * so the threshold is where it clears 19px and the labels are still readable:
-   * 2000 wide, and tall enough that the twelve faction rows have somewhere to
-   * go. Below that it falls back to columns by faction, which packs into a
-   * laptop because it has no empty cells to pay for.
-   */
-  const wideEnoughForRoster = useMediaQuery('(min-width: 2000px) and (min-height: 780px)');
   const compare = useCompareSelection();
 
   // Everything the browse screen shows is derived from the URL, so any view can
@@ -205,14 +193,7 @@ export function BrowseClient({
         </div>
 
         <main className={styles.main} data-view={view}>
-          {/* Mobile only. The rail that normally carries these is a drawer
-              here, so without this the only way to reach Learn or Build
-              orders is to open the filter panel. */}
-          <div className={styles.mobileNav}>
-            <SectionNav layout="strip" />
-          </div>
-
-          <div className={styles.resultsBar}>
+<div className={styles.resultsBar}>
             <div className={styles.resultsTop}>
               <h1 className={`t ${styles.title}`}>{title}</h1>
               <span className={styles.count}>
@@ -269,7 +250,13 @@ export function BrowseClient({
               </div>
             </div>
 
-            <ActiveChips filters={filters} query={query} onToggle={toggle} onClearQuery={() => setQuery('')} />
+            {/* The second row: what is filtered out, and the replay viewer.
+                Nomads is off by default, so this row is already there on a
+                first visit and the strip costs the roster no height. */}
+            <div className={styles.resultsSub}>
+              <ActiveChips filters={filters} query={query} onToggle={toggle} onClearQuery={() => setQuery('')} />
+              <ReplayPromo />
+            </div>
           </div>
 
           {pickMode && (
@@ -300,11 +287,13 @@ export function BrowseClient({
               <button className={styles.emptyAction} onClick={reset}>Reset filters</button>
             </div>
           ) : view === 'onepage' ? (
-            wideEnoughForRoster ? (
-              <OnePage units={results} selected={compare.ids} onToggle={compare.toggle} sort={sort} pickMode={pickMode} mode="screen" />
-            ) : (
-              <OneScreen units={results} selected={compare.ids} onToggle={compare.toggle} pickMode={pickMode} sort={sort} />
-            )
+            /* Columns by faction at every size. Past 2000px this used to switch
+               to the roster's labelled layout with all nine sections in a row,
+               which needs 55 chip-widths across: 29px chips on a 2560 with 60%
+               of the screen empty below, 45px on a 3440. Columns by faction
+               fill the same screens at 68px and 76px, and the labelled layout
+               is still one click away as Roster. */
+            <OneScreen units={results} selected={compare.ids} onToggle={compare.toggle} pickMode={pickMode} sort={sort} />
           ) : view === 'compact' ? (
             <OnePage units={results} selected={compare.ids} onToggle={compare.toggle} sort={sort} pickMode={pickMode} />
           ) : (

@@ -75,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{var d=localStorage.getItem('faf.density');if(d)document.documentElement.dataset.density=d}catch(e){}",
+              "try{if(localStorage.getItem('faf.replayPromo'))document.documentElement.dataset.replayPromo='dismissed'}catch(e){}",
           }}
         />
       </head>

@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { UnitWell } from './UnitWell';
 import { fmtSeconds } from '@/lib/faf/buildpower';
 import type { Builder } from '@/lib/faf/buildpower';
 import type { Faction } from '@/lib/faf/types';
+import { UnitLink } from '@/components/UnitLink';
 import styles from './BuildTime.module.css';
 
 /** Enough assist to cover a pair of engineers up to a serious engineer ball. */
@@ -84,7 +84,7 @@ export function BuildTime({
           const seconds = total > 0 ? points / total : 0;
           return (
             <div key={b.id} className={styles.row} role="row">
-              <Link href={`/unit/${b.slug}`} className={styles.who}>
+              <UnitLink href={`/unit/${b.slug}`} className={styles.who}>
                 <UnitWell
                   id={b.id}
                   faction={faction}
@@ -102,7 +102,7 @@ export function BuildTime({
                     {b.techLabel} {b.upgrade ? 'upgrade' : b.kind === 'Other' ? 'builder' : b.kind}
                   </span>
                 </span>
-              </Link>
+              </UnitLink>
               <span className={`m ${styles.num}`}>
                 {b.power}
                 {assist > 0 && <span className={styles.plus}> +{assist}</span>}
