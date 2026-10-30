@@ -30,6 +30,7 @@ import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { JsonLd } from '@/components/JsonLd';
 import { FieldPill } from '@/app/changelog/page';
 import type { DecoratedWeapon, Faction, Unit } from '@/lib/faf/types';
+import { UnitLink } from '@/components/UnitLink';
 import styles from './detail.module.css';
 
 export async function generateStaticParams() {
@@ -717,7 +718,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
               <div className={styles.panel}>
                 <div className={styles.buildGrid}>
                   {builds.map((b) => (
-                    <Link key={b.id} href={`/unit/${b.slug}`} className={styles.buildItem}>
+                    <UnitLink key={b.id} href={`/unit/${b.slug}`} className={styles.buildItem}>
                       <UnitWell
                         id={b.id}
                         faction={unit.faction}
@@ -731,7 +732,7 @@ export default async function UnitPage({ params }: { params: Promise<{ slug: str
                         <span className={`t ${styles.buildName}`}>{b.name}</span>
                         <span className={styles.buildRole}>{b.role}</span>
                       </span>
-                    </Link>
+                    </UnitLink>
                   ))}
                 </div>
               </div>
@@ -1224,7 +1225,7 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
   const peerShield = bothShields ? shieldEconomy(peer) : null;
   if (baseShield && peerShield) {
     return (
-      <Link href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
+      <UnitLink href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
         <UnitWell id={peer.Id} faction={peer.faction} techLabel={peer.techLabel} size={38} imageSize={34} pip={false} hasRender={peer.hasRender} />
         <div className={styles.peerBody}>
           <div className={`t ${styles.peerName}`}>{peer.name}</div>
@@ -1234,7 +1235,7 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
           <Delta n={peerShield.hp - baseShield.hp} format={fmtNum} unit="shield" />
           <Delta n={peerShield.radius - baseShield.radius} format={(v) => fmtRatio(v, 1)} unit="radius" />
         </div>
-      </Link>
+      </UnitLink>
     );
   }
 
@@ -1246,7 +1247,7 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
   const peerIntel = roleOf(peer) === baseRole ? intelEconomy(peer, baseRole) : null;
   if (baseIntel && peerIntel) {
     return (
-      <Link href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
+      <UnitLink href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
         <UnitWell id={peer.Id} faction={peer.faction} techLabel={peer.techLabel} size={38} imageSize={34} pip={false} hasRender={peer.hasRender} />
         <div className={styles.peerBody}>
           <div className={`t ${styles.peerName}`}>{peer.name}</div>
@@ -1256,7 +1257,7 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
           <Delta n={peerIntel.radius - baseIntel.radius} format={(v) => fmtRatio(v, 1)} unit="radius" />
           <Delta n={peer.mass - base.mass} format={fmtNum} unit="mass" invert />
         </div>
-      </Link>
+      </UnitLink>
     );
   }
 
@@ -1268,7 +1269,7 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
   const baseDps = totalDps(base);
   const dpsDelta = peerDps > 0 || baseDps > 0 ? peerDps - baseDps : null;
   return (
-    <Link href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
+    <UnitLink href={`/unit/${peer.slug}`} className={styles.peerRow} data-faction={peer.faction}>
       <UnitWell id={peer.Id} faction={peer.faction} techLabel={peer.techLabel} size={38} imageSize={34} pip={false} hasRender={peer.hasRender} />
       <div className={styles.peerBody}>
         <div className={`t ${styles.peerName}`}>{peer.name}</div>
@@ -1278,6 +1279,6 @@ function PeerRow({ peer, base }: { peer: Unit; base: Unit }) {
         <Delta n={hpDelta} format={fmtNum} unit="hp" />
         {dpsDelta !== null && <Delta n={dpsDelta} format={(v) => fmtRatio(v, 1)} unit="dps" />}
       </div>
-    </Link>
+    </UnitLink>
   );
 }

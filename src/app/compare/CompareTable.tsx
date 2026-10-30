@@ -8,6 +8,7 @@ import { Icon, type IconName } from '@/components/Icon';
 import { MassMark, EnergyMark, TimeMark } from '@/components/Marks';
 import { fmtNum } from '@/lib/faf/decorate';
 import type { CompareGroup } from '@/lib/faf/compare';
+import { UnitLink } from '@/components/UnitLink';
 import styles from './compare.module.css';
 
 export interface CompareUnit {
@@ -96,7 +97,7 @@ export function CompareTable({ units, groups }: { units: CompareUnit[]; groups: 
                   <div className={styles.colTop}>
                     <UnitWell id={u.id} faction={u.faction as never} techLabel={u.techLabel} size={44} imageSize={40} pip={false} />
                     <div style={{ minWidth: 0 }}>
-                      <Link href={`/unit/${u.slug}`} className={`t ${styles.colName}`}>{u.name}</Link>
+                      <UnitLink href={`/unit/${u.slug}`} className={`t ${styles.colName}`}>{u.name}</UnitLink>
                       {u.name !== u.role && <div className={styles.colRole}>{u.role}</div>}
                     </div>
                   </div>

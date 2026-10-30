@@ -1,10 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useRef, useState } from 'react';
 import { UnitWell } from './UnitWell';
 import { Icon } from './Icon';
 import { fmt, type BrowseUnit, type SortDef } from '@/lib/faf/browse';
+import { UnitLink } from '@/components/UnitLink';
 import styles from './UnitChip.module.css';
 
 /**
@@ -112,7 +112,7 @@ export function UnitChip({
           </span>
         </button>
       ) : (
-        <Link href={`/unit/${unit.slug}`} className={styles.btn} aria-label={`${unit.name}, ${unit.role}`}>
+        <UnitLink href={`/unit/${unit.slug}`} className={styles.btn} aria-label={`${unit.name}, ${unit.role}`}>
           <UnitWell
             id={unit.id}
             faction={unit.faction}
@@ -126,7 +126,7 @@ export function UnitChip({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={`/strategic/${unit.icon}.png`} alt="" className={styles.corner} />
           )}
-        </Link>
+        </UnitLink>
       )}
 
       {armed && (

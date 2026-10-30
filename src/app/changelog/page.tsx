@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { TopBar } from '@/components/TopBar';
 import { SiteFooter } from '@/components/SiteFooter';
 import { UnitWell } from '@/components/UnitWell';
@@ -8,6 +7,7 @@ import { getPatches } from '@/lib/faf/changelog';
 import { buildRelations } from '@/lib/faf/related';
 import type { FieldChange, UnitChange } from '@/lib/faf/diff';
 import type { Faction } from '@/lib/faf/types';
+import { UnitLink } from '@/components/UnitLink';
 import styles from './changelog.module.css';
 
 export const metadata: Metadata = {
@@ -128,7 +128,7 @@ export default async function ChangelogPage() {
                       {p.added.map((a) => {
                         const u = byId.get(a.id);
                         return (
-                          <Link key={a.id} href={`/unit/${a.slug}`} className={styles.unit} data-faction={a.faction}>
+                          <UnitLink key={a.id} href={`/unit/${a.slug}`} className={styles.unit} data-faction={a.faction}>
                             <div className={styles.unitTop}>
                               {u && (
                                 <UnitWell id={u.Id} faction={u.faction} techLabel={u.techLabel} size={30} imageSize={28} pip={false} hasRender={u.hasRender} />
@@ -137,7 +137,7 @@ export default async function ChangelogPage() {
                               <span className={styles.badge}>NEW</span>
                               <span className={styles.unitRole}>{a.role}</span>
                             </div>
-                          </Link>
+                          </UnitLink>
                         );
                       })}
                       {(() => {
@@ -254,9 +254,9 @@ function ChangedUnit({
   return (
     <div className={styles.unitGroup} data-faction={change.faction}>
       {listed ? (
-        <Link href={`/unit/${change.slug}`} className={styles.unit} data-faction={change.faction}>
+        <UnitLink href={`/unit/${change.slug}`} className={styles.unit} data-faction={change.faction}>
           {body(change, hasRender, 30)}
-        </Link>
+        </UnitLink>
       ) : (
         <div className={styles.unit} data-faction={change.faction}>
           {body(change, hasRender, 30)}
@@ -269,14 +269,14 @@ function ChangedUnit({
             {body(r.change, r.hasRender, 26, true)}
           </div>
         ) : (
-          <Link
+          <UnitLink
             key={r.change.id}
             href={`/unit/${r.change.slug}`}
             className={`${styles.unit} ${styles.related}`}
             data-faction={r.change.faction}
           >
             {body(r.change, r.hasRender, 26, true)}
-          </Link>
+          </UnitLink>
         )
       )}
     </div>

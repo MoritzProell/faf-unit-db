@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
 import { UnitWell } from '@/components/UnitWell';
 import { Icon } from '@/components/Icon';
 import { FactionMark } from '@/components/FactionMark';
@@ -10,6 +9,7 @@ import { MassMark, EnergyMark, TimeMark } from '@/components/Marks';
 import { fmtNum } from '@/lib/faf/decorate';
 import { SLOT_ORDER, SLOT_LABEL, type Slot } from '@/lib/faf/enhancements';
 import type { Faction } from '@/lib/faf/types';
+import { UnitLink } from '@/components/UnitLink';
 import styles from './upgrades.module.css';
 
 export interface UpgradeRow {
@@ -194,7 +194,7 @@ function HostCard({ host }: { host: HostRow }) {
 
   return (
     <section className={styles.host} data-faction={host.faction}>
-      <Link href={`/unit/${host.slug}`} className={styles.hostHead}>
+      <UnitLink href={`/unit/${host.slug}`} className={styles.hostHead}>
         <UnitWell
           id={host.id}
           faction={host.faction}
@@ -209,7 +209,7 @@ function HostCard({ host }: { host: HostRow }) {
           <span className={styles.hostRole}>{host.faction} · {host.role}</span>
         </span>
         <Icon name="chevronRight" size={14} />
-      </Link>
+      </UnitLink>
 
       {bySlot.map(([slot, list]) => (
         <div key={slot}>
@@ -219,7 +219,7 @@ function HostCard({ host }: { host: HostRow }) {
             <span className="rule" />
           </div>
           {list.map((u) => (
-            <Link
+            <UnitLink
               key={u.key}
               href={`/unit/${host.slug}#upgrade-${u.key.toLowerCase()}`}
               className={styles.row}
@@ -251,7 +251,7 @@ function HostCard({ host }: { host: HostRow }) {
                 </div>
               )}
               {u.prerequisite && <div className={styles.prereq}>Requires {u.prerequisite}</div>}
-            </Link>
+            </UnitLink>
           ))}
         </div>
       ))}

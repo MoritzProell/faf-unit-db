@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { UnitWell } from './UnitWell';
 import { clock } from '@/lib/faf/opening';
 import type { OpeningRun } from '@/lib/faf/opening';
 import { RECLAIM_LEVELS, type Opening, type MapSize } from '@/data/openings';
+import { UnitLink } from '@/components/UnitLink';
 import styles from './OpeningTimeline.module.css';
 
 const MAP_SIZES: MapSize[] = ['5x5', '10x10', '20x20'];
@@ -203,7 +203,7 @@ export function OpeningTimeline({ openings, runs }: { openings: Opening[]; runs:
 
             <span className={styles.what}>
               {item.id ? (
-                <Link href={`/unit/${run.slugs[item.id] ?? ''}`} className={styles.link}>
+                <UnitLink href={`/unit/${run.slugs[item.id] ?? ''}`} className={styles.link}>
                   {item.count > 1 && <span className={`m ${styles.count}`}>{item.count}&times;</span>}
                   <UnitWell
                     id={item.id}
@@ -214,7 +214,7 @@ export function OpeningTimeline({ openings, runs }: { openings: Opening[]; runs:
                     pip={false}
                   />
                   <span className={`t ${styles.name}`}>{item.name}</span>
-                </Link>
+                </UnitLink>
               ) : (
                 <span className={styles.action}>{item.name}</span>
               )}
