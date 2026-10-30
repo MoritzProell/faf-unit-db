@@ -10,10 +10,6 @@
 .reset:hover { color: var(--text); }
 .reset:disabled { opacity: 0.4; cursor: default; }
 .group { display: flex; flex-direction: column; gap: 8px; }
-.browse {
-  display: flex; flex-direction: column; gap: 5px;
-  padding-bottom: 14px; border-bottom: 1px solid var(--line);
-}
 .groupBody { display: flex; flex-direction: column; }
 .chips { display: flex; flex-wrap: wrap; gap: 5px; }
 
@@ -42,23 +38,3 @@
 .chip:hover { border-color: var(--line-2); color: var(--text); }
 .chip[data-on='true'] { background: rgba(255, 255, 255, 0.12); border-color: var(--line-2); color: var(--text); }
 .chipCount { font-size: 10px; opacity: 0.72; margin-left: 5px; }
-
-.railLink {
-  display: flex; align-items: center; gap: 9px; height: 30px; padding: 0 8px;
-  border-radius: var(--radius); border: 1px solid var(--line-2);
-  background: var(--panel-2); color: var(--text-2); font-size: 12.5px; font-weight: 600;
-}
-.railLink:hover { color: var(--text); border-color: var(--primary); }
-.railLink span:first-of-type { flex: 1; }
-
-/* The same links as a horizontal strip, for the mobile header. Scrolls
-   sideways rather than wrapping, so it costs one row whatever the width. */
-.browseStrip {
-  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px;
-  scrollbar-width: none;
-}
-.browseStrip::-webkit-scrollbar { display: none; }
-.browseStrip .railLink {
-  flex: 0 0 auto; white-space: nowrap; padding: 6px 10px;
-}
-.browseStrip .railLink svg:last-child { display: none; }

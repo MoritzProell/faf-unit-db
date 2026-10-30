@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useMemo, useState } from 'react';
 import { TopBar } from './TopBar';
-import { FilterRail, SectionNav, FACTIONS, TECHS, KINDS, type Facets, type FilterState } from './FilterRail';
+import { FilterRail, FACTIONS, TECHS, KINDS, type Facets, type FilterState } from './FilterRail';
 import { UnitTile } from './UnitTile';
 import { OnePage } from './OnePage';
 import { OneScreen } from './OneScreen';
@@ -11,6 +11,7 @@ import { useMediaQuery } from '@/lib/useMediaQuery';
 import { SECTION_ORDER } from '@/lib/faf/sections';
 import { CompareTray } from './CompareTray';
 import { SiteFooter } from './SiteFooter';
+import { ReplayPromo } from './ReplayLink';
 import { Icon, type IconName } from './Icon';
 import { useCompareSelection, MAX_COMPARE } from '@/lib/useCompareSelection';
 import { useViewPreference } from '@/lib/useViewPreference';
@@ -205,14 +206,7 @@ export function BrowseClient({
         </div>
 
         <main className={styles.main} data-view={view}>
-          {/* Mobile only. The rail that normally carries these is a drawer
-              here, so without this the only way to reach Learn or Build
-              orders is to open the filter panel. */}
-          <div className={styles.mobileNav}>
-            <SectionNav layout="strip" />
-          </div>
-
-          <div className={styles.resultsBar}>
+<div className={styles.resultsBar}>
             <div className={styles.resultsTop}>
               <h1 className={`t ${styles.title}`}>{title}</h1>
               <span className={styles.count}>
@@ -269,7 +263,13 @@ export function BrowseClient({
               </div>
             </div>
 
-            <ActiveChips filters={filters} query={query} onToggle={toggle} onClearQuery={() => setQuery('')} />
+            {/* The second row: what is filtered out, and the replay viewer.
+                Nomads is off by default, so this row is already there on a
+                first visit and the strip costs the roster no height. */}
+            <div className={styles.resultsSub}>
+              <ActiveChips filters={filters} query={query} onToggle={toggle} onClearQuery={() => setQuery('')} />
+              <ReplayPromo />
+            </div>
           </div>
 
           {pickMode && (
