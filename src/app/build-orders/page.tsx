@@ -4,7 +4,7 @@ import { TopBar } from '@/components/TopBar';
 import { SiteFooter } from '@/components/SiteFooter';
 import { Icon } from '@/components/Icon';
 import { getUnitData } from '@/lib/faf/data';
-import { BUILD_ORDERS } from '@/data/build-orders';
+import { BUILD_ORDERS, BO_GROUPS } from '@/data/build-orders';
 import { OPENINGS, RECLAIM_LEVELS } from '@/data/openings';
 import { runOpening } from '@/lib/faf/opening';
 import { OpeningTimeline, type Runs } from '@/components/OpeningTimeline';
@@ -19,7 +19,6 @@ export const metadata: Metadata = {
 
 export default async function BuildOrdersPage() {
   const { units, hidden, version } = await getUnitData();
-  const maps = new Set(BUILD_ORDERS.filter((o) => o.scope !== 'Generic').map((o) => o.scope));
 
   /**
    * Every opening at every reclaim level, run at build time.
@@ -49,49 +48,59 @@ export default async function BuildOrdersPage() {
     <div className={styles.shell}>
       <TopBar version={version} totalUnits={units.length} />
 
-      <div className={styles.head}>
-        <Link href="/learn" className={styles.back}>
-          <Icon name="chevronLeft" size={13} strokeWidth={2.2} /> Learn
-        </Link>
-        <h1 className={`t ${styles.title}`}>Build orders</h1>
-        <p className={styles.lede}>
-          {BUILD_ORDERS.length} guides, generic and map-specific, tagged so you can find the one you
-          need. They are scattered across YouTube, two wikis, both forums and a Google Doc, and
-          nowhere collects them — so this does. Each links out to its author; nothing is
-          reproduced here.
-        </p>
-        <p className={styles.note}>
-          Worth knowing before you start: a build order is tied to one map, and the ladder pool
-          rotates monthly, so map-specific material goes stale by design. The generic openings and
-          the faction guides age far better. {maps.size} maps are covered below.
-        </p>
-      </div>
-
-      <section className={styles.openings}>
-        <div className={styles.sectionHead}>
-          <h2 className={`t ${styles.sectionTitle}`}>The first five minutes</h2>
-          <p className={styles.sectionLede}>
-            The generic openings, transcribed from the guides that teach them and then played out
-            against the current patch. Pick what you are opening into and every number below is
-            computed rather than quoted: build points divided by build power, with the economy
-            stepped forward tick by tick so you can watch the reserves drain and see where the
-            build would stall. There is no faction to pick, because every building an opening
-            touches costs exactly the same in all four.
+      <main className={styles.page}>
+        <header className={styles.head}>
+          <Link href="/learn" className={styles.back}>
+            <Icon name="chevronLeft" size={13} strokeWidth={2.2} /> Learn
+          </Link>
+          <h1 className={`t ${styles.title}`}>Build orders</h1>
+          <p className={styles.lede}>
+            The standard openings played out step by step against the current patch, then{' '}
+            {BUILD_ORDERS.length} guides, generic and map-specific, from YouTube, two wikis, both
+            forums and a Google Doc. Nowhere else collects them, so this does. The guides link out to
+            their authors and nothing of theirs is reproduced here; the opening sequences are
+            credited to the guide each one comes from.
           </p>
-        </div>
-        <OpeningTimeline openings={OPENINGS} runs={runs} />
-      </section>
+          <nav className={styles.jump} aria-label="On this page">
+            <a href="#openings" className={styles.jumpLink}>
+              The first five minutes <span className={`m ${styles.jumpCount}`}>{OPENINGS.length}</span>
+            </a>
+            <a href="#guides" className={styles.jumpLink}>
+              Guides <span className={`m ${styles.jumpCount}`}>{BUILD_ORDERS.length}</span>
+            </a>
+          </nav>
+        </header>
 
-      <div className={styles.sectionHead}>
-        <h2 className={`t ${styles.sectionTitle}`}>Guides, by map and focus</h2>
-        <p className={styles.sectionLede}>
-          Openings for specific maps and team positions are not transcribed above, because they
-          exist as videos and a build order rebuilt from memory of a video has invented steps in
-          it. They are linked here instead, tagged so you can find yours.
-        </p>
-      </div>
+        <section id="openings" className={styles.section} aria-labelledby="openings-title">
+          <div className={styles.sectionHead}>
+            <h2 id="openings-title" className={`t ${styles.sectionTitle}`}>
+              The first five minutes
+            </h2>
+            <p className={styles.sectionLede}>
+              Pick an opening for your situation. Every time and number is computed from the
+              current patch rather than quoted: build points divided by build power, with the
+              economy stepped forward tick by tick, so you can watch the reserves drain and see
+              where the build would stall. There is no faction to pick, because every building an
+              opening touches costs exactly the same in all four.
+            </p>
+          </div>
+          <OpeningTimeline openings={OPENINGS} runs={runs} />
+        </section>
 
-      <BuildOrdersClient orders={BUILD_ORDERS} />
+        <section id="guides" className={styles.section} aria-labelledby="guides-title">
+          <div className={styles.sectionHead}>
+            <h2 id="guides-title" className={`t ${styles.sectionTitle}`}>
+              Guides, by map and focus
+            </h2>
+            <p className={styles.sectionLede}>
+              Openings for specific maps and team positions are not transcribed above, because they
+              exist as videos and a build order rebuilt from memory of a video has invented steps in
+              it. They are linked here instead, sorted so the ones to start with come first.
+            </p>
+          </div>
+          <BuildOrdersClient orders={BUILD_ORDERS} groups={BO_GROUPS} />
+        </section>
+      </main>
 
       <SiteFooter version={version} />
     </div>

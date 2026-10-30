@@ -80,18 +80,38 @@ export interface OpeningLane {
   advice?: string[];
 }
 
+/**
+ * How the opening list is sorted on the page.
+ *
+ * The picker used to be a set of conditional questions (map, second factory,
+ * hydro, reclaim, size) that steered to one build, with options appearing and
+ * disappearing depending on earlier answers. With seven builds it is quicker
+ * to show all seven, each with the situation it is for, and let the reader
+ * pick. These are those labels.
+ */
+export const OPENING_GROUPS = [
+  { key: 'standard', label: 'Standard' },
+  { key: 'situational', label: 'For a situation' },
+  { key: 'map', label: 'For one map' },
+] as const;
+
 export interface Opening {
   id: string;
   title: string;
+  /** Which shelf of the picker it sits on. */
+  group: (typeof OPENING_GROUPS)[number]['key'];
+  /** When to reach for it, in a few words. Shown on the picker card. */
+  situation: string;
   summary: string;
-  /** The map this is written for, or 'Generic'. Drives the first pick. */
+  /** The map this is written for, or 'Generic'. */
   map: string;
-  /** Only makes sense on the largest maps, and is only offered there. */
+  /** Only makes sense on the largest maps; its factory queue shows the 20x20 line only. */
   only20x20?: boolean;
-  /** Which branch of the picker leads here. */
+  /** What the second factory is. Pairs a build with its high-reclaim variant. */
   secondFactory: 'land' | 'air';
   /**
-   * Only offered when reclaim is set to high.
+   * Written for heavy reclaim. Picking it sets reclaim to high, and the plain
+   * build it varies is offered alongside.
    *
    * Heavy reclaim does not merely make the same build faster, it changes what
    * the build is: the mass pays for engineers to stand on the ACU instead of
@@ -247,6 +267,8 @@ export const OPENINGS: Opening[] = [
   {
     id: 'triple-land',
     title: 'Triple land',
+    group: 'standard',
+    situation: 'Any land map. The default',
     map: 'Generic',
     summary:
       'Three land factories before the ACU leaves the base. The straightforward opening: everything goes into putting tanks on the ground and taking your half of the map.',
@@ -281,6 +303,8 @@ export const OPENINGS: Opening[] = [
   {
     id: 'third-air',
     title: 'Third air',
+    group: 'standard',
+    situation: 'Any land map, with air for scouting',
     map: 'Generic',
     summary:
       'Land, land, then air. The air factory is the third factory, which buys bombers, interceptors and above all the scouts that tell you what your opponent is doing.',
@@ -315,6 +339,8 @@ export const OPENINGS: Opening[] = [
   {
     id: 'hydro-rush',
     title: 'Hydro rush',
+    group: 'situational',
+    situation: 'A hydrocarbon near your spawn',
     map: 'Generic',
     summary:
       'Take the hydrocarbon plant whenever there is one. It is far more energy per mass than generators, so the ACU can skip them almost entirely and spend on extractors instead.',
@@ -373,6 +399,8 @@ export const OPENINGS: Opening[] = [
   {
     id: 'triple-land-assist',
     title: 'Triple land, dual assist',
+    group: 'situational',
+    situation: 'Lots of reclaim near your spawn',
     map: 'Generic',
     forReclaim: 'high',
     summary:
@@ -427,6 +455,8 @@ export const OPENINGS: Opening[] = [
   {
     id: 'third-air-assist',
     title: 'Third air, dual assist',
+    group: 'situational',
+    situation: 'Lots of reclaim, and you want air',
     map: 'Generic',
     forReclaim: 'high',
     summary:
@@ -469,6 +499,8 @@ export const OPENINGS: Opening[] = [
   {
     id: 'transport',
     title: 'Assisted second air transport',
+    group: 'situational',
+    situation: '20x20 and water-heavy maps',
     map: 'Generic',
     only20x20: true,
     summary:
@@ -530,6 +562,8 @@ export const OPENINGS: Opening[] = [
   {
     id: 'setons-beach',
     title: "Seton's Clutch, beach",
+    group: 'map',
+    situation: 'Beach slot, second air off the hydro',
     map: "Seton's Clutch",
     summary:
       'The beach slot, second air off the hydro. An exposed spot that gets its navy going earlier than the rock does, so the build is about being up and running before anyone can punish you for standing there.',

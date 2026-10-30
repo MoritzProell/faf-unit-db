@@ -1,72 +1,111 @@
-/* Capped, not stretched. The table is seven columns of short numbers; run
-   across a 27-inch screen the eye has to travel half a metre from the unit
-   name to its reserves, and the gap between "Build" and "By" becomes a void.
-   A reading measure fixes both. */
-.wrap { display: flex; flex-direction: column; gap: 14px; max-width: 1120px; }
+/* Two containers, so the layout answers to the space it is given rather than
+   to the window: the picker sits beside the build once there is room for both,
+   and the build's notes move beside its table once the table has room of its
+   own. Same rules whether the page is full width or inside something narrower. */
+.wrap { container: openings / inline-size; }
+.grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+@container openings (min-width: 980px) {
+  .grid { grid-template-columns: 272px minmax(0, 1fr); align-items: start; }
+  .chooser { position: sticky; top: 12px; grid-template-columns: minmax(0, 1fr); }
+}
 
-.picker {
-  display: flex; flex-wrap: wrap; gap: 10px 24px;
-  padding: 12px 14px;
+/* ---- The picker: every opening, with what it is for. ---- */
+.chooser {
+  display: grid; gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 155px), 1fr));
+}
+/* `display: contents` lets the shelf label and its cards fall into the
+   picker's grid directly, so on a phone the cards flow two-up regardless of
+   which shelf they are on, while the label still names the group. */
+.shelf { display: contents; }
+.shelfLabel { grid-column: 1 / -1; font-size: 9px; padding: 8px 2px 0; }
+.shelf:first-child .shelfLabel { padding-top: 0; }
+
+.pick {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  padding: 9px 11px 9px 12px; text-align: left;
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  position: relative;
 }
-.choice { display: flex; flex-direction: column; gap: 5px; }
-.choiceLabel { font-size: 9px; color: var(--text-3); }
-.opts { display: flex; gap: 4px; }
-.opt {
-  display: flex; align-items: baseline; gap: 5px;
-  font: inherit; font-size: 12.5px;
-  color: var(--text-2);
+.pick:hover { border-color: var(--line-2); }
+.pick[aria-pressed='true'] {
   background: var(--panel-2);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 5px 11px;
-  cursor: pointer;
-}
-.opt:hover:not(:disabled) { border-color: var(--line-2); color: var(--text); }
-.opt[data-on='true'] {
-  color: var(--primary);
   border-color: color-mix(in srgb, var(--primary) 55%, transparent);
-  background: color-mix(in srgb, var(--primary) 12%, transparent);
 }
-.opt:disabled { opacity: 0.35; cursor: not-allowed; }
-.optSub { font-size: 10px; opacity: 0.75; font-variant-numeric: tabular-nums; }
+/* The selected card carries a bar on its leading edge, so the choice reads
+   even in a peripheral glance at the list. */
+.pick[aria-pressed='true']::before {
+  content: ''; position: absolute; left: -1px; top: 8px; bottom: 8px; width: 3px;
+  border-radius: 0 2px 2px 0; background: var(--primary);
+}
+.pickTitle { font-size: 13.5px; font-weight: 650; color: var(--text); line-height: 1.3; }
+.pickWhen { font-size: 11.5px; color: var(--text-2); line-height: 1.35; }
+.pickStats {
+  display: flex; gap: 12px; margin-top: 3px;
+  font-size: 11px; color: var(--text-2);
+}
+.pickStats > span { display: inline-flex; align-items: center; gap: 4px; }
+
+/* ---- The build. ---- */
+.detail {
+  container: build / inline-size;
+  display: flex; flex-direction: column; gap: 12px; min-width: 0;
+  scroll-margin-top: 12px;
+}
 
 .head {
-  display: flex; align-items: flex-start; gap: 24px; flex-wrap: wrap;
+  display: flex; align-items: flex-start; gap: 16px 28px; flex-wrap: wrap;
   padding: 14px 16px;
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
 }
-.headMain { flex: 1 1 340px; min-width: 0; }
-.title { font-size: 17px; font-weight: 650; margin: 0 0 5px; display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
-/* The picker changed the build, not just the numbers. Saying so beats leaving
-   the reader to notice the title moved. */
-.swap {
-  font-size: 9.5px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;
-  color: var(--primary);
-  border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
-  border-radius: 3px; padding: 2px 6px;
-}
-.summary { font-size: 12.5px; line-height: 1.55; color: var(--text-2); margin: 0; max-width: 62ch; }
+.headMain { flex: 1 1 360px; min-width: 0; }
+.kicker { font-size: 9px; display: block; margin-bottom: 4px; }
+.title { font-size: 20px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.01em; }
+.summary { font-size: 13px; line-height: 1.55; color: var(--text-2); margin: 0; max-width: 70ch; }
+.credit { font-size: 11.5px; color: var(--text-3); margin: 8px 0 0; }
+.credit a { color: var(--text-2); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 2px; }
+.credit a:hover { color: var(--text); }
 
-.totals { display: flex; gap: 22px; margin: 0; }
+.totals { display: flex; flex-wrap: wrap; gap: 14px 24px; margin: 0; }
 .total { display: flex; flex-direction: column; gap: 3px; }
-.totalLabel { font-size: 9px; color: var(--text-3); white-space: nowrap; }
-.totalValue { font-size: 21px; margin: 0; display: flex; align-items: baseline; gap: 5px; }
-.total[data-tone='warn'] .totalValue { color: var(--dmg, #e07a63); }
+.totalLabel { font-size: 9px; white-space: nowrap; }
+.totalValue { font-size: 22px; margin: 0; display: flex; align-items: baseline; gap: 5px; }
+.total[data-tone='warn'] .totalValue { color: var(--dmg); }
 .totalUnit { font-size: 11px; color: var(--text-3); }
 .totalSub { font-size: 12px; color: var(--text-3); }
 
-/* The table. Seven columns and a full-width note under any row that has one. */
+.controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 18px; }
+.hint { font-size: 12px; line-height: 1.5; color: var(--text-2); margin: 0; flex: 1 1 320px; max-width: 70ch; }
+.hintBtn {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-weight: 600; color: #7fb6e0;
+}
+.hintBtn:hover { color: #a7d0ee; }
+
+.body { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+/* With room to spare, the notes sit beside the table rather than under it.
+   The table keeps a reading measure: run across a whole wide screen the eye
+   has to travel half a metre from a unit name to its reserves. */
+@container build (min-width: 1240px) {
+  .body { grid-template-columns: minmax(0, 1060px) minmax(280px, 1fr); }
+  .notes { position: sticky; top: 12px; }
+}
+
+/* ---- The step table. Seven columns, and a full-width note under any row that has one. ---- */
 .table {
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
   padding: 4px 14px 8px;
 }
+.steps { list-style: none; margin: 0; padding: 0; }
 .headRow, .row {
   display: grid;
   grid-template-columns: 46px minmax(0, 1fr) 104px 54px 74px 74px 116px;
   align-items: center;
   column-gap: 12px;
 }
+/* On a wide row the metrics are ordinary grid cells; on a narrow one they
+   become a line of their own under the unit (see the container rule below). */
+.metrics { display: contents; }
 .headRow {
   font-size: 9px; letter-spacing: 0.07em; text-transform: uppercase;
   color: var(--text-3);
@@ -82,13 +121,12 @@
 .time { font-size: 13px; color: var(--text-2); }
 
 .what { min-width: 0; }
-.link { display: flex; align-items: center; gap: 9px; color: inherit; text-decoration: none; min-width: 0; }
-.link:hover .name { color: var(--primary); }
 /* The two things a player reads first: how many, and of what. The count leads,
    because that is the order a build order is said out loud -- three engineers,
-   two extractors -- and reading it off the end of a truncated name was the
-   wrong way round. It sits outside the icon, in a fixed column, so the icons
-   line up down the table whether or not a row has a count. */
+   two extractors -- and it sits in a fixed column outside the icon so the
+   icons line up down the table whether or not a row has a count. */
+.link { display: flex; align-items: center; gap: 9px; color: inherit; text-decoration: none; min-width: 0; padding-left: 26px; }
+.link:hover .name { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
 .name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .count {
   font-size: 14px; font-weight: 700; color: var(--primary);
@@ -96,9 +134,7 @@
   width: 22px; text-align: right;
   margin-left: -26px;
 }
-/* Leave room for the count so the icons align whether a row has one or not. */
-.link { padding-left: 26px; }
-.action { font-size: 13px; color: var(--text-2); font-style: italic; }
+.action { font-size: 13px; color: var(--text-2); font-style: italic; padding-left: 26px; }
 
 .byCol { font-size: 12px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .num { text-align: right; font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -123,50 +159,66 @@
 .bar[data-kind='energy'] .fill { background: var(--energy); }
 /* Empty is the only state that means something is wrong, so it is the only one
    that gets a colour of its own. */
-.bar[data-empty='true'] .track { background: color-mix(in srgb, var(--dmg, #e07a63) 30%, transparent); }
+.bar[data-empty='true'] .track { background: color-mix(in srgb, var(--dmg) 30%, transparent); }
 .barValue {
   width: 34px; text-align: right; flex-shrink: 0;
   font-size: 10.5px; font-variant-numeric: tabular-nums;
-  color: var(--text-3);
 }
 .bar[data-kind='mass'] .barValue { color: color-mix(in srgb, var(--mass) 70%, var(--text-3)); }
 .bar[data-kind='energy'] .barValue { color: color-mix(in srgb, var(--energy) 70%, var(--text-3)); }
 
 .foot {
   grid-column: 2 / -1;
-  font-size: 11px; line-height: 1.5; color: var(--text-3);
-  padding-top: 3px;
+  font-size: 11.5px; line-height: 1.5; color: var(--text-2);
+  padding: 3px 0 0 26px;
   display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px;
 }
 .stall {
-  font-size: 10px; color: var(--dmg, #e07a63);
-  border: 1px solid color-mix(in srgb, var(--dmg, #e07a63) 40%, transparent);
+  font-size: 10.5px; color: var(--dmg);
+  border: 1px solid color-mix(in srgb, var(--dmg) 40%, transparent);
   border-radius: 3px; padding: 0 5px;
 }
 
-.after { display: flex; flex-wrap: wrap; gap: 10px; }
+/* Under this the seven columns stop fitting, so the numbers move to one
+   labelled line under the unit rather than being squeezed to two characters. */
+@container build (max-width: 720px) {
+  .table { padding: 2px 10px 6px; }
+  .headRow { display: none; }
+  .row { grid-template-columns: 40px minmax(0, 1fr); row-gap: 4px; padding: 8px 0; }
+  .metrics {
+    grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px;
+    padding-left: 26px;
+  }
+  .byCol { font-size: 11px; color: var(--text-2); flex-basis: 100%; }
+  .num { text-align: left; font-size: 11.5px; }
+  .num::before {
+    content: attr(data-label) ' ';
+    font-family: var(--font-title), sans-serif; font-size: 9px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-3);
+  }
+  .bank { flex-direction: row; gap: 12px; width: 100%; max-width: 300px; }
+  .bar { flex: 1; }
+  .foot { grid-column: 2; }
+  .name { font-size: 13.5px; white-space: normal; }
+}
+
+/* ---- Around the build. ---- */
+.notes { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .card {
-  flex: 1 1 300px;
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
   padding: 11px 13px;
 }
-.cardLabel { font-size: 9px; color: var(--text-3); display: block; margin-bottom: 5px; }
-.cardBody { font-size: 12px; line-height: 1.55; color: var(--text-2); margin: 0; }
-.adviceList { margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.6; color: var(--text-2); }
+.cardLabel { font-size: 9px; display: block; margin-bottom: 7px; }
+.sizes { margin: 0; display: flex; flex-direction: column; gap: 7px; }
+.size { display: grid; grid-template-columns: 46px minmax(0, 1fr); gap: 8px; }
+.size dt { font-size: 11.5px; color: var(--text); padding-top: 1px; }
+.size dd { margin: 0; font-size: 12px; line-height: 1.55; color: var(--text-2); }
+.adviceList { margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.6; color: var(--text-2); max-width: 75ch; }
 .adviceList li + li { margin-top: 5px; }
 
-.provenance { font-size: 10.5px; line-height: 1.65; color: var(--text-3); margin: 0; }
-.provenance a { color: var(--text-2); }
+.provenance { font-size: 11px; line-height: 1.65; color: var(--text-3); margin: 0; max-width: 90ch; }
+.provenance a { color: var(--text-2); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 2px; }
 
-/* Under this the seven columns stop fitting, so the numbers move to their own
-   line under the unit rather than being squeezed to two characters. */
-@media (max-width: 860px) {
-  .headRow { display: none; }
-  .row { grid-template-columns: 44px minmax(0, 1fr) auto; row-gap: 3px; }
-  .byCol { grid-column: 3; font-size: 10.5px; color: var(--text-3); text-align: right; }
-  .num { grid-column: 2 / -1; text-align: left; }
-  .bank { grid-column: 2 / -1; }
-  .num::before { content: attr(data-label) ' '; font-size: 9px; color: var(--text-3); text-transform: uppercase; }
-  .takes { grid-column: 2 / -1; }
-  .foot { grid-column: 2 / -1; }
+@media (prefers-reduced-motion: reduce) {
+  .fill { transition: none; }
 }

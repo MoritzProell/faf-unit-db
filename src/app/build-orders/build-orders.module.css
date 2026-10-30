@@ -1,161 +1,165 @@
+/* The page's own gutter and measure. Kept here rather than as a global token so
+   the page does not depend on how the rest of the site sets its width. The cap
+   is wide enough for the picker, the step table and its notes to sit side by
+   side, and stops an ultrawide from stretching any of them into long lines. */
 .shell { display: flex; flex-direction: column; min-height: 100vh; }
-.head { padding: 18px 22px 14px; }
+.page {
+  --bo-pad: clamp(16px, 1.6vw, 32px);
+  flex: 1; width: 100%; max-width: 1960px; margin: 0 auto;
+  padding: 0 var(--bo-pad) 40px;
+  display: flex; flex-direction: column; gap: 34px;
+}
+
+.head { padding-top: 18px; }
 .back { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--text-2); }
 .back:hover { color: var(--text); }
-.title { font-size: 30px; font-weight: 700; letter-spacing: -0.015em; margin-top: 10px; }
-.lede { font-size: 13.5px; color: var(--text-2); margin-top: 7px; max-width: 88ch; line-height: 1.55; }
+.title { font-size: 30px; font-weight: 700; letter-spacing: -0.015em; margin: 10px 0 0; }
+.lede { font-size: 13.5px; color: var(--text-2); margin: 7px 0 0; max-width: 88ch; line-height: 1.55; }
 
-.layout { flex: 1; display: flex; align-items: flex-start; }
-.main { flex: 1; min-width: 0; padding: 0 22px 22px; display: flex; flex-direction: column; gap: 16px; }
-.empty { font-size: 13px; color: var(--text-3); padding: 30px 0; }
-
-.rail {
-  width: 248px; flex-shrink: 0; align-self: stretch;
-  background: var(--rail); border-right: 1px solid var(--line);
-  padding: 14px; display: flex; flex-direction: column; gap: 18px;
-  position: sticky; top: 0;
+.jump { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.jumpLink {
+  display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 11px;
+  border-radius: var(--radius); border: 1px solid var(--line-2); background: var(--panel-2);
+  font-size: 12.5px; font-weight: 600; color: var(--text-2);
 }
-.railHead { display: flex; align-items: center; gap: 8px; color: var(--text-2); }
-.railTitle { flex: 1; font-size: 12px; font-weight: 700; letter-spacing: 0.13em; color: var(--text); }
-.reset { font-size: 11.5px; font-weight: 600; color: var(--text-2); }
-.reset:hover { color: var(--text); }
-.reset:disabled { opacity: 0.4; cursor: default; }
+.jumpLink:hover { color: var(--text); border-color: var(--primary); }
+.jumpCount { font-size: 10.5px; color: var(--text-3); }
 
+.section { scroll-margin-top: 16px; display: flex; flex-direction: column; gap: 14px; }
+.sectionHead { max-width: 96ch; }
+.sectionTitle { font-size: 18px; font-weight: 700; margin: 0 0 6px; }
+.sectionLede { font-size: 13px; line-height: 1.6; color: var(--text-2); margin: 0; }
+
+/* ---- Guides: one filter bar, then the guides on their shelves. ---- */
+.guides { display: flex; flex-direction: column; gap: 18px; }
+
+.bar {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 20px;
+  padding: 12px 14px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
+}
 .search {
-  display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 9px;
+  display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 9px;
+  width: clamp(220px, 20vw, 320px);
   background: var(--panel-2); border: 1px solid var(--line-2);
   border-radius: var(--radius); color: var(--text-3);
 }
 .search:focus-within { border-color: var(--primary); }
 .search input {
   flex: 1; min-width: 0; background: none; border: none; outline: none;
-  color: var(--text); font-size: 12.5px; font-family: inherit;
+  color: var(--text); font-size: 13px; font-family: inherit;
 }
+.search input::-webkit-search-cancel-button { display: none; }
 .search input::placeholder { color: var(--text-3); }
+.search button { display: flex; color: var(--text-2); }
+.search button:hover { color: var(--text); }
 
-.group { display: flex; flex-direction: column; gap: 8px; }
-.chips { display: flex; flex-wrap: wrap; gap: 5px; }
-.chip {
-  height: 26px; padding: 0 10px; border-radius: var(--radius);
-  border: 1px solid var(--line-2); background: var(--panel-2);
-  font-size: 11.5px; font-weight: 600; color: var(--text-3);
+.filterSet { display: contents; }
+.filtersToggle {
+  display: none; align-items: center; gap: 7px; height: 34px; padding: 0 12px;
+  border-radius: var(--radius); border: 1px solid var(--line-2); background: var(--panel-2);
+  font-size: 12.5px; font-weight: 600; color: var(--text-2);
 }
-.chip[data-on='true'] { color: var(--text); border-color: var(--primary); background: var(--panel); }
+.filtersToggle[aria-expanded='true'] { color: var(--text); border-color: color-mix(in srgb, var(--primary) 50%, transparent); }
+.filtersCount { font-size: 10.5px; color: var(--text); background: var(--line-2); border-radius: 3px; padding: 0 5px; }
 
-.select {
-  height: 30px; padding: 0 8px; border-radius: var(--radius);
-  border: 1px solid var(--line-2); background: var(--panel-2);
-  color: var(--text); font-size: 12.5px; font-family: inherit;
-}
+.tally { margin-left: auto; display: flex; align-items: center; gap: 12px; min-height: 34px; }
+.tally p { margin: 0; font-size: 12px; color: var(--text-2); white-space: nowrap; }
+.reset { font-size: 12px; font-weight: 600; color: #7fb6e0; }
+.reset:hover { color: #a7d0ee; }
+.empty { font-size: 13px; color: var(--text-2); padding: 20px 0; margin: 0; }
+.inlineBtn { font-weight: 600; color: #7fb6e0; }
+.inlineBtn:hover { color: #a7d0ee; }
 
-.uniqueToggle {
-  display: flex; align-items: center; gap: 9px; width: 100%; text-align: left;
-  font-size: 12.5px; font-weight: 600; color: var(--text-3);
+/* Start here and the faction guides take the full width; the longer shelves
+   share a row, three across on a desktop, one on a phone. */
+.shelves { display: flex; flex-direction: column; gap: 24px; }
+.rowShelves {
+  display: grid; gap: 24px 18px; align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
 }
-.uniqueToggle[data-on='true'] { color: var(--text); }
-.box {
-  display: flex; align-items: center; justify-content: center;
-  width: 15px; height: 15px; border-radius: 3px;
-  border: 1px solid var(--line-2); color: transparent; flex-shrink: 0;
-}
-.box[data-on='true'] { background: var(--primary); border-color: var(--primary); color: #06121c; }
-.tally { font-size: 11.5px; color: var(--text-3); margin-top: auto; }
+.shelf { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.rowShelves > .shelf { max-width: 900px; }
+.shelfHead { max-width: 90ch; }
+.shelfTitle { display: flex; align-items: baseline; gap: 8px; font-size: 14.5px; font-weight: 650; margin: 0; }
+.shelfCount { font-size: 11px; font-weight: 500; color: var(--text-3); }
+.shelfIntro { font-size: 12px; line-height: 1.5; color: var(--text-2); margin: 3px 0 0; }
 
-.slot { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
-.slotHead {
-  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
-  padding: 11px 14px; border-bottom: 1px solid var(--line);
+.shelfList { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+/* auto-fit so four cards share the row with no empty tracks beside them; the
+   cap on each card keeps one left alone by a filter from spanning the page. */
+.shelf[data-kind='card'] .shelfList { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+.shelf[data-kind='faction'] .shelfList { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+.shelf[data-kind='card'] .shelfList > li,
+.shelf[data-kind='faction'] .shelfList > li { max-width: 560px; }
+/* A long shelf is one panel of rows rather than a stack of cards: same
+   information, a third of the height. */
+.shelf[data-kind='row'] .shelfList {
+  gap: 0;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
 }
-.slotTitle { font-size: 15px; font-weight: 600; text-transform: capitalize; }
-.uniqueBadge {
-  display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 4px;
-  background: var(--best-bg); border: 1px solid var(--best-line); color: var(--best);
-  font-size: 10.5px; font-weight: 600;
-}
-.missingNote { font-size: 11px; color: var(--text-3); }
+.shelfList > li { display: flex; min-width: 0; }
+.shelf[data-kind='row'] .shelfList > li + li { border-top: 1px solid var(--line); }
 
-.tableWrap { overflow-x: auto; }
-.table { width: 100%; border-collapse: collapse; min-width: 560px; }
-.table th {
-  text-align: right; padding: 7px 14px; font-size: 9.5px; font-weight: 700;
-  letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3);
-  border-bottom: 1px solid var(--line); white-space: nowrap;
+.more {
+  align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px;
+  border-radius: var(--radius); border: 1px solid var(--line-2); background: var(--panel-2);
+  font-size: 12px; font-weight: 600; color: var(--text-2);
 }
-.table th.thUnit { text-align: left; }
-.table td { padding: 6px 14px; border-bottom: 1px solid var(--line); }
-.table tbody tr:last-child td { border-bottom: none; }
-.table tbody tr:hover { background: rgba(255, 255, 255, 0.025); }
-.tdUnit { width: 40%; }
-.unitLink { display: flex; align-items: center; gap: 9px; color: inherit; }
-.unitLink:hover { color: inherit; }
-.unitBody { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.unitName { font-size: 12.5px; font-weight: 600; }
-.unitFaction { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text-3); }
-.num { text-align: right; font-size: 12px; color: var(--text-2); white-space: nowrap; }
-.num[data-best='true'] { color: var(--best); font-weight: 600; }
+.more:hover { color: var(--text); border-color: var(--primary); }
 
-@media (max-width: 1000px) {
-  .layout { flex-direction: column; }
-  .rail { width: 100%; position: static; border-right: none; border-bottom: 1px solid var(--line); }
-  .tally { margin-top: 0; }
-  .main { padding: 16px; width: 100%; }
-}
-@media (max-width: 700px) { .head { padding: 16px; } }
-
-/* The five factions, large: legend for the row colours and faction filter. */
-.factionBar {
-  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px; padding: 0 22px 16px;
-}
-.factionTile {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  padding: 14px 10px; border-radius: var(--radius-lg);
-  border: 1px solid var(--line); background: var(--panel);
-  color: var(--text-3); text-align: center;
-}
-.factionTile[data-on='true'] {
-  color: var(--fac);
-  border-color: color-mix(in srgb, var(--fac) 45%, transparent);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--fac) 14%, transparent), transparent 70%);
-}
-.factionTile[data-on='false'] { opacity: 0.42; }
-.factionTile:hover { border-color: color-mix(in srgb, var(--fac) 60%, transparent); }
-.factionName { font-size: 13.5px; font-weight: 700; letter-spacing: 0.03em; }
-.factionCount { font-size: 10.5px; color: var(--text-3); }
-
-@media (max-width: 700px) {
-  .factionBar { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 0 16px 14px; }
-}
-
-/* Build order cards. */
-.note { font-size: 12.5px; color: var(--text-3); margin-top: 8px; max-width: 84ch; line-height: 1.55; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; align-items: start; }
-.card {
+/* ---- One guide. ---- */
+.guide {
+  flex: 1; min-width: 0;
   display: flex; flex-direction: column; gap: 7px; padding: 13px 14px;
   background: var(--panel); border: 1px solid var(--line);
   border-radius: var(--radius-lg); color: inherit;
 }
-.card:hover { border-color: var(--primary); color: inherit; }
-.cardTop { display: flex; align-items: baseline; gap: 10px; color: var(--text-3); }
-.cardTitle { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.35; }
+.guide:hover { border-color: var(--primary); color: inherit; }
+.guide:hover .guideTitle { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line-2); }
+.guide[data-kind='row'] {
+  background: none; border: 1px solid transparent; border-radius: 0; padding: 11px 13px; gap: 5px;
+}
+.shelfList > li:first-child .guide[data-kind='row'] { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.shelfList > li:last-child .guide[data-kind='row'] { border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg); }
+.guide[data-kind='row']:hover { background: var(--panel-2); border-color: color-mix(in srgb, var(--primary) 40%, transparent); }
+.guide[data-kind='faction'] {
+  border-top: 2px solid var(--fac);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--fac) 9%, transparent), transparent 60%), var(--panel);
+}
+.guideMark { color: var(--fac); align-self: center; }
+
+.guideTop { display: flex; align-items: baseline; gap: 9px; color: var(--text-3); }
+.guideTop > svg:last-of-type { align-self: center; }
+.guideTitle { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.35; }
+.guide[data-kind='row'] .guideTitle { font-size: 13.5px; }
+
 .tags { display: flex; flex-wrap: wrap; gap: 5px; }
 .tag {
-  padding: 2px 7px; border-radius: 4px; font-size: 10.5px; font-weight: 600;
+  padding: 1px 7px; border-radius: 4px; font-size: 10.5px; font-weight: 600;
   background: rgba(255, 255, 255, 0.045); border: 1px solid var(--line-2); color: var(--text-2);
 }
 .tag[data-kind='scope'] { color: var(--primary); border-color: color-mix(in srgb, var(--primary) 40%, transparent); }
-.tag[data-kind='scope'][data-generic='true'] { color: var(--text-2); border-color: var(--line-2); }
 .tag[data-level='Advanced'] { color: var(--worse); }
 .tag[data-level='New'] { color: var(--best); }
-.cardBlurb { font-size: 12.5px; line-height: 1.5; color: var(--text-2); }
-.cardCaveat { font-size: 11.5px; line-height: 1.45; color: var(--worse); border-left: 2px solid var(--worse); padding-left: 9px; }
-.cardMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; font-size: 10.5px; color: var(--text-3); }
-.cardSource { padding: 2px 6px; border-radius: 3px; font-weight: 600; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line-2); color: var(--text-2); }
-.cardSignal { color: var(--best); }
 
-/* The transcribed openings, above the link index. */
-.openings { padding: 0 var(--page-pad, 22px) 26px; }
-.sectionHead { padding: 0 var(--page-pad, 22px) 12px; max-width: 96ch; }
-.openings .sectionHead { padding-left: 0; padding-right: 0; }
-.sectionTitle { font-size: 14px; font-weight: 650; margin: 0 0 5px; }
-.sectionLede { font-size: 12px; line-height: 1.6; color: var(--text-2); margin: 0; }
+.blurb { font-size: 12.5px; line-height: 1.5; color: var(--text-2); }
+.caveat { font-size: 11.5px; line-height: 1.45; color: var(--worse); border-left: 2px solid var(--worse); padding-left: 9px; }
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 11px; color: var(--text-2); margin-top: auto; padding-top: 2px; }
+.source {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 1px 6px; border-radius: 3px; font-weight: 600;
+  background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line-2); color: var(--text-2);
+}
+.signal { color: var(--best); }
+
+@media (max-width: 700px) {
+  .title { font-size: 26px; }
+  .bar { padding: 12px; gap: 12px; }
+  .search { width: 100%; }
+  .filtersToggle { display: inline-flex; }
+  .filterSet { display: flex; flex-direction: column; gap: 12px; width: 100%; order: 1; }
+  .filterSet[data-open='false'] { display: none; }
+  .tally { margin-left: auto; }
+}
