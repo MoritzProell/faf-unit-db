@@ -1,5 +1,5 @@
 .shell { display: flex; flex-direction: column; min-height: 100vh; }
-.wrap { flex: 1; min-width: 0; padding: 0 22px 40px; max-width: 1100px; width: 100%; }
+.wrap { flex: 1; min-width: 0; padding: 0 28px 40px; width: 100%; }
 .head { padding: 24px 22px 4px; }
 .title { font-size: 26px; font-weight: 700; letter-spacing: -0.015em; }
 .lede { font-size: 13.5px; color: var(--text-2); margin: 8px 0 20px; max-width: 62ch; line-height: 1.6; }
@@ -13,12 +13,15 @@
 .patchMeta { font-size: 12.5px; color: var(--text-3); }
 .patchLink { font-size: 12.5px; margin-left: auto; }
 
-.cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 380px); gap: 24px; margin-top: 16px; align-items: start; }
-/* A bugfix patch changes no blueprints, so the notes take the full width rather
-   than sitting beside an empty column. */
+/* The unit changes and the notes share the width; the notes flow into as many
+   columns as fit, so a wide screen is filled rather than left half empty. */
+.cols { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(340px, 1fr); gap: 24px; margin-top: 16px; align-items: start; }
+/* A bugfix patch changes no blueprints, so the notes take the full width. */
 .cols[data-single='true'] { grid-template-columns: minmax(0, 1fr); }
-.cols[data-single='true'] .notes { max-width: 760px; }
-@media (max-width: 900px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 1100px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+
+.unitList { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); gap: 8px; align-items: start; }
+.unitList > * { margin: 0; }
 
 .sectionLabel { margin-bottom: 10px; }
 .empty { font-size: 13px; color: var(--text-3); padding: 14px 0; }
@@ -54,9 +57,19 @@
 .up { color: var(--best); }
 .down { color: var(--worse); }
 
-.notes { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 14px 16px; }
-.noteHeading { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); margin: 14px 0 8px; }
-.noteHeading:first-child { margin-top: 0; }
+.notes { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 16px 18px; }
+.noteCols { columns: 290px; column-gap: 28px; column-rule: 1px solid var(--line); }
+.noteSection { margin-bottom: 16px; }
+.noteSection:last-child { margin-bottom: 0; }
+.noteHeading { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); margin: 0 0 8px; break-after: avoid; }
+.noteList li { break-inside: avoid; }
+.noteSection > .more { break-before: avoid; }
+.contrib {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line);
+}
+.contribLabel { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); margin-right: 4px; }
+.contribName { font-size: 12px; color: var(--text-2); padding: 2px 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); }
 .noteList { margin: 0; padding-left: 18px; }
 .noteList li { font-size: 12.5px; color: var(--text-2); line-height: 1.65; margin-bottom: 5px; }
 .more { font-size: 12.5px; color: var(--text-3); margin-top: 12px; }

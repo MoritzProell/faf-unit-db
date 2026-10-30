@@ -31,6 +31,9 @@ function formatPatchDate(iso: string): string {
   });
 }
 
+/** The notes' list of names, shown as one line of names under the notes rather than a section of its own. */
+const isContributors = (heading: string) => /^contributors?$/i.test(heading.trim());
+
 export default async function ChangelogPage() {
   const { units, version } = await getUnitData();
   const patches = await getPatches();
@@ -117,14 +120,10 @@ export default async function ChangelogPage() {
               </div>
 
               <div className={styles.cols} data-single={p.changed.length === 0 && p.added.length === 0}>
+                {(p.changed.length > 0 || p.added.length > 0) && (
                 <div>
                   <div className={`lbl ${styles.sectionLabel}`}>Unit changes</div>
-                  {p.changed.length === 0 && p.added.length === 0 ? (
-                    <p className={styles.empty}>
-                      No unit blueprint changed in this patch. It was fixes and other work.
-                    </p>
-                  ) : (
-                    <>
+                  <div className={styles.unitList}>
                       {p.added.map((a) => {
                         const u = byId.get(a.id);
                         return (
@@ -166,16 +165,17 @@ export default async function ChangelogPage() {
                           />
                         ));
                       })()}
-                    </>
-                  )}
+                  </div>
                 </div>
+                )}
 
                 <div>
                   <div className={`lbl ${styles.sectionLabel}`}>FAF release notes</div>
                   {p.notes?.length ? (
                     <div className={styles.notes}>
-                      {p.notes.map((s) => (
-                        <div key={s.heading}>
+                      <div className={styles.noteCols}>
+                      {p.notes.filter((s) => !isContributors(s.heading)).map((s) => (
+                        <div key={s.heading} className={styles.noteSection}>
                           <div className={styles.noteHeading}>{s.heading}</div>
                           <ul className={styles.noteList}>
                             {s.items.slice(0, 12).map((it, i) => (
@@ -188,6 +188,15 @@ export default async function ChangelogPage() {
                               <a href={p.notesUrl} target="_blank" rel="noopener noreferrer">official notes</a>.
                             </p>
                           )}
+                        </div>
+                      ))}
+                      </div>
+                      {p.notes.filter((s) => isContributors(s.heading)).map((s) => (
+                        <div key={s.heading} className={styles.contrib}>
+                          <span className={styles.contribLabel}>{s.heading}</span>
+                          {s.items.map((name, i) => (
+                            <span key={i} className={styles.contribName}>{name}</span>
+                          ))}
                         </div>
                       ))}
                     </div>
