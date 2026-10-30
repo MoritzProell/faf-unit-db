@@ -21,7 +21,10 @@
   container-type: size;
 
   --chip-gap: 2px;
-  --row-pad: 3px;
+  /* 2px, not 3: twelve rows of padding is 24px of a 768px laptop's height,
+     which is most of a chip's worth once divided back across the rows. Screen
+     mode keeps 3px below, because fit.ts budgets for it. */
+  --row-pad: 2px;
   --head-h: 34px;
   /* Height left for unit rows: one screenful, less a column header and each
      tier's icon strip and border, divided by the rows in the tallest column. */
@@ -33,8 +36,20 @@
   --fit-w: calc((100cqw - var(--furniture)) / var(--wide));
   /* Floor so it stays legible, ceiling so it stays a roster. Without the
      ceiling a filter down to five structures grew the chips to 141px and the
-     view stopped reading as a grid of units. 52px matches the other views. */
-  --chip: clamp(14px, min(var(--fit-h), var(--fit-w)), 52px);
+     view stopped reading as a grid of units. It was 52px, which a 1920 already
+     reaches, so every larger screen got the same roster and an empty third
+     beside it; 80px is about where the 64px renders start to go soft. */
+  --chip-max: 80px;
+  --chip: clamp(14px, min(var(--fit-h), var(--fit-w)), var(--chip-max));
+
+  /* Never wider than the army needs at the ceiling, and centred in what is
+     left. On an ultrawide the roster used to sit against the rail with up to
+     1800px of nothing to its right; now the spare width is split either side
+     and the structures below wrap to the same measure, so the page reads as
+     one block instead of a block and a void. */
+  width: 100%;
+  max-width: calc(var(--chip-max) * var(--wide) + var(--furniture) + 2px);
+  align-self: center;
 }
 
 .sheet {
@@ -138,9 +153,18 @@
    viewport-height box while the footer sat under it, permanently on screen
    instead of at the end of the page where a footer belongs. */
 @media (max-width: 1100px), (max-height: 620px) {
-  .scroll { height: auto; min-height: 0; overflow: visible; container-type: normal; }
+  .scroll {
+    height: auto; min-height: 0; overflow: visible; max-width: none;
+    /* Inline size only: the height is the content's own here. */
+    container-type: inline-size;
+    /* Sized so the widest single column fills the width, since the columns
+       stack here rather than share a row. A flat 26px left a tablet's roster
+       using half its width. Capped lower than the one-screen ceiling: the
+       stacked view is a scroll either way, and past 44px a phone held sideways
+       would show two rows of units at a time. */
+    --chip: clamp(24px, (100cqw - var(--furniture-one)) / var(--wide-one), 44px);
+  }
   .sheet { overflow: visible; flex-wrap: wrap; height: auto; }
-  .scroll { --chip: 26px; }
 }
 
 /* Screen mode: every section on the screen at once, in bands.
@@ -150,9 +174,12 @@
    stops scrolling and stops being a query container, the bands share the
    height, and --chip arrives as a number. */
 .scroll[data-mode='screen'] {
+  --row-pad: 3px;
   overflow: hidden;
   container-type: normal;
   gap: 8px;
+  /* The solver measures this box, so it must be the whole of main. */
+  max-width: none;
 }
 .scroll[data-mode='screen'] .sheet {
   height: auto;

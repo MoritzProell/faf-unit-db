@@ -33,9 +33,14 @@ const TECH_ORDER: Tech[] = ['T1', 'T2', 'T3', 'EXP'];
 
 /* The size below which a unit render is no longer recognisable, and the size
    above which the view stops reading as a roster. Both match the clamp in
-   OnePage.module.css. */
+   OnePage.module.css.
+
+   The ceiling was 52px, which is where a 1920 monitor lands anyway, so every
+   screen past it got the same 52px roster with a third of the width empty
+   beside it: 554px of nothing on a 2560, 1434px on a 3440. 80px is about as
+   far as the 64px renders stretch before they go soft. */
 const MIN_CHIP = 14;
-const MAX_CHIP = 52;
+const MAX_CHIP = 80;
 
 /** The army is what fits on the screen; everything else waits below it. */
 const ARMY = new Set(COLUMNS.map((c) => c.section));
@@ -246,6 +251,22 @@ export function OnePage({
     })
   );
 
+  /**
+   * The widest single column, army or structures, for the narrow layout.
+   *
+   * Below the one-screen breakpoint the columns stack and each one may have a
+   * row to itself, so the chip only has to fit the widest column across, not
+   * all four side by side. It used to be a flat 26px there, which left a tablet
+   * with a 26px roster and half its width empty.
+   */
+  const single = [...columns, ...restColumns].map((c) => widestTier(c)).reduce(
+    (best, w) => {
+      const furn = 45 + 4 * w.cols + 2 * (w.chips - w.cols) + 18;
+      return w.chips > best.chips ? { chips: w.chips, furn } : best;
+    },
+    { chips: 1, furn: 63 }
+  );
+
   return (
     <div
       ref={boxRef}
@@ -261,6 +282,8 @@ export function OnePage({
           '--cols': columns.length,
           '--wide': totalWide,
           '--furniture': `${furniture}px`,
+          '--wide-one': single.chips,
+          '--furniture-one': `${single.furn}px`,
           ...(fit ? { '--chip': `${fit.chip}px` } : null),
         } as React.CSSProperties
       }

@@ -1,12 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { FactionMark } from './FactionMark';
 import { UnitWell } from './UnitWell';
 import { AbilityChips } from './AbilityChips';
 import { MassMark } from './Marks';
 import { Icon } from './Icon';
 import { fmt, type BrowseUnit, type SortDef } from '@/lib/faf/browse';
+import { UnitLink } from '@/components/UnitLink';
 import styles from './UnitTile.module.css';
 
 /**
@@ -49,9 +49,9 @@ export function UnitTile({
           aria-label={`${selected ? 'Remove' : 'Add'} ${unit.name} ${selected ? 'from' : 'to'} comparison`}
         />
       ) : (
-        <Link href={`/unit/${unit.slug}`} className={styles.open} aria-label={`${unit.name}, ${unit.role}`}>
+        <UnitLink href={`/unit/${unit.slug}`} className={styles.open} aria-label={`${unit.name}, ${unit.role}`}>
           <span className="visually-hidden">{unit.name}</span>
-        </Link>
+        </UnitLink>
       )}
 
       {!pickMode && (
@@ -78,8 +78,8 @@ export function UnitTile({
           id={unit.id}
           faction={unit.faction}
           techLabel={unit.techLabel}
-          size={60}
-          imageSize={56}
+          // Grows with the card on a wide screen; see .grid in Browse.module.css.
+          size="var(--tile-well, 60px)"
           priority={eager}
           hasRender={unit.hasRender}
         />
